@@ -1,0 +1,51 @@
+<ion-content class="pagina-de-login">
+  <div class="container">
+
+    <h1 class="titulo">Junte-Se A Nós E Leve<br>Mais Sabor Ao Mundo!</h1>
+    <p class="subtitulo">
+      Explore receitas incríveis, compartilhe seus pratos favoritos e leve mais sabor ao dia a dia de quem ama cozinhar!
+    </p>
+    <ion-item class="item-de-entrada" lines="none">
+      <ion-icon name="mail-outline" slot="start"></ion-icon>
+      <ion-input placeholder="Email" type="email"></ion-input>
+    </ion-item>
+
+    <ion-item class="item-de-entrada" lines="none">
+      <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+      <ion-input
+        placeholder="Senha"
+        [type]="showPassword ? 'text' : 'password'"
+      ></ion-input>
+      <ion-icon
+        [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"
+        slot="end"
+        (click)="togglePassword()"
+        class="icone-alternar"
+      ></ion-icon>
+    </ion-item>
+
+    <div class="esqueceu-a-senha">
+      <a href="#">Perdeu a senha?</a>
+    </div>
+
+    <ion-button expand="block" class="botao-de-login">Login</ion-button>
+
+    <div class="divisor">
+      <span>Ou</span>
+    </div>
+
+    <div class="icones-sociais">
+      <ion-button fill="clear" class="botao-social google">
+        <ion-icon name="logo-google"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" class="botao-social facebook">
+        <ion-icon name="logo-facebook"></ion-icon>
+      </ion-button>
+    </div>
+
+    <div class="link-de-cadastro">
+      <p>Não possui uma conta? <a href="../cadastro/cadastro.page.html">Cadastre-se.</a></p>
+    </div>
+
+  </div>
+</ion-content>
