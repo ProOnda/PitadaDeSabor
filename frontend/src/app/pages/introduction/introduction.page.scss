@@ -1,0 +1,17 @@
+ion-content {
+  --background: white; /* Defina a cor de fundo */
+  --color: black; /* Defina a cor do texto padrão */
+}
+
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end; /* Alinha o conteúdo na parte inferior */
+  height: 100%;
+  margin: 0 auto;
+  width: 80%;
+  height: 90vh;
+  gap: 10px;
+  color: white; /* Cor do texto sobre o overlay */
+}
