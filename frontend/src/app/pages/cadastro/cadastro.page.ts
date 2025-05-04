@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { IonContent } from '@ionic/angular/standalone'; // Importe o IonContent
+import { IonContent } from '@ionic/angular/standalone';
 import { CustomInputComponent } from '../../components/custom-input/custom-input.component';
 import { ButtonComponent } from '../../components/button/button.component';
 import { SocialLoginComponent } from '../../components/social-login/social-login.component';
 import { FooterLinkComponent } from '../../components/footer-link/footer-link.component';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../services/auth/auth.service'; // Importe o AuthService
 
 @Component({
   selector: 'app-cadastro',
@@ -15,7 +16,7 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [
     CommonModule,
-    IonContent, // Adicione o IonContent aos imports
+    IonContent,
     RouterModule,
     ReactiveFormsModule,
     CustomInputComponent,
@@ -31,8 +32,8 @@ export class CadastroPage implements OnInit {
 
   constructor(
     private formBuilder: FormBuilder,
-    private router: Router
-    // Adicione aqui o seu serviço de autenticação (ex: private authService: AuthService)
+    private router: Router,
+    private authService: AuthService // Injete o AuthService
   ) {
     this.cadastroForm = this.formBuilder.group({
       nome: ['', Validators.required],
@@ -65,42 +66,39 @@ export class CadastroPage implements OnInit {
   }
 
   cadastrarUsuario() {
+    console.log('Botão Cadastrar clicado!');
+    console.log('Estado do formulário:', this.cadastroForm);
+    console.log('Controles do formulário:', this.cadastroForm.controls);
+    console.log('Valores do formulário:', this.cadastroForm.value);
+
     if (this.cadastroForm.valid) {
-      const nome = this.cadastroForm.value.nome;
-      const email = this.cadastroForm.value.email;
-      const senha = this.cadastroForm.value.senha;
-      const confirmarSenha = this.cadastroForm.value.confirmarSenha;
-
-      // Verifique se as senhas coincidem novamente aqui, por segurança
-      if (senha !== confirmarSenha) {
-        this.errorMessage = 'As senhas não coincidem.';
-        return;
+            const userData = this.cadastroForm.value;
+            this.authService.cadastrar(userData).subscribe({
+              next: (response) => {
+                console.log('Cadastro realizado com sucesso!', response);
+                // Agora, faça o login do usuário recém-cadastrado
+                this.authService.login({ email: userData.email, senha: userData.senha }).subscribe({
+                  next: (loginResponse) => {
+                    console.log('Login após cadastro realizado com sucesso!', loginResponse);
+                    this.router.navigate(['/feed']);
+                  },
+                  error: (loginError) => {
+                    console.error('Erro ao fazer login após o cadastro', loginError);
+                    this.errorMessage = 'Erro ao fazer login após o cadastro.';
+                    this.router.navigate(['/login']); // Redirecionar para a página de login em caso de erro
+                  }
+                });
+              },
+              error: (error) => {
+                console.error('Erro ao cadastrar', error);
+                this.errorMessage = error?.error?.message || 'Erro ao realizar o cadastro.';
+                if (error?.error?.message === 'Este email já está cadastrado.') {
+                  this.errorMessage = 'Este email já está cadastrado.';
+                }
+              }
+            });
+          } else {
+       this.errorMessage = 'Por favor, preencha todos os campos corretamente.';
+       }
       }
-
-      // Aqui você chamaria o seu serviço de autenticação para cadastrar o usuário
-      // Exemplo (você precisará adaptar para o seu serviço):
-      // this.authService.cadastrar({ nome, email, senha })
-      //   .subscribe({
-      //     next: (response) => {
-      //       console.log('Cadastro realizado com sucesso!', response);
-      //       this.router.navigate(['/home']); // Navega para a página inicial após o sucesso
-      //     },
-      //     error: (error) => {
-      //       console.error('Erro ao cadastrar', error);
-      //       this.errorMessage = 'Erro ao cadastrar. Por favor, tente novamente.';
-      //       // Trate o erro de acordo com a sua API (ex: email já existe)
-      //       if (error?.error?.message === 'Email already exists') {
-      //         this.errorMessage = 'Este email já está cadastrado.';
-      //       }
-      //     }
-      //   });
-
-      // Por enquanto, apenas um log para demonstração:
-      console.log('Dados do formulário de cadastro:', this.cadastroForm.value);
-      this.router.navigate(['/home']); // Navegação simulada
-    } else {
-      this.errorMessage = 'Por favor, preencha todos os campos corretamente.';
     }
-  }
-
-}

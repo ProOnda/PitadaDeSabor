@@ -11,4 +11,7 @@ import { CommonModule } from '@angular/common';
 })
 export class FooterLinkComponent {
   @Input() isLoginPage: boolean = true; // Por padrão, assume que está na página de login
+  @Input() text: string = '';       // Garanta que esta linha exista
+  @Input() linkText: string = '';   // Garanta que esta linha exista
+  @Input() route: string = '';
 }
