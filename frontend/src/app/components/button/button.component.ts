@@ -11,10 +11,6 @@ import { IonIcon } from '@ionic/angular/standalone';
 })
 export class ButtonComponent {
   @Input() label: string = '';
-  @Input() icon: string | undefined; // Input para o nome do ícone Ionic (opcional)
-  @Output() buttonClicked = new EventEmitter<void>();
-
-  handleClick() {
-    this.buttonClicked.emit();
-  }
+  @Input() type: 'button' | 'submit' | 'reset' = 'button';
+  @Input() disabled: boolean = false; // ESTA LINHA É CRUCIAL
 }

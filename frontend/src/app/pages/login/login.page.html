@@ -5,19 +5,29 @@
       <p>Bem-vindo de volta! Acesse sua conta para continuar explorando e aproveitando ao máximo tudo o que temos para oferecer.</p>
     </div>
 
-    <app-custom-input label="Email">
-      <i class="bi bi-envelope-fill"></i>
-    </app-custom-input>
+    <form [formGroup]="loginForm" (ngSubmit)="loginUsuario()">
+      <app-custom-input label="Email" controlName="email">
+        <i class="bi bi-envelope-fill"></i>
+      </app-custom-input>
+      <div class="error-message" *ngIf="loginForm.controls['email'].invalid && (loginForm.controls['email'].dirty || loginForm.controls['email'].touched)">
+        {{ getEmailErrorMessage() }}
+      </div>
 
-    <app-custom-input label="Senha">
-      <i class="bi bi-lock-fill"></i>
-    </app-custom-input>
+      <app-custom-input label="Senha" controlName="senha">
+        <i class="bi bi-lock-fill"></i>
+      </app-custom-input>
+      <div class="error-message" *ngIf="loginForm.controls['senha'].invalid && (loginForm.controls['senha'].dirty || loginForm.controls['senha'].touched)">
+        {{ getPasswordErrorMessage() }}
+      </div>
 
-    <div class="forgot-password">
-      <a href="../forgot-password">Perdeu a Senha?</a>
-    </div>
+      <div class="forgot-password">
+        <a href="../forgot-password">Perdeu a Senha?</a>
+      </div>
 
-    <app-button [label]="'Log In'"></app-button>
+      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+      <app-button [label]="'Log In'" type="submit" [disabled]="loginForm.invalid"></app-button>
+    </form>
 
     <div class="separator">
       <span>Ou</span>
@@ -25,6 +35,6 @@
 
     <app-social-login></app-social-login>
 
-    <app-footer-link></app-footer-link>
+    <app-footer-link [text]="'Não tem uma conta?'" [linkText]="'Cadastre-se'" [route]="'/cadastro'"></app-footer-link>
   </div>
 </ion-content>

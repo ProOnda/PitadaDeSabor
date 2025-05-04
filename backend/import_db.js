@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
 });
  
 // Lê o arquivo SQL
-const sql = fs.readFileSync(__dirname + '/receitas_db.sql').toString();
+const sql = fs.readFileSync(__dirname + '/pitada_de_sabor.sql').toString();
  
 connection.connect((err) => {
   if (err) {
