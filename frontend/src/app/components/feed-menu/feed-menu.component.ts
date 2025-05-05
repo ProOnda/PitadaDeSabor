@@ -36,7 +36,7 @@ export class FeedMenuComponent implements OnInit {
     menuItems.forEach(item => item.classList.remove('active'));
 
     const activeItem = Array.from(menuItems).find((item, index) => {
-      const routes = ['/home', '/cart', '/profile', '/settings']; // Ajuste suas rotas
+      const routes = ['/feed', '/cart', '/profile', '/configuracoes']; // Ajuste suas rotas
       return this.activeRoute.startsWith(routes[index]); // Verifica se a rota ativa começa com a rota do item
     });
 

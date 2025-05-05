@@ -64,24 +64,31 @@
   opacity: 0.6;
   font-size: 24px; /* Tamanho base para os ícones */
   top: 20px; /* Mantém a posição vertical */
+  opacity: 50%;
 }
 
 .menu-item.home {
   left: 20px;
-  color: rgba(240, 240, 240, 0.60);
+  color: #f0f0f0;
 }
 
 .menu-item.cart {
   left: 80px;
-  color: rgba(240, 240, 240, 0.60);
+  color: rgba(240, 240, 240);
 }
 
 .menu-item.profile {
   left: 195px;
-  color: rgba(240, 240, 240, 0.60);
+  color: rgba(240, 240, 240);
 }
 
 .menu-item.settings {
   left: 255px;
-  color: rgba(240, 240, 240, 0.60);
+  color: rgba(240, 240, 240);
+}
+
+.active {
+  opacity: 1;
+  border-bottom: solid #AD2F33;
+  padding-bottom: 2px;
 }

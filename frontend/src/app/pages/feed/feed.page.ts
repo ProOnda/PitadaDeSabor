@@ -86,9 +86,5 @@ export class FeedPage implements OnInit, OnDestroy {
 
   handleCategoryClick(category: string) {
     console.log(`Categoria selecionada: ${category}`);
-    // Implemente a lógica para filtrar as receitas por categoria
-    // Você pode chamar this.carregarReceitas() aqui, passando a categoria como parâmetro
-    // Exemplo (se você tiver um método no seu service para buscar por categoria):
-    // this.receitaService.listarReceitasPorCategoria(category).subscribe(...);
   }
 }

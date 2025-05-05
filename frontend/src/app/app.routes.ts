@@ -53,5 +53,25 @@ export const routes: Routes = [
   {
     path: 'filter',
     loadComponent: () => import('./pages/filter/filter.page').then( m => m.FilterPage)
+  },
+  {
+    path: 'configuracoes',
+    loadComponent: () => import('./pages/configuracoes/configuracoes.page').then( m => m.ConfiguracoesPage)
+  },
+  {
+    path: 'cart',
+    loadComponent: () => import('./pages/cart/cart.page').then( m => m.CartPage)
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./pages/profile/profile.page').then( m => m.ProfilePage)
+  },
+  {
+    path: 'category-food',
+    loadComponent: () => import('./pages/category-food/category-food.page').then( m => m.CategoryFoodPage)
+  },
+  {
+    path: 'about-app',
+    loadComponent: () => import('./pages/about-app/about-app.page').then( m => m.AboutAppPage)
   }
 ];
