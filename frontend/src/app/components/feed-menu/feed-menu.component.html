@@ -7,16 +7,16 @@
       </div>
     </div>
   </button>
-  <button class="menu-item home">
+  <button class="menu-item home" [class.active]="activeRoute.startsWith('/feed')" (click)="navigateTo('/feed')">
     <i class="bi bi-house-door-fill"></i>
   </button>
-  <button class="menu-item cart">
+  <button class="menu-item cart" (click)="navigateTo('/cart')">
     <i class="bi bi-cart-fill"></i>
   </button>
-  <button class="menu-item profile">
+  <button class="menu-item profile" (click)="navigateTo('/cart')">
     <i class="bi bi-person-fill"></i>
   </button>
-  <button class="menu-item settings">
+  <button class="menu-item settings" [class.active]="activeRoute.startsWith('/configuracoes')"  (click)="navigateTo('/configuracoes')">
     <i class="bi bi-gear-fill"></i>
   </button>
 </div>
