@@ -7,9 +7,9 @@ import { CommonModule } from '@angular/common';
 import { ReceitaService } from '../../services/receita/receita.service';
 import { ReceitaCardHorizontalComponent } from '../../components/receita-card-horizontal/receita-card-horizontal.component';
 import { ItemListSectionComponent } from '../../components/item-list-section/item-list-section.component';
-import { AuthService } from '../../services/auth/auth.service'; // Importe o AuthService
+import { AuthService } from '../../services/auth/auth.service';
 import { Subscription, interval } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-feed',
@@ -34,7 +34,11 @@ export class FeedPage implements OnInit, OnDestroy {
   userName: string | null = null;
   private timeSubscription: Subscription | undefined;
 
-  constructor(private receitaService: ReceitaService, private authService: AuthService) {} // Injete o AuthService
+  constructor(
+    private receitaService: ReceitaService,
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.carregarReceitas();
@@ -74,6 +78,10 @@ export class FeedPage implements OnInit, OnDestroy {
     this.error = null;
     this.receitaService.listarReceitas().subscribe(
       (data) => {
+        console.log('Dados das receitas carregados:', data);
+        data.forEach(receita => {
+          console.log('Objeto da receita:', receita); // LOG DE CADA OBJETO
+        });
         this.receitas = data;
         this.loading = false;
       },
@@ -86,5 +94,12 @@ export class FeedPage implements OnInit, OnDestroy {
 
   handleCategoryClick(category: string) {
     console.log(`Categoria selecionada: ${category}`);
+    // Aqui você pode adicionar a lógica para filtrar as receitas por categoria
+    // e talvez navegar para uma página específica de categorias.
+  }
+
+  openReceitaDetails(receitaId: number) {
+    console.log('Função openReceitaDetails chamada com ID:', receitaId);
+    this.router.navigate(['/receita-detalhe', receitaId]);
   }
 }

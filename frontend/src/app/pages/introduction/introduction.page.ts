@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { IonContent } from '@ionic/angular/standalone';
 import { BackgroundImageWithOverlayComponent } from '../../components/background-image-with-overlay/background-image-with-overlay.component';
 import { LogoTitleComponent } from '../../components/logo-title/logo-title.component';
-import { DescriptionTextComponent } from '../../components/description-text/description-text.component';
 import { ButtonComponent } from '../../components/button/button.component';
 import { Router } from '@angular/router';
 
@@ -15,7 +14,6 @@ import { Router } from '@angular/router';
     IonContent,
     BackgroundImageWithOverlayComponent,
     LogoTitleComponent,
-    DescriptionTextComponent,
     ButtonComponent,
   ],
   templateUrl: './introduction.page.html',
