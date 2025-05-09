@@ -1,0 +1,12 @@
+<ion-content [fullscreen]="true">
+  <app-onboarding-slide
+  imageUrl="/assets/images/meatballs.svg" title="Compartilhe E Faça Parte Da Comunidade"
+  description="Divida suas receitas favoritas com outras pessoas e descubra novos sabores todos os dias. Aqui, cozinhar é uma experiência coletiva."
+  [activeDot]="3">
+  </app-onboarding-slide>
+
+  <div class="navigation-container">
+    <div class="back-button" (click)="navigateToPreviousPage()">voltar</div>
+    <div class="start-button" (click)="navigateToNextPage()">iniciar</div>
+  </div>
+</ion-content>

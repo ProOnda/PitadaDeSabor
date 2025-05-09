@@ -1,0 +1,14 @@
+<ion-content [fullscreen]="true">
+  <app-onboarding-slide
+    imageUrl="/assets/images/cake.svg"
+    title="Planeje E Organize Suas Refeições"
+    description="Salve suas receitas semanalmente, liste ingredientes e mantenha tudo organizado. Menos estresse e mais praticidade na hora de cozinhar."
+    [activeDot]="2">
+  </app-onboarding-slide>
+
+  <div class="navigation-container">
+    <div class="back-button" (click)="navigateToPreviousPage()">voltar</div>
+    <app-next-button class="next-button-positioned" (click)="navigateToNextPage()"></app-next-button>
+  </div>
+
+</ion-content>

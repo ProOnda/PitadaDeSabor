@@ -1,0 +1,31 @@
+<div class="filter-header">
+  <div class="header-content">
+    <button class="back-button">
+      <i class="bi bi-arrow-left"></i>
+    </button>
+    <h1>Filtros</h1>
+  </div>
+</div>
+
+<div class="ion-content filter-page">
+  <app-item-list-section title="Categorias">
+    <app-filter-item label="Café da Manhã" (filterItemSelected)="handleFilterSelection('categorias', 'cafe')"></app-filter-item>
+    <app-filter-item label="Almoço" (filterItemSelected)="handleFilterSelection('categorias', 'almoco')"></app-filter-item>
+    <app-filter-item label="Janta" (filterItemSelected)="handleFilterSelection('categorias', 'janta')"></app-filter-item>
+    <app-filter-item label="Sobremesa" (filterItemSelected)="handleFilterSelection('categorias', 'sobremesa')"></app-filter-item>
+  </app-item-list-section>
+
+  <app-item-list-section title="Tempo De Preparo">
+    <app-filter-item label="Até 15 min" (filterItemSelected)="handleFilterSelection('tempo', 'ate15')"></app-filter-item>
+    <app-filter-item label="15 - 30 min" (filterItemSelected)="handleFilterSelection('tempo', '15-30')"></app-filter-item>
+    <app-filter-item label="30 - 60 min" (filterItemSelected)="handleFilterSelection('tempo', '30-60')"></app-filter-item>
+    <app-filter-item label="Mais de 1h" (filterItemSelected)="handleFilterSelection('tempo', 'mais1h')"></app-filter-item>
+  </app-item-list-section>
+
+  <app-item-list-section title="Dificuldade">
+    <app-filter-item label="Fácil" (filterItemSelected)="handleFilterSelection('dificuldade', 'facil')"></app-filter-item>
+    <app-filter-item label="Médio" (filterItemSelected)="handleFilterSelection('dificuldade', 'medio')"></app-filter-item>
+    <app-filter-item label="Difícil" (filterItemSelected)="handleFilterSelection('dificuldade', 'dificil')"></app-filter-item>
+  </app-item-list-section>
+
+</div>

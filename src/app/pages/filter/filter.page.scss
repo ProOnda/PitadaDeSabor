@@ -1,0 +1,35 @@
+.filter-header {
+    background-color: #1c1c1e; /* Cor da toolbar */
+    color: #ffffff;
+    padding: 10px 16px;
+    
+    .header-content {
+      display: flex;
+      align-items: center;
+    }
+  
+    .back-button {
+      background: none;
+      border: none;
+      color: #ffffff;
+      padding: 0;
+      margin-right: 16px;
+      cursor: pointer;
+  
+      i {
+        font-size: 1.5em; /* Ajuste o tamanho do ícone */
+      }
+    }
+  
+    h1 {
+      margin: 0;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+  }
+  
+  .ion-content.filter-page {
+    color: #ffffff; /* Cor do texto padrão */
+  }
+  
+  /* O restante dos seus estilos para app-item-list-section e app-filter-item permanecem os mesmos */

@@ -1,0 +1,17 @@
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #dc3545; /* Cor da borda */
+    background-color: transparent; /* Inicialmente transparente */
+    opacity: 0.8;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    display: inline-block; /* Para que as bolinhas fiquem lado a lado */
+  }
+  
+  .dot.active {
+    background-color: #dc3545; /* Cor de preenchimento quando ativa */
+    border-color: #dc3545;
+    opacity: 1;
+    transform: scale(1.2); /* Opcional: um pequeno efeito visual quando ativo */
+  }

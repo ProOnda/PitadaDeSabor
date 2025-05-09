@@ -1,0 +1,28 @@
+.category-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer; /* Indica que é clicável */
+    margin: 10px auto;
+    gap: 5px;
+  }
+  
+  .icon-container {
+    background-color: #67161F;
+    width: 50px; /* Ajuste o tamanho conforme necessário */
+    height: 50px; /* Ajuste o tamanho conforme necessário */
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 8px; /* Espaçamento entre o ícone e o texto */
+  }
+  
+  .label {
+    color: #f0f0f0;
+    font-size: 10px;
+    width: 60px;
+    text-align: center;
+    font-family: sans-serif;
+  }
