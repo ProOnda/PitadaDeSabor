@@ -34,6 +34,13 @@ export class LoginPage implements OnInit {
   emailRequiredError: string = 'Email é obrigatório.';
   emailInvalidError: string = 'Por favor, insira um email válido.';
   passwordRequiredError: string = 'Senha é obrigatória.';
+  exibirSenha: boolean = false;
+  senhaInputType: string = 'password';
+
+  toggleSenha() {
+    this.exibirSenha = !this.exibirSenha;
+    this.senhaInputType = this.exibirSenha ? 'text' : 'password';
+  }
 
   constructor(
     private router: Router,

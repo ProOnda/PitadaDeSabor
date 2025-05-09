@@ -1,3 +1,9 @@
+.receita-detalhe{
+  background: #111;
+  height: 100%;
+  color: #f0f0f0;
+}
+
 .content{
   width: 90%;
   margin: 0 auto;
@@ -9,7 +15,7 @@
   border-radius: 14px;
   overflow: hidden;
   margin-bottom: 16px;
-  margin: 0 auto;
+  margin: 10% auto 0 auto;
 
   img {
     display: block;

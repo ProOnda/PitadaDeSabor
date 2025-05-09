@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { Sequelize } = require('sequelize'); // Importe o Sequelize
+const { Sequelize } = require('sequelize');
 const app = express();
 const PORT = 3000;
 

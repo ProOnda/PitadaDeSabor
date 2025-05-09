@@ -3,8 +3,8 @@ import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReceitaService } from '../../services/receita/receita.service';
 import { IonicModule } from '@ionic/angular';
-import { PageHeaderComponent } from 'src/app/components/page-header/page-header.component';
-import { InfoItemComponent } from 'src/app/components/info-item/info-item.component'; // Importe o componente InfoItem
+import { PageHeaderComponent } from '../../components/page-header/page-header.component';
+import { InfoItemComponent } from '../../components/info-item/info-item.component'; // Importe o componente InfoItem
 
 @Component({
   selector: 'app-receita-detalhe',

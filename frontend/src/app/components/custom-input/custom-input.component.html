@@ -2,8 +2,7 @@
   <div class="input-wrapper">
     <ng-content></ng-content>
     <input
-      type="text"
-      [placeholder]="label"
+      [type]="inputType" [placeholder]="label"
       [value]="value"
       (input)="handleInput($event)"
       [disabled]="disabled"
