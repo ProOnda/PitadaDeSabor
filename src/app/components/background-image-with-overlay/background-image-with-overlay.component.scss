@@ -1,0 +1,14 @@
+.background-container {
+    position: relative;
+    width: 100%;
+    height: 100vh; /* Ou a altura desejada */
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+  
+    /* Conteúdo que será sobreposto (logo, texto, botão) */
+    :host > * {
+      position: relative;
+      z-index: 10; /* Garante que o conteúdo fique acima da imagem e do overlay */
+    }
+  }

@@ -1,0 +1,38 @@
+.next-button-container {
+  width: 45.66px;
+  height: 45.66px;
+  position: relative;
+  cursor: pointer;
+
+  .button-background {
+    width: 45.66px;
+    height: 45.66px;
+    left: 0px;
+    top: 0px;
+    position: absolute;
+    background: #AD2F33;
+    border-radius: 9999px;
+  }
+
+  .button-icon {
+    width: 16.58px;
+    height: 16.58px;
+    left: 14.70px;
+    top: 14.70px;
+    position: absolute;
+    overflow: hidden;
+
+    i {
+      color: #F0DBBE;
+    }
+
+    div { /* O div transparente dentro do ícone */
+      width: 12.39px;
+      height: 6.96px;
+      left: 2.07px;
+      top: 4.81px;
+      position: absolute;
+      background: transparent;
+    }
+  }
+}

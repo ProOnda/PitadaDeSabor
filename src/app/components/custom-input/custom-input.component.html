@@ -1,0 +1,11 @@
+<div class="custom-input-container">
+  <div class="input-wrapper">
+    <ng-content></ng-content>
+    <input
+      [type]="inputType" [placeholder]="label"
+      [value]="value"
+      (input)="handleInput($event)"
+      [disabled]="disabled"
+    >
+  </div>
+</div>

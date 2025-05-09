@@ -1,0 +1,16 @@
+<ion-content [fullscreen]="true">
+  <app-onboarding-slide
+    imageUrl="/assets/images/pizza.svg"
+    title="Descubra Receitas De Forma Inteligente"
+    description="Encontre receitas personalizadas com base no que você tem em casa. Torne seu dia a dia na cozinha mais simples e saboroso.
+
+    "
+    [activeDot]="1">
+  </app-onboarding-slide>
+
+  <div class="navigation-container">
+    <div class="back-button"></div>
+    <app-next-button class="next-button-positioned" (click)="navigateToNextPage()"></app-next-button>
+  </div>
+  
+</ion-content>
