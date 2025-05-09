@@ -20,6 +20,7 @@ import { Subject, takeUntil } from 'rxjs';
 export class CustomInputComponent implements ControlValueAccessor, OnInit, OnDestroy {
   @Input() label: string = '';
   @Input() controlName: string = '';
+  @Input() type: string = 'text'; // Nova propriedade de entrada para o tipo do input
 
   value: any = '';
   onChange: any = () => {};
@@ -28,6 +29,11 @@ export class CustomInputComponent implements ControlValueAccessor, OnInit, OnDes
   inputElement: HTMLInputElement | null = null;
   formControl: FormControl | null = null;
   private readonly destroy$ = new Subject<void>();
+
+  // Getter para o tipo do input
+  get inputType(): string {
+    return this.type;
+  }
 
   constructor(
     private el: ElementRef,

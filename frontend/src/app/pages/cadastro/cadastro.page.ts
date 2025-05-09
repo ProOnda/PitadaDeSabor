@@ -29,6 +29,10 @@ export class CadastroPage implements OnInit {
 
   cadastroForm: FormGroup;
   errorMessage: string = '';
+  exibirSenha: boolean = false;
+  senhaInputType: string = 'password';
+  exibirConfirmarSenha: boolean = false;
+  confirmarSenhaInputType: string = 'password';
 
   constructor(
     private formBuilder: FormBuilder,
@@ -63,6 +67,16 @@ export class CadastroPage implements OnInit {
     }
 
     return null;
+  }
+
+  toggleSenha() {
+    this.exibirSenha = !this.exibirSenha;
+    this.senhaInputType = this.exibirSenha ? 'text' : 'password';
+  }
+
+  toggleConfirmarSenha() {
+    this.exibirConfirmarSenha = !this.exibirConfirmarSenha;
+    this.confirmarSenhaInputType = this.exibirConfirmarSenha ? 'text' : 'password';
   }
 
   cadastrarUsuario() {

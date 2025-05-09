@@ -13,11 +13,13 @@
         {{ getEmailErrorMessage() }}
       </div>
 
-      <app-custom-input label="Senha" controlName="senha">
-        <i class="bi bi-lock-fill"></i>
-      </app-custom-input>
-      <div class="error-message" *ngIf="loginForm.controls['senha'].invalid && (loginForm.controls['senha'].dirty || loginForm.controls['senha'].touched)">
-        {{ getPasswordErrorMessage() }}
+      <div class="password-input-container">
+        <app-custom-input [label]="'Senha'" controlName="senha" [type]="senhaInputType">
+          <i class="bi bi-lock-fill"></i>
+        </app-custom-input>
+        <button type="button" (click)="toggleSenha()" class="toggle-password-button">
+          <i [ngClass]="exibirSenha ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
+        </button>
       </div>
 
       <div class="forgot-password">
