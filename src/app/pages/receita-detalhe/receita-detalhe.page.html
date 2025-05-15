@@ -1,0 +1,33 @@
+<div class="receita-detalhe">
+  <div class="content">
+    <div class="page-header">
+      <app-page-header
+        title="Detalhes Da Receita"
+        [showBackButton]="true"
+        backButtonRoute="/feed"
+      ></app-page-header>
+    </div>
+
+    <div class="recipe-image-container">
+      <img src="{{ receita?.photo}}" alt="{{ receita?.recipe_name }}">
+    </div>
+
+    <div class="recipe-details">
+
+      <div class="recipe-header">
+        <h2>{{ receita?.recipe_name }}</h2>
+      </div>
+
+      <div class="description" *ngIf="receita?.description">
+        <h3>Descrição</h3>
+        <p>{{ receita?.description}}</p>
+      </div>
+
+      <div class="specifications">
+        <app-info-item iconClass="bi bi-clock" text="{{ receita?.time_id }}"></app-info-item>
+        <app-info-item iconClass="bi bi-graph-up" text="{{ receita?.difficulty_id }}"></app-info-item>
+        <app-info-item iconClass="bi bi-bookmark" text="{{ receita?.category_id }}"></app-info-item>
+      </div>
+    </div>
+  </div>
+</div>

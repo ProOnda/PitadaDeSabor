@@ -1,0 +1,42 @@
+<ion-content [fullscreen]="true" class="login-page">
+  <div class="login-container">
+    <div class="login-header">
+      <h1>Junte-Se A Nós E Leve Mais Sabor Ao Mundo!</h1>
+      <p>Bem-vindo de volta! Acesse sua conta para continuar explorando e aproveitando ao máximo tudo o que temos para oferecer.</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="fazerLogin()">
+      <app-custom-input label="Email" controlName="email">
+        <i class="bi bi-envelope-fill"></i>
+      </app-custom-input>
+      <div class="error-message" *ngIf="loginForm.controls['email'].invalid && (loginForm.controls['email'].dirty || loginForm.controls['email'].touched)">
+        {{ getEmailErrorMessage() }}
+      </div>
+
+      <div class="password-input-container">
+        <app-custom-input [label]="'Senha'" controlName="senha" [type]="senhaInputType">
+          <i class="bi bi-lock-fill"></i>
+        </app-custom-input>
+        <button type="button" (click)="toggleSenha()" class="toggle-password-button">
+          <i [ngClass]="exibirSenha ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
+        </button>
+      </div>
+
+      <div class="forgot-password">
+        <a href="../forgot-password">Perdeu a Senha?</a>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+      <app-button [label]="'Log In'" type="submit" [disabled]="loginForm.invalid"></app-button>
+    </form>
+
+    <div class="separator">
+      <span>Ou</span>
+    </div>
+
+    <app-social-login></app-social-login>
+
+    <app-footer-link [text]="'Não tem uma conta?'" [linkText]="'Cadastre-se'" [route]="'/cadastro'"></app-footer-link>
+  </div>
+</ion-content>
