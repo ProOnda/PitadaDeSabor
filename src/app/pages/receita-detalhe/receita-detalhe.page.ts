@@ -1,10 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReceitaService } from '../../services/receita/receita.service';
 import { IonicModule } from '@ionic/angular';
 import { PageHeaderComponent } from '../../components/page-header/page-header.component';
-import { InfoItemComponent } from '../../components/info-item/info-item.component'; // Importe o componente InfoItem
+import { InfoItemComponent } from '../../components/info-item/info-item.component';
+import { Observable, Subscription, of } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-receita-detalhe',
@@ -13,37 +15,51 @@ import { InfoItemComponent } from '../../components/info-item/info-item.componen
     CommonModule,
     IonicModule,
     PageHeaderComponent,
-    InfoItemComponent // Adicione o InfoItemComponent aos imports
+    InfoItemComponent
   ],
   templateUrl: './receita-detalhe.page.html',
   styleUrls: ['./receita-detalhe.page.scss'],
 })
-export class ReceitaDetalhePage implements OnInit {
-  receitaId: string | null = null; // Alterado para string | null
-  receita: any; // Defina o tipo correto para sua receita
+export class ReceitaDetalhePage implements OnInit, OnDestroy {
+  receitaId: string | null = null;
+  receita$!: Observable<any | undefined>;
+  private route: ActivatedRoute = inject(ActivatedRoute);
+  private receitaService: ReceitaService = inject(ReceitaService);
+  private subscription: Subscription | undefined;
+  receitaNaoEncontrada = false;
 
-  constructor(
-    private route: ActivatedRoute,
-    private receitaService: ReceitaService // Injete seu serviço de receitas
-  ) {}
+  constructor() { }
 
   ngOnInit() {
-    const idParam = this.route.snapshot.paramMap.get('id');
-    if (idParam) {
-      this.receitaId = idParam;
-      this.carregarReceita(this.receitaId); // Passe o id como string
+    this.receitaId = this.route.snapshot.paramMap.get('id');
+    console.log('[ReceitaDetalhePage] ID da receita da rota:', this.receitaId);
+    if (this.receitaId) {
+      this.carregarReceitaComDetalhes(this.receitaId);
     }
   }
 
-  carregarReceita(id: string) { // Atualize o tipo do parâmetro para string
-    this.receitaService.buscarReceitaPorId(id).subscribe(
-      (data) => {
-        this.receita = data;
-      },
-      (error) => {
-        console.error('Erro ao carregar receita:', error);
-        // Trate o erro aqui (exibir mensagem, etc.)
-      }
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
+
+  carregarReceitaComDetalhes(id: string) {
+    console.log('[ReceitaDetalhePage] Carregando receita com ID:', id);
+    this.receita$ = this.receitaService.buscarReceitaPorIdComDetalhes(id).pipe(
+      tap(data => {
+        console.log('[ReceitaDetalhePage] Dados recebidos do serviço:', data);
+        if (!data) {
+          this.receitaNaoEncontrada = true;
+        } else {
+          this.receitaNaoEncontrada = false; // Reseta a flag caso a receita seja encontrada
+        }
+      }),
+      catchError(error => {
+        console.error('[ReceitaDetalhePage] Erro ao buscar receita:', error);
+        this.receitaNaoEncontrada = true;
+        return of(undefined);
+      })
     );
   }
 }
