@@ -1,12 +1,25 @@
-import { Component, OnInit, inject, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReceitaService } from '../../services/receita/receita.service';
 import { IonicModule } from '@ionic/angular';
 import { PageHeaderComponent } from '../../components/page-header/page-header.component';
 import { InfoItemComponent } from '../../components/info-item/info-item.component';
-import { Observable, Subscription, of } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+
+interface ReceitaDetalhe {
+  id: string;
+  recipe: {
+    photo?: string;
+    recipe_name?: string;
+    description?: string;
+    categoryName?: string;
+    difficultyName?: string;
+    timeName?: string;
+    userName?: string;
+    ingredients?: string[]; // Adicione a propriedade ingredients
+    preparation_mode?: string[]; // Adicione a propriedade preparation_mode
+  };
+}
 
 @Component({
   selector: 'app-receita-detalhe',
@@ -20,46 +33,59 @@ import { tap, catchError } from 'rxjs/operators';
   templateUrl: './receita-detalhe.page.html',
   styleUrls: ['./receita-detalhe.page.scss'],
 })
-export class ReceitaDetalhePage implements OnInit, OnDestroy {
+export class ReceitaDetalhePage implements OnInit {
   receitaId: string | null = null;
-  receita$!: Observable<any | undefined>;
-  private route: ActivatedRoute = inject(ActivatedRoute);
-  private receitaService: ReceitaService = inject(ReceitaService);
-  private subscription: Subscription | undefined;
-  receitaNaoEncontrada = false;
+  receita: ReceitaDetalhe | undefined;
+  isFavorite: boolean = false; // Adicione esta propriedade
+  showIngredients: boolean = true; // Inicialmente mostra os ingredientes
 
-  constructor() { }
+  constructor(
+    private route: ActivatedRoute,
+    private receitaService: ReceitaService
+  ) { }
 
   ngOnInit() {
-    this.receitaId = this.route.snapshot.paramMap.get('id');
-    console.log('[ReceitaDetalhePage] ID da receita da rota:', this.receitaId);
-    if (this.receitaId) {
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.receitaId = idParam;
       this.carregarReceitaComDetalhes(this.receitaId);
-    }
-  }
-
-  ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
+      this.verificarSeFavorita(); // Chame a função para verificar o estado inicial
     }
   }
 
   carregarReceitaComDetalhes(id: string) {
-    console.log('[ReceitaDetalhePage] Carregando receita com ID:', id);
-    this.receita$ = this.receitaService.buscarReceitaPorIdComDetalhes(id).pipe(
-      tap(data => {
-        console.log('[ReceitaDetalhePage] Dados recebidos do serviço:', data);
-        if (!data) {
-          this.receitaNaoEncontrada = true;
-        } else {
-          this.receitaNaoEncontrada = false; // Reseta a flag caso a receita seja encontrada
-        }
-      }),
-      catchError(error => {
-        console.error('[ReceitaDetalhePage] Erro ao buscar receita:', error);
-        this.receitaNaoEncontrada = true;
-        return of(undefined);
-      })
+    this.receitaService.buscarReceitaPorIdComDetalhes(id).subscribe(
+      (data) => {
+        this.receita = data;
+        console.log('Detalhes da receita carregados:', this.receita);
+      },
+      (error) => {
+        console.error('Erro ao carregar detalhes da receita:', error);
+      }
     );
+  }
+
+  verificarSeFavorita() {
+    // Aqui você implementaria a lógica para verificar se esta receita
+    // já está na lista de favoritos do usuário.
+    // Por enquanto, vamos definir um valor inicial aleatório para demonstração:
+    this.isFavorite = Math.random() < 0.5;
+  }
+
+  toggleFavorite() { // Adicione esta função
+    this.isFavorite = !this.isFavorite;
+    // Aqui você implementaria a lógica para adicionar ou remover
+    // esta receita da lista de favoritos do usuário e persistir essa informação.
+    console.log('Favorito toggled:', this.isFavorite);
+  }
+
+  addToCart() {
+    // Aqui você implementaria a lógica para adicionar esta receita
+    // ao carrinho de compras do usuário.
+    console.log('Adicionar ao carrinho');
+  }
+
+  toggleContent(contentType: 'ingredients' | 'preparation') {
+    this.showIngredients = contentType === 'ingredients';
   }
 }
