@@ -78,4 +78,9 @@ export const routes: Routes = [
     path: 'about-app',
     loadComponent: () => import('./pages/settings/about-app/about-app.page').then( m => m.AboutAppPage)
   },
+  {
+    path: 'recipe-creation',
+    loadComponent: () => import('./pages/main/recipe-creation/recipe-creation.page').then( m => m.RecipeCreationPage)
+  },
+
 ];

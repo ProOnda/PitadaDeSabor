@@ -1,13 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { IonToolbar, IonButtons, IonButton } from '@ionic/angular/standalone';
+// Removi IonToolbar, IonButtons, IonButton pois não são usados no HTML fornecido
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-feed-menu',
   standalone: true,
-  imports: [CommonModule, IonToolbar, IonButtons, IonButton],
+  // Removi os imports do IonicModule, pois não são usados no HTML fornecido.
+  // Se você tiver outros componentes Ionic no HTML que não me mostrou, adicione-os de volta.
+  imports: [CommonModule], 
   templateUrl: './feed-menu.component.html',
   styleUrls: ['./feed-menu.component.scss'],
 })
@@ -32,12 +34,16 @@ export class FeedMenuComponent implements OnInit {
   }
 
   setActiveIndicator() {
-    const menuItems = document.querySelectorAll('.feed-menu .menu-item');
+    // Note: O add-button geralmente não recebe a classe 'active' pois é uma ação, não uma rota de navegação principal.
+    // Se você quiser que ele também seja 'ativo' para a rota de criação, você precisaria adicionar sua rota à lista 'routes'.
+    const menuItems = document.querySelectorAll('.feed-menu-container .menu-item'); // Corrigido o seletor para .feed-menu-container
     menuItems.forEach(item => item.classList.remove('active'));
 
+    const routes = ['/feed', '/cart', '/profile', '/configuracoes']; // Suas rotas de navegação
+    
+    // Encontre o item ativo com base na rota
     const activeItem = Array.from(menuItems).find((item, index) => {
-      const routes = ['/feed', '/cart', '/profile', '/configuracoes']; // Ajuste suas rotas
-      return this.activeRoute.startsWith(routes[index]); // Verifica se a rota ativa começa com a rota do item
+      return this.activeRoute.startsWith(routes[index]);
     });
 
     if (activeItem) {

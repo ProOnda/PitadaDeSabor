@@ -1,0 +1,123 @@
+<div class="criacao-receita-page-container">
+    <div class="content">
+        <app-page-header [title]="'Criar Uma Receita'" [showBackButton]="true" (backButtonClick)="onBackClick()"></app-page-header>
+
+        <div class="criacao-receita-conteudo">
+            <div class="criar-receita-esquerda">
+                <div class="grupo-formulario upload-foto-receita">
+                    <label for="fotoReceita" class="upload-area">
+                        <input type="file" id="fotoReceita" name="fotoReceita" accept="image/*" style="display: none;">
+                        <div class="upload-icon-wrapper">
+                        <i class="bi bi-image"></i> <i class="bi bi-plus-lg upload-plus-icon"></i> </div>
+                    </label>
+                </div>
+
+                <div class="grupo-formulario">
+                    <div class="input-container-custom">
+                        <input type="text" id="titulo-input" name="titulo-input" placeholder="Título">
+                    </div>
+                </div>
+
+                <div class="grupo-formulario">
+                    <div class="input-container-custom input-container-textarea">
+                        <textarea id="descricaoReceita" name="descricaoReceita" placeholder="Descrição"></textarea>
+                    </div>
+                </div>
+
+                <div class="grupo-formulario">
+                    <div class="seletor-wrapper">
+                        <select id="selectTime" name="selectTime">
+                            <option value="" disabled selected hidden>Tempo</option>
+                            <option value="15min">Até 30 minutos</option>
+                            <option value="30min">30 minutos - 60 minutos</option>
+                            <option value="1h">60 minutos - 120 minutos</option>
+                            <option value="2h+">Mais de 120 minutos</option>
+                            </select>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="grupo-formulario">
+                    <div class="seletor-wrapper">
+                        <select id="dificuldade" name="dificuldade">
+                            <option value="" disabled selected hidden>Dificuldade</option>
+                            <option value="facil">Fácil</option>
+                            <option value="medio">Médio</option>
+                            <option value="dificil">Difícil</option>
+                        </select>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="grupo-formulario">
+                    <div class="seletor-wrapper">
+                        <select id="categoria" name="categoria">
+                            <option value="" disabled selected hidden>Categoria</option>
+                            <option value="lanches">Lanches</option>
+                            <option value="refeicoes">Refeições</option>
+                            <option value="sobremesas">Sobremesas</option>
+                        </select>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="ingredientes-secao">
+                    <h2 class="secao-titulo">Ingredientes</h2>
+
+                    <div class="ingredientes-form-linha">
+                        <div class="grupo-formulario ingrediente-select">
+                        <div class="seletor-wrapper">
+                            <select id="selectIngrediente" name="selectIngrediente">
+                            <option value="" disabled selected hidden>Ingrediente</option>
+                            <option value="farinha">Farinha</option>
+                            <option value="acucar">Açúcar</option>
+                            <option value="leite">Leite</option>
+                            </select>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        </div>
+
+                        <div class="grupo-formulario quantidade-input">
+                        <div class="input-container-custom">
+                            <input type="number" id="quantidade" name="quantidade" placeholder="" min="0" step="any">
+                        </div>
+                        </div>
+
+                        <div class="grupo-formulario unidade-select">
+                        <div class="seletor-wrapper">
+                            <select id="selectUnidade" name="selectUnidade">
+                            <option value="" disabled selected hidden>Unidade</option>
+                            <option value="g">Gramas</option>
+                            <option value="ml">Mililitros</option>
+                            <option value="und">Unidade(s)</option>
+                            <option value="col_sopa">Colher de Sopa</option>
+                            </select>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        </div>
+                    </div>
+
+                    <button class="botao-adicionar-ingrediente">
+                        <i class="bi bi-plus-lg"></i> Adicionar
+                    </button>
+                </div>
+
+            <div class="modo-preparo-secao">
+                <h2 class="secao-titulo">Modo De Preparo</h2>
+
+                <div class="passo-preparo-item">
+                    <div class="input-container-custom passo-input-container">
+                    <input type="text" id="passo1" name="passo1" placeholder="Descreva o primeiro passo da receita..." />
+                    </div>
+                </div>
+
+                <button class="botao-adicionar-ingrediente">
+                    <i class="bi bi-plus-lg"></i> Adicionar
+                </button>
+            </div>
+        </div>
+        <button class="botao-criar-receita">
+        Criar Receita
+        </button>
+    </div>
+</div>

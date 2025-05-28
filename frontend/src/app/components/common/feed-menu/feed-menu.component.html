@@ -1,7 +1,6 @@
 <div class="feed-menu-container">
   <div class="menu-background"></div>
-  <button class="add-button">
-    <div class="add-icon-fundo">
+  <button class="add-button" (click)="navigateTo('/recipe-creation')"> <div class="add-icon-fundo">
       <div class="add-icon-background">
         <i class="bi bi-plus-lg add-icon"></i>
       </div>
@@ -16,7 +15,7 @@
   <button class="menu-item profile" (click)="navigateTo('/cart')">
     <i class="bi bi-person-fill"></i>
   </button>
-  <button class="menu-item settings" [class.active]="activeRoute.startsWith('/configuracoes')"  (click)="navigateTo('/configuracoes')">
+  <button class="menu-item settings" [class.active]="activeRoute.startsWith('/configuracoes')" (click)="navigateTo('/configuracoes')">
     <i class="bi bi-gear-fill"></i>
   </button>
 </div>
