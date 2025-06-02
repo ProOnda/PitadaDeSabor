@@ -21,7 +21,6 @@ const db = admin.firestore();
 exports.db = db;
 
 // --- Importar Rotas ---
-const ingredientRoutes = require('./routes/ingredientRoutes');
 const recipeRoutes = require('./routes/recipeRoutes');
 
 
@@ -33,7 +32,6 @@ app.use(cors({
 app.use(express.json());
 
 // --- Usar Rotas ---
-app.use('/api/ingredients', ingredientRoutes);
 app.use('/api/recipes', recipeRoutes);
 
 

@@ -1,12 +1,11 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router'; // Adicionado Router
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ReceitaService } from '../../../services/receita/receita.service';
-// REMOVIDO: IonicModule, pois não estamos mais usando componentes Ionic no HTML
+import { ReceitaService } from '../../../services/receita/receita.service'; // Ajustado para o caminho correto do serviço
 import { PageHeaderComponent } from '../../../components/item-displays/page-header/page-header.component';
 import { InfoItemComponent } from '../../../components/item-displays/info-item/info-item.component';
-import { Observable, of, Subscription } from 'rxjs'; // Adicionado Subscription
-import { switchMap, catchError, map, tap } from 'rxjs/operators'; // Adicionado tap
+import { Observable, of, Subscription } from 'rxjs';
+import { switchMap, catchError, map, tap } from 'rxjs/operators';
 
 // Importe as interfaces do arquivo centralizado
 import { RecipeDetail, IngredientDetail } from '../../../interfaces/recipe.interfaces';
@@ -16,7 +15,6 @@ import { RecipeDetail, IngredientDetail } from '../../../interfaces/recipe.inter
   standalone: true,
   imports: [
     CommonModule,
-    // REMOVIDO: IonicModule
     PageHeaderComponent,
     InfoItemComponent
   ],
@@ -25,17 +23,17 @@ import { RecipeDetail, IngredientDetail } from '../../../interfaces/recipe.inter
 })
 export class ReceitaDetalhePage implements OnInit, OnDestroy {
   receita$: Observable<RecipeDetail | undefined> = of(undefined);
-  receitaId: string | null = null; // Adicionado para armazenar o ID da rota
-  loading: boolean = true; // Adicionado para controlar o estado de carregamento
-  error: string | null = null; // Adicionado para exibir mensagens de erro
+  receitaId: string | null = null;
+  loading: boolean = true;
+  error: string | null = null;
   isFavorite: boolean = false;
   showIngredients: boolean = true;
 
   private route = inject(ActivatedRoute);
   private receitaService = inject(ReceitaService);
-  private router = inject(Router); // Injetado o Router para navegação
+  private router = inject(Router);
 
-  private recipeSubscription: Subscription | undefined; // Para gerenciar a subscrição da receita
+  private recipeSubscription: Subscription | undefined;
 
   constructor() { }
 
@@ -44,7 +42,7 @@ export class ReceitaDetalhePage implements OnInit, OnDestroy {
     this.route.paramMap.pipe(
       map(params => params.get('id')),
       tap(id => {
-        this.receitaId = id; // Armazena o ID da receita
+        this.receitaId = id;
         if (!id) {
           this.error = 'ID da receita não fornecido.';
           this.loading = false;
@@ -52,18 +50,26 @@ export class ReceitaDetalhePage implements OnInit, OnDestroy {
       }),
       switchMap(id => {
         if (id) {
-          this.loading = true; // Inicia o carregamento
-          this.error = null; // Limpa erros anteriores
+          this.loading = true;
+          this.error = null;
           return this.receitaService.buscarReceitaPorIdComDetalhes(id).pipe(
             tap(data => {
-              this.loading = false; // Finaliza o carregamento
+              this.loading = false;
               if (!data) {
                 this.error = 'Receita não encontrada ou dados inválidos.';
               }
             }),
-            catchError(error => {
+            catchError((error: unknown) => { // Correção: especifica o tipo 'unknown'
               console.error('Erro ao carregar detalhes da receita:', error);
-              this.error = 'Não foi possível carregar os detalhes da receita.';
+              let errorMessage = 'Não foi possível carregar os detalhes da receita.';
+              if (error instanceof Error) {
+                errorMessage += ` Detalhes: ${error.message}`;
+              } else if (typeof error === 'object' && error !== null && 'message' in error) {
+                errorMessage += ` Detalhes: ${(error as any).message}`;
+              } else if (typeof error === 'string') {
+                errorMessage += ` Detalhes: ${error}`;
+              }
+              this.error = errorMessage;
               this.loading = false;
               return of(undefined);
             })
@@ -73,7 +79,7 @@ export class ReceitaDetalhePage implements OnInit, OnDestroy {
         }
       })
     ).subscribe(receita => {
-      this.receita$ = of(receita); // Atribui o Observable de volta à propriedade receita$
+      this.receita$ = of(receita);
       if (receita) {
         this.verificarSeFavorita();
       }
@@ -99,9 +105,17 @@ export class ReceitaDetalhePage implements OnInit, OnDestroy {
             this.error = 'Receita não encontrada ou dados inválidos.';
           }
         }),
-        catchError(error => {
+        catchError((error: unknown) => { // Correção: especifica o tipo 'unknown'
           console.error('Erro ao recarregar detalhes da receita:', error);
-          this.error = 'Não foi possível recarregar os detalhes da receita.';
+          let errorMessage = 'Não foi possível recarregar os detalhes da receita.';
+          if (error instanceof Error) {
+            errorMessage += ` Detalhes: ${error.message}`;
+          } else if (typeof error === 'object' && error !== null && 'message' in error) {
+            errorMessage += ` Detalhes: ${(error as any).message}`;
+          } else if (typeof error === 'string') {
+            errorMessage += ` Detalhes: ${error}`;
+          }
+          this.error = errorMessage;
           this.loading = false;
           return of(undefined);
         })
@@ -139,12 +153,23 @@ export class ReceitaDetalhePage implements OnInit, OnDestroy {
     console.log('Deletar receita:', id);
     // Exemplo de lógica de deleção com confirmação (você pode usar um modal customizado)
     if (confirm('Tem certeza que deseja deletar esta receita?')) { // Usar modal customizado em apps reais
-      this.receitaService.deleteRecipe(id).subscribe(() => {
-        console.log('Receita deletada com sucesso!');
-        this.router.navigate(['/feed']); // Navegar de volta para o feed após deletar
-      }, error => {
-        console.error('Erro ao deletar receita:', error);
-        this.error = 'Erro ao deletar a receita.';
+      this.receitaService.deleteRecipe(id).subscribe({
+        next: () => { // Usando next para sucesso
+          console.log('Receita deletada com sucesso!');
+          this.router.navigate(['/feed']); // Navegar de volta para o feed após deletar
+        },
+        error: (error: unknown) => { // Correção: especifica o tipo 'unknown' no erro
+          console.error('Erro ao deletar receita:', error);
+          let errorMessage = 'Erro desconhecido ao deletar a receita.';
+          if (error instanceof Error) {
+            errorMessage += ` Detalhes: ${error.message}`;
+          } else if (typeof error === 'object' && error !== null && 'message' in error) {
+            errorMessage += ` Detalhes: ${(error as any).message}`;
+          } else if (typeof error === 'string') {
+            errorMessage += ` Detalhes: ${error}`;
+          }
+          this.error = errorMessage;
+        }
       });
     }
   }

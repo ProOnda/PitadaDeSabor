@@ -6,40 +6,49 @@
             <div class="criar-receita-esquerda">
                 <div class="grupo-formulario upload-foto-receita">
                     <label for="fotoReceita" class="upload-area">
-                        <input type="file" id="fotoReceita" name="fotoReceita" accept="image/*" style="display: none;">
-                        <div class="upload-icon-wrapper">
-                        <i class="bi bi-image"></i> <i class="bi bi-plus-lg upload-plus-icon"></i> </div>
+                        <input
+                            type="file"
+                            id="fotoReceita"
+                            name="fotoReceita"
+                            accept="image/png, image/jpeg, image/jpg"
+                            style="display: none;"
+                            (change)="onFileSelected($event)" >
+                        <div class="upload-icon-wrapper" *ngIf="!imagemPreviewUrl"> 
+                            <i class="bi bi-image"></i> 
+                            <i class="bi bi-plus-lg upload-plus-icon"></i>
+                        </div>
+                        <img [src]="imagemPreviewUrl!" *ngIf="imagemPreviewUrl" class="imagem-preview" alt="Prévia da Receita">
                     </label>
                 </div>
 
                 <div class="grupo-formulario">
                     <div class="input-container-custom">
-                        <input type="text" id="titulo-input" name="titulo-input" placeholder="Título">
+                        <input type="text" id="tituloReceita" name="tituloReceita" placeholder="Título" [(ngModel)]="recipeTitle"> 
                     </div>
                 </div>
 
                 <div class="grupo-formulario">
                     <div class="input-container-custom input-container-textarea">
-                        <textarea id="descricaoReceita" name="descricaoReceita" placeholder="Descrição"></textarea>
+                        <textarea id="descricaoReceita" name="descricaoReceita" placeholder="Descrição" [(ngModel)]="recipeDescription"></textarea>
                     </div>
                 </div>
 
                 <div class="grupo-formulario">
                     <div class="seletor-wrapper">
-                        <select id="selectTime" name="selectTime">
+                        <select id="tempo" name="tempo" [(ngModel)]="recipeTime"> 
                             <option value="" disabled selected hidden>Tempo</option>
                             <option value="15min">Até 30 minutos</option>
                             <option value="30min">30 minutos - 60 minutos</option>
                             <option value="1h">60 minutos - 120 minutos</option>
                             <option value="2h+">Mais de 120 minutos</option>
-                            </select>
+                        </select>
                         <i class="bi bi-chevron-down"></i>
                     </div>
                 </div>
 
                 <div class="grupo-formulario">
                     <div class="seletor-wrapper">
-                        <select id="dificuldade" name="dificuldade">
+                        <select id="dificuldade" name="dificuldade" [(ngModel)]="recipeDifficulty">
                             <option value="" disabled selected hidden>Dificuldade</option>
                             <option value="facil">Fácil</option>
                             <option value="medio">Médio</option>
@@ -51,7 +60,7 @@
 
                 <div class="grupo-formulario">
                     <div class="seletor-wrapper">
-                        <select id="categoria" name="categoria">
+                        <select id="categoria" name="categoria" [(ngModel)]="recipeCategory">
                             <option value="" disabled selected hidden>Categoria</option>
                             <option value="lanches">Lanches</option>
                             <option value="refeicoes">Refeições</option>
@@ -64,60 +73,97 @@
                 <div class="ingredientes-secao">
                     <h2 class="secao-titulo">Ingredientes</h2>
 
-                    <div class="ingredientes-form-linha">
-                        <div class="grupo-formulario ingrediente-select">
-                        <div class="seletor-wrapper">
-                            <select id="selectIngrediente" name="selectIngrediente">
-                            <option value="" disabled selected hidden>Ingrediente</option>
-                            <option value="farinha">Farinha</option>
-                            <option value="acucar">Açúcar</option>
-                            <option value="leite">Leite</option>
-                            </select>
-                            <i class="bi bi-chevron-down"></i>
-                        </div>
-                        </div>
+                    <div class="grupo-formulario" *ngFor="let ingredient of ingredients; let i = index">
+                        <div class="ingredientes-form-linha item-com-remocao"> 
+                            <div class="grupo-formulario ingrediente-input-text">
+                                <div class="input-container-custom">
+                                    <input 
+                                        type="text" 
+                                        [(ngModel)]="ingredient.ingredient_name" 
+                                        name="ingrediente-{{i}}" 
+                                        [attr.id]="'inputIngrediente-' + i" 
+                                        placeholder="Nome do Ingrediente"
+                                        required> 
+                                </div>
+                            </div>
 
-                        <div class="grupo-formulario quantidade-input">
-                        <div class="input-container-custom">
-                            <input type="number" id="quantidade" name="quantidade" placeholder="" min="0" step="any">
-                        </div>
-                        </div>
+                            <div class="grupo-formulario quantidade-input">
+                                <div class="input-container-custom">
+                                    <input type="number" [(ngModel)]="ingredient.quantity" name="quantidade-{{i}}" placeholder="Qtd" min="0" step="any" [attr.id]="'quantidade-' + i"> 
+                                </div>
+                            </div>
 
-                        <div class="grupo-formulario unidade-select">
-                        <div class="seletor-wrapper">
-                            <select id="selectUnidade" name="selectUnidade">
-                            <option value="" disabled selected hidden>Unidade</option>
-                            <option value="g">Gramas</option>
-                            <option value="ml">Mililitros</option>
-                            <option value="und">Unidade(s)</option>
-                            <option value="col_sopa">Colher de Sopa</option>
-                            </select>
-                            <i class="bi bi-chevron-down"></i>
-                        </div>
+                            <div class="grupo-formulario unidade-select">
+                                <div class="seletor-wrapper">
+                                    <select [(ngModel)]="ingredient.unit" name="unidade-{{i}}" [attr.id]="'selectUnidade-' + i"> 
+                                        <option value="" disabled selected hidden>Unid.</option> 
+                                        <option value="g">Gramas</option>
+                                        <option value="ml">Mililitros</option>
+                                        <option value="unid">Unidade(s)</option>
+                                        <option value="col_sopa">Colher de Sopa</option>
+                                        <option value="col_cha">Colher de Chá</option>
+                                        <option value="xic">Xícara(s)</option>
+                                    </select>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                            </div>
+
+                            <div class="grupo-formulario foodtype-select">
+                                <div class="seletor-wrapper">
+                                    <select [(ngModel)]="ingredient.foodType" name="foodtype-{{i}}" [attr.id]="'selectFoodType-' + i"> 
+                                        <option value="" disabled selected hidden>Tipo de Alimento</option> 
+                                        <option value="vegetal">Vegetais</option>
+                                        <option value="fruta">Frutas</option>
+                                        <option value="carne">Carnes, Aves e Peixes</option>
+                                        <option value="laticinio">Laticínios e Ovos</option>
+                                        <option value="grao">Cereais e Grãos</option>
+                                        <option value="especiaria">Especiarias e Condimentos</option>
+                                        <option value="leguminosa">Leguminosas</option>
+                                        <option value="oleos">Óleos e Gorduras</option>
+                                        <option value="acucar">Açúcares e Doces</option>
+                                        <option value="bebida">Bebidas</option>
+                                    </select>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                            </div>
+
+                            <button type="button" (click)="removeIngredient(i)" class="botao-remover" *ngIf="ingredients.length > 1">
+                                <i class="bi bi-dash-lg"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <button class="botao-adicionar-ingrediente">
+                    <button type="button" (click)="addIngredient()" class="botao-adicionar-ingrediente">
                         <i class="bi bi-plus-lg"></i> Adicionar
                     </button>
                 </div>
 
-            <div class="modo-preparo-secao">
-                <h2 class="secao-titulo">Modo De Preparo</h2>
+                <div class="modo-preparo-secao">
+                    <h2 class="secao-titulo">Modo de Preparo</h2>
 
-                <div class="passo-preparo-item">
-                    <div class="input-container-custom passo-input-container">
-                    <input type="text" id="passo1" name="passo1" placeholder="Descreva o primeiro passo da receita..." />
+                    <div class="passo-preparo-item" *ngFor="let step of preparationSteps; let i = index">
+                        <div class="input-container-custom passo-input-container">
+                            <input 
+                                type="text" 
+                                [(ngModel)]="step.description" 
+                                name="passo-{{i}}" 
+                                [attr.id]="'passo-' + i" 
+                                placeholder="{{ getStepPlaceholder(i) }}" 
+                            />
+                        </div>
+                        <button type="button" (click)="removePreparationStep(i)" class="botao-remover" *ngIf="preparationSteps.length > 1">
+                            <i class="bi bi-dash-lg"></i>
+                        </button>
                     </div>
-                </div>
 
-                <button class="botao-adicionar-ingrediente">
-                    <i class="bi bi-plus-lg"></i> Adicionar
-                </button>
+                    <button type="button" (click)="addPreparationStep()" class="botao-adicionar-ingrediente">
+                        <i class="bi bi-plus-lg"></i> Adicionar
+                    </button>
+                </div>
             </div>
+            <button class="botao-criar-receita" (click)="saveRecipe()">
+                Criar Receita
+            </button>
         </div>
-        <button class="botao-criar-receita">
-        Criar Receita
-        </button>
     </div>
 </div>

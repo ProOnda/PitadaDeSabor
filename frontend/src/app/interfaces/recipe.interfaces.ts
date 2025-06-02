@@ -1,90 +1,62 @@
 // src/app/interfaces/recipe.interfaces.ts
+// ... (outras interfaces) ...
 
-// Interface para um único ingrediente dentro do array 'ingredients'
-// (Corresponde aos campos do Firestore, mas em camelCase para o frontend)
 export interface IngredientDetail {
-  fdcId: string;        // fdc_id no Firestore
-  name: string;         // ingredient_name no Firestore
-  // foodType?: string;     // food_type no Firestore. Comentei/removi conforme você já não exibe e o backend não retorna.
-  quantity: number;     // quantity no Firestore
-  unitId: string | null; // unit_id no Firestore. Adicionei '| null' para refletir o backend.
-  unitName: string;     // <<< ADICIONADO: O nome da unidade (ex: "gramas") populado pelo backend <<<
+  fdcId: string;
+  name: string; // Já está correto
+  quantity: number;
+  unitId: string | null;
+  unitLabel: string; // ANTES: unitName, AGORA: unitLabel (para corresponder ao backend)
+  foodTypeId: string | null; // Adicionei para consistência com o backend
+  foodTypeLabel: string; // Adicionei para consistência com o backend
 }
 
-// Interface para o objeto 'recipe' aninhado dentro de RecipeDetail
-// (Corresponde aos campos do Firestore, mas em camelCase para o frontend)
 export interface RecipeContent {
-  photoUrl?: string;          // 'photo' no Firestore, convertido para 'photoUrl' no backend
-  recipeName?: string;        // 'recipe_name' no Firestore
-  description?: string;       // 'description' no Firestore
-  preparationSteps?: string[];// 'preparation_steps' no Firestore
-  ingredients?: IngredientDetail[]; // 'ingredients' no Firestore (array de IngredientDetail)
+  photoUrl?: string;
+  recipeName?: string;
+  description?: string;
+  preparationSteps?: string[];
+  ingredients?: IngredientDetail[];
 
   // Nomes dos labels (agregados pelo backend)
-  categoryName?: string;
-  difficultyName?: string;
-  timeName?: string;
-  userName?: string;
+  categoryLabel?: string;   // ANTES: categoryName, AGORA: categoryLabel
+  difficultyLabel?: string; // ANTES: difficultyName, AGORA: difficultyLabel
+  timeLabel?: string;       // ANTES: timeName, AGORA: timeLabel
+  userName?: string;        // Este parece estar correto no backend (userName)
 
-  // IDs originais (podem ser úteis para formulários de edição)
-  categoryId?: string;       // 'category_id' no Firestore
-  difficultyId?: string;     // 'difficulty_id' no Firestore
-  timeId?: string;           // 'time_id' no Firestore
-  userId?: string;           // 'user_id' no Firestore
-
-  // Metadados
-  createdAt?: string;        // 'created_at' no Firestore (Firestore Timestamp -> ISO string)
-  updatedAt?: string;        // 'updated_at' no Firestore (Firestore Timestamp -> ISO string)
-  ingredientFoodTypes?: string[]; // 'ingredient_food_type' no Firestore
-}
-
-// Interface principal que o frontend receberá para uma única receita
-// (Retorno do backend para GET /api/recipes/:id)
-export interface RecipeDetail { // Adicionei esta interface que estava faltando, presumindo que o backend retorna { id, recipe: RecipeContent }
-  id: string;
-  recipe: RecipeContent;
-}
-
-// Interface para itens da lista de receitas
-// (Retorno do backend para GET /api/recipes)
-// O backend deve retornar apenas esses campos para a lista para otimização
-export interface RecipeListItem {
-  id: string;
-  recipeName: string; // 'recipe_name' no Firestore
-  photoUrl?: string;  // 'photo' no Firestore, convertido para 'photoUrl' no backend
-  description?: string; // 'description' no Firestore
-  // Opcional: Incluir IDs de referência se o componente de lista precisar deles,
-  // mas evite os 'name' para manter a lista leve.
+  // IDs originais
   categoryId?: string;
   difficultyId?: string;
   timeId?: string;
   userId?: string;
-  // Adicionei os nomes populados que o backend está enviando para a lista
-  categoryName?: string;
-  difficultyName?: string;
-  timeName?: string;
-  userName?: string;
+
+  // Metadados
+  createdAt?: string;
+  updatedAt?: string;
+  ingredientFoodTypes?: string[];
 }
 
-// Interfaces para os dados de referência (usadas para dropdowns/seleções, por exemplo)
-// Supondo que o backend tenha endpoints para buscá-las
-export interface Category {
+export interface RecipeDetail {
   id: string;
-  label: string;
+  recipe: RecipeContent;
 }
 
-export interface Difficulty {
-  id: string;
-  label: string;
-}
+// ... (RecipeListItem, Category, Difficulty, Time, User - se precisar) ...
 
-export interface Time {
-  id: string;
-  label: string;
-}
-
-export interface User {
-  id: string;
-  user_name: string; // Ou 'userName' se o backend converter
-  // ... outros campos do usuário
+// **NOTA IMPORTANTE PARA RecipeListItem:**
+// Se o listRecipes no backend também retorna categoryLabel, difficultyLabel, timeLabel,
+// você precisará ajustar RecipeListItem para ter esses campos também:
+export interface RecipeListItem {
+    id: string;
+    recipeName: string;
+    photoUrl?: string;
+    description?: string;
+    categoryId?: string;
+    difficultyId?: string;
+    timeId?: string;
+    userId?: string;
+    categoryLabel?: string;   // Adicionar
+    difficultyLabel?: string; // Adicionar
+    timeLabel?: string;       // Adicionar
+    userName?: string;        // Adicionar
 }

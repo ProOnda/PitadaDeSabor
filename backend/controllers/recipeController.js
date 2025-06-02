@@ -1,10 +1,12 @@
 const admin = require('firebase-admin');
 const db = admin.firestore();
 
+// --- Função para obter detalhes de uma única receita ---
 async function getRecipeById(req, res) {
     try {
         const recipeId = req.params.id;
 
+        console.log('\n--- CALL: getRecipeById ---');
         console.log('ID da receita recebido no backend para detalhes:', recipeId);
 
         // Validação para garantir que o ID não é nulo ou vazio
@@ -17,177 +19,193 @@ async function getRecipeById(req, res) {
         const recipeDoc = await recipeDocRef.get();
 
         if (!recipeDoc.exists) {
+            console.log(`[getRecipeById] Receita com ID ${recipeId} não encontrada.`);
             return res.status(404).send({ message: 'Receita não encontrada.' });
         }
 
         const firestoreData = recipeDoc.data();
 
-        // 2. Mapeamento e populamento dos ingredientes: Firestore snake_case para frontend camelCase
+        // 1. Mapeamento e populamento dos ingredientes: Firestore snake_case para frontend camelCase
+        // AGORA, NÓS PEGAMOS OS LABELS DIRETAMENTE DOS CAMPOS DENORMALIZADOS!
         let ingredientsFormatted = [];
         if (Array.isArray(firestoreData.ingredients) && firestoreData.ingredients.length > 0) {
-            const unitPromises = firestoreData.ingredients.map(async (ing) => {
-                let unitName = '';
+            ingredientsFormatted = firestoreData.ingredients.map(ing => ({
+                fdcId: ing.fdc_id, // Usando o nome original do Firestore (snake_case)
+                name: ing.ingredient_name,
+                quantity: ing.quantity,
+                unitId: ing.unit_id ? ing.unit_id.id : null, // Pega o ID da referência
+                unitLabel: ing.unit_label || 'N/A', // PEGA O LABEL DIRETAMENTE DO DOCUMENTO DA RECEITA
+                foodTypeId: ing.food_type_id ? ing.food_type_id.id : null, // Pega o ID da referência
+                foodTypeLabel: ing.food_type_label || 'N/A' // PEGA O LABEL DIRETAMENTE DO DOCUMENTO DA RECEITA
+            }));
+        }
 
-                if (ing.unit_id && ing.unit_id.get) {
-                    try {
-                        const unitDoc = await ing.unit_id.get();
-                        if (unitDoc.exists) {
-                            unitName = unitDoc.data().label; // Supondo que o nome da unidade está no campo 'label'
-                            console.log(`Unidade encontrada (referência) para ${ing.ingredient_name}: ID=${ing.unit_id.id}, Nome=${unitName}`);
-                        } else {
-                            console.log(`Documento da unidade (referência) ${ing.unit_id.id} não encontrado.`);
-                            unitName = 'unidade desconhecida';
-                        }
-                    } catch (unitError) {
-                        console.error(`Erro ao buscar unidade (referência) para ingrediente ${ing.ingredient_name}:`, unitError);
-                        unitName = 'erro unidade';
-                    }
+        // 2. Apenas para o `user_id`, se você precisar do `userName` e ele não estiver denormalizado na receita.
+        let userName = 'Desconhecido';
+        if (firestoreData.user_id && firestoreData.user_id.get) {
+            try {
+                const userDoc = await firestoreData.user_id.get();
+                if (userDoc.exists) {
+                    // AJUSTE PARA O CAMPO DE NOME DE USUÁRIO REAL NA SUA COLEÇÃO 'USERS'
+                    userName = userDoc.data().user_name || userDoc.data().displayName || userDoc.data().email;
+                    console.log(`[getRecipeById] Nome de usuário obtido para receita ${recipeId}:`, userName); // Log de depuração
                 }
-                // Se não for DocumentReference, tenta como string de ID
-                else if (typeof ing.unit_id === 'string' && ing.unit_id.trim() !== '') {
-                    try {
-                        const unitDoc = await db.collection('units').doc(ing.unit_id).get();
-                        if (unitDoc.exists) {
-                            unitName = unitDoc.data().label;
-                            console.log(`Unidade encontrada (ID string) para ${ing.ingredient_name}: ID=${ing.unit_id}, Nome=${unitName}`);
-                        } else {
-                            console.log(`Documento da unidade (ID string) ${ing.unit_id} não encontrado.`);
-                            unitName = 'unidade desconhecida';
-                        }
-                    } catch (unitError) {
-                        console.error(`Erro ao buscar unidade (ID string) para ingrediente ${ing.ingredient_name}:`, unitError);
-                        unitName = 'erro unidade';
-                    }
-                } else {
-                    console.log(`unit_id do ingrediente ${ing.ingredient_name} não é uma referência ou string válida:`, ing.unit_id);
-                    unitName = 'N/A'; // Nenhuma unidade válida para buscar
-                }
-
-                return {
-                    fdcId: ing.fdc_id, // Usando o nome original do Firestore (snake_case)
-                    name: ing.ingredient_name,
-                    quantity: ing.quantity,
-                    unitId: ing.unit_id ? (ing.unit_id.id || ing.unit_id) : null, // Retorna o ID da unidade (seja da ref ou string)
-                    unitName: unitName // ESTE É O CAMPO COM O LABEL DA UNIDADE PARA EXIBIÇÃO
-                };
-            });
-            ingredientsFormatted = await Promise.all(unitPromises);
+            } catch (userError) {
+                console.error(`Erro ao buscar nome de usuário para ID ${firestoreData.user_id.id}:`, userError);
+            }
         }
 
 
-        // 3. Busca os dados de referência (labels) em paralelo
-        const [categoryDoc, difficultyDoc, timeDoc, userDoc] = await Promise.all([
-            firestoreData.category_id ? db.collection('categories').doc(firestoreData.category_id.id).get() : Promise.resolve(null),
-            firestoreData.difficulty_id ? db.collection('difficulties').doc(firestoreData.difficulty_id.id).get() : Promise.resolve(null),
-            firestoreData.time_id ? db.collection('times').doc(firestoreData.time_id.id).get() : Promise.resolve(null),
-            firestoreData.user_id ? db.collection('users').doc(firestoreData.user_id.id).get() : Promise.resolve(null)
-        ]);
-
-        // 4. Agrega todos os dados em um único objeto para enviar ao frontend (camelCase)
+        // 3. Agrega todos os dados em um único objeto para enviar ao frontend (camelCase)
         const aggregatedRecipe = {
             id: recipeDoc.id,
             recipe: {
                 recipeName: firestoreData.recipe_name || 'Sem Nome',
                 description: firestoreData.description || '',
                 photoUrl: firestoreData.photo || 'assets/placeholder.png',
-                // CAMPO CORRIGIDO: Agora pegando 'preparation_mode' do Firestore
-                preparationSteps: Array.isArray(firestoreData.preparation_mode) ? firestoreData.preparation_mode : [],
-                ingredients: ingredientsFormatted, // Usando os ingredientes formatados com nomes de unidade
-                ingredientFoodTypes: Array.isArray(firestoreData.ingredient_food_type) ? firestoreData.ingredient_food_type : [],
+                preparationSteps: Array.isArray(firestoreData.preparation_mode) ? firestoreData.preparation_mode : [], // Usa 'preparation_mode'
+                ingredients: ingredientsFormatted,
 
+                // PEGA OS LABELS DIRETAMENTE DOS CAMPOS DENORMALIZADOS!
                 categoryId: firestoreData.category_id ? firestoreData.category_id.id : null,
+                categoryLabel: firestoreData.category_label || 'Não definida',
+                
                 difficultyId: firestoreData.difficulty_id ? firestoreData.difficulty_id.id : null,
+                difficultyLabel: firestoreData.difficulty_label || 'Não definida',
+                
                 timeId: firestoreData.time_id ? firestoreData.time_id.id : null,
+                timeLabel: firestoreData.time_label || 'Não definido',
+                
                 userId: firestoreData.user_id ? firestoreData.user_id.id : null,
+                userName: userName, // O user_name ainda pode precisar de lookup se não for denormalizado
 
-                categoryName: categoryDoc && categoryDoc.exists ? categoryDoc.data().label : 'Não definida',
-                difficultyName: difficultyDoc && difficultyDoc.exists ? difficultyDoc.data().label : 'Não definida',
-                timeName: timeDoc && timeDoc.exists ? timeDoc.data().label : 'Não definido',
-                userName: userDoc && userDoc.exists ? userDoc.data().user_name : 'Desconhecido',
-
-                createdAt: firestoreData.created_at && firestoreData.created_at.toDate ? firestoreData.created_at.toDate().toISOString() : null,
-                updatedAt: firestoreData.updated_at && firestoreData.updated_at.toDate ? firestoreData.updated_at.toDate().toISOString() : null
+                createdAt: firestoreData.createdAt && firestoreData.createdAt.toDate ? firestoreData.createdAt.toDate().toISOString() : null,
+                updatedAt: firestoreData.updatedAt && firestoreData.updatedAt.toDate ? firestoreData.updatedAt.toDate().toISOString() : null
             }
         };
 
+        console.log(`[getRecipeById] Receita ${recipeId} encontrada e formatada.`);
         res.status(200).send(aggregatedRecipe);
 
     } catch (error) {
-        console.error('Erro ao buscar receita por ID:', error);
+        console.error('[getRecipeById] Erro ao buscar receita por ID:', error);
         res.status(500).send({ message: 'Erro interno do servidor ao buscar receita.' });
+    } finally {
+        console.log('--- END: getRecipeById ---\n');
     }
 }
 
 // --- Função para criar uma nova receita ---
 async function createRecipe(req, res) {
+    console.log('\n--- CALL: createRecipe ---');
     try {
         const {
             recipeName, description, photoUrl, userId,
-            categoryId, difficultyId, timeId, preparationSteps, // preparationSteps vem do frontend
-            ingredients // Este virá do frontend como Array de objetos { fdcId, name, foodType, quantity, unitId }
+            categoryId, difficultyId, timeId, preparationSteps,
+            ingredients
         } = req.body;
 
         // Validações básicas (adicione mais conforme necessário)
         if (!recipeName || !userId || !ingredients || !Array.isArray(ingredients)) {
+            console.error('[createRecipe] Campos obrigatórios ausentes: recipeName, userId, ingredients.');
             return res.status(400).send({ message: 'Campos obrigatórios da receita ausentes ou inválidos.' });
         }
         for (const ingredient of ingredients) {
-            if (!ingredient.name || typeof ingredient.quantity !== 'number' || !ingredient.unitId || !ingredient.foodType || !ingredient.fdcId) {
+            if (!ingredient.name || typeof ingredient.quantity !== 'number' || !ingredient.unitId || !ingredient.foodTypeId) {
+                console.error('[createRecipe] Estrutura de ingrediente inválida:', ingredient);
                 return res.status(400).send({ message: 'Estrutura de ingrediente inválida.' });
             }
         }
 
+        // 1. Obter os labels das coleções de referência para denormalizar
+        const [
+            categoryDoc,
+            difficultyDoc,
+            timeDoc,
+            userDoc,
+            // Fetch all units and food types once for all ingredients
+            allUnitsSnapshot,
+            allFoodTypesSnapshot
+        ] = await Promise.all([
+            categoryId ? db.collection('categories').doc(categoryId).get() : Promise.resolve(null),
+            difficultyId ? db.collection('difficulties').doc(difficultyId).get() : Promise.resolve(null),
+            timeId ? db.collection('times').doc(timeId).get() : Promise.resolve(null),
+            userId ? db.collection('users').doc(userId).get() : Promise.resolve(null),
+            db.collection('units').get(), // Fetch all units
+            db.collection('foodTypes').get() // Fetch all food types
+        ]);
+
+        // Create maps for quick lookup of labels
+        const unitsMap = new Map();
+        allUnitsSnapshot.forEach(doc => unitsMap.set(doc.id, doc.data().label));
+        const foodTypesMap = new Map();
+        allFoodTypesSnapshot.forEach(doc => foodTypesMap.set(doc.id, doc.data().label));
+
         // Mapeamento dos ingredientes: frontend camelCase para Firestore snake_case
+        // E ADICIONA OS LABELS DENORMALIZADOS
         const ingredientsToSave = ingredients.map(ing => ({
-            fdc_id: ing.fdcId,
+            fdc_id: ing.fdcId || null, // Se fdcId for opcional
             ingredient_name: ing.name,
-            food_type: ing.foodType,
             quantity: ing.quantity,
-            // AQUI: Converte unitId (string) para DocumentReference ao salvar
-            unit_id: ing.unitId ? db.collection('units').doc(ing.unitId) : null
+            unit_id: ing.unitId ? db.collection('units').doc(ing.unitId) : null,
+            unit_label: ing.unitId ? (unitsMap.get(ing.unitId) || 'N/A') : 'N/A', // <<-- AQUI
+            food_type_id: ing.foodTypeId ? db.collection('foodTypes').doc(ing.foodTypeId) : null,
+            food_type_label: ing.foodTypeId ? (foodTypesMap.get(ing.foodTypeId) || 'N/A') : 'N/A' // <<-- AQUI
         }));
 
         // Geração do campo `ingredient_food_type` para consultas futuras (Firestore snake_case)
-        const uniqueFoodTypes = [...new Set(ingredients.map(ing => ing.foodType))];
+        // Isso é para o array 'ingredient_food_type' que pode ser usado em queries 'array-contains'
+        const uniqueFoodTypeLabels = [...new Set(ingredientsToSave.map(ing => ing.food_type_label).filter(Boolean))];
 
         // Converte os IDs de string para DocumentReference antes de salvar no Firestore
         const categoryRef = categoryId ? db.collection('categories').doc(categoryId) : null;
         const difficultyRef = difficultyId ? db.collection('difficulties').doc(difficultyId) : null;
         const timeRef = timeId ? db.collection('times').doc(timeId) : null;
-        const userRef = userId ? db.collection('users').doc(userId) : null;
+        const userRef = userId ? db.collection('users').doc(userId) : null; // user_id precisa ser DocumentReference
 
 
         const newRecipeData = {
             recipe_name: recipeName,
             description: description,
             photo: photoUrl,
+            
             user_id: userRef, // Salva como referência
-            category_id: categoryRef, // Salva como referência
-            difficulty_id: difficultyRef, // Salva como referência
-            time_id: timeRef, // Salva como referência
-            // CAMPO CORRIGIDO: Salva no Firestore como 'preparation_mode'
-            preparation_mode: preparationSteps, // <<-- Alterado de 'preparation_steps' para 'preparation_mode'
+            // Denormaliza os labels das categorias, dificuldades e tempos
+            category_id: categoryRef,
+            category_label: categoryDoc && categoryDoc.exists ? categoryDoc.data().label : 'Não definida',
+            
+            difficulty_id: difficultyRef,
+            difficulty_label: difficultyDoc && difficultyDoc.exists ? difficultyDoc.data().label : 'Não definida',
+            
+            time_id: timeRef,
+            time_label: timeDoc && timeDoc.exists ? timeDoc.data().label : 'Não definido',
+            
+            preparation_mode: preparationSteps,
             ingredients: ingredientsToSave,
-            ingredient_food_type: uniqueFoodTypes,
-            created_at: admin.firestore.FieldValue.serverTimestamp(),
-            updated_at: admin.firestore.FieldValue.serverTimestamp()
+            ingredient_food_type: uniqueFoodTypeLabels, // Salva os LABELS, não os IDs, para facilitar queries 'array-contains'
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
         };
 
         const docRef = await db.collection('recipes').add(newRecipeData);
 
+        console.log(`[createRecipe] Receita criada com sucesso. ID: ${docRef.id}`);
         res.status(201).send({
             message: 'Receita criada com sucesso!',
             recipeId: docRef.id
         });
 
     } catch (error) {
-        console.error('Erro ao criar receita:', error);
+        console.error('[createRecipe] Erro ao criar receita:', error);
         res.status(500).send({ message: 'Erro interno do servidor ao criar receita.' });
+    } finally {
+        console.log('--- END: createRecipe ---\n');
     }
 }
 
 // --- Função para atualizar uma receita existente ---
 async function updateRecipe(req, res) {
+    console.log('\n--- CALL: updateRecipe ---');
     try {
         const recipeId = req.params.id;
         const {
@@ -196,21 +214,53 @@ async function updateRecipe(req, res) {
         } = req.body;
 
         if (!recipeId || !ingredients || !Array.isArray(ingredients)) {
+            console.error('[updateRecipe] ID da receita ou dados de ingrediente ausentes para atualização.');
             return res.status(400).send({ message: 'ID da receita ou dados de ingrediente ausentes para atualização.' });
         }
+        for (const ingredient of ingredients) {
+            if (!ingredient.name || typeof ingredient.quantity !== 'number' || !ingredient.unitId || !ingredient.foodTypeId) {
+                console.error('[updateRecipe] Estrutura de ingrediente inválida:', ingredient);
+                return res.status(400).send({ message: 'Estrutura de ingrediente inválida.' });
+            }
+        }
+
+        // 1. Obter os labels das coleções de referência para denormalizar
+        const [
+            categoryDoc,
+            difficultyDoc,
+            timeDoc,
+            userDoc, // userDoc para createRecipe e updateRecipe
+            allUnitsSnapshot,
+            allFoodTypesSnapshot
+        ] = await Promise.all([
+            categoryId ? db.collection('categories').doc(categoryId).get() : Promise.resolve(null),
+            difficultyId ? db.collection('difficulties').doc(difficultyId).get() : Promise.resolve(null),
+            timeId ? db.collection('times').doc(timeId).get() : Promise.resolve(null),
+            userId ? db.collection('users').doc(userId).get() : Promise.resolve(null), // Busca o userDoc aqui
+            db.collection('units').get(), // Fetch all units
+            db.collection('foodTypes').get() // Fetch all food types
+        ]);
+
+        // Create maps for quick lookup of labels
+        const unitsMap = new Map();
+        allUnitsSnapshot.forEach(doc => unitsMap.set(doc.id, doc.data().label));
+        const foodTypesMap = new Map();
+        allFoodTypesSnapshot.forEach(doc => foodTypesMap.set(doc.id, doc.data().label));
 
         // Mapeamento dos ingredientes para salvar: frontend camelCase para Firestore snake_case
+        // E ADICIONA OS LABELS DENORMALIZADOS
         const ingredientsToSave = ingredients.map(ing => ({
-            fdc_id: ing.fdcId,
+            fdc_id: ing.fdcId || null,
             ingredient_name: ing.name,
-            food_type: ing.foodType,
             quantity: ing.quantity,
-            // AQUI: Converte unitId (string) para DocumentReference ao salvar
-            unit_id: ing.unitId ? db.collection('units').doc(ing.unitId) : null
+            unit_id: ing.unitId ? db.collection('units').doc(ing.unitId) : null,
+            unit_label: ing.unitId ? (unitsMap.get(ing.unitId) || 'N/A') : 'N/A', // <<-- AQUI
+            food_type_id: ing.foodTypeId ? db.collection('foodTypes').doc(ing.foodTypeId) : null,
+            food_type_label: ing.foodTypeId ? (foodTypesMap.get(ing.foodTypeId) || 'N/A') : 'N/A' // <<-- AQUI
         }));
 
         // Re-gera o campo `ingredient_food_type` em cada atualização para manter a consistência
-        const uniqueFoodTypes = [...new Set(ingredients.map(ing => ing.foodType))];
+        const uniqueFoodTypeLabels = [...new Set(ingredientsToSave.map(ing => ing.food_type_label).filter(Boolean))];
 
         // Converte os IDs de string para DocumentReference antes de salvar no Firestore
         const categoryRef = categoryId ? db.collection('categories').doc(categoryId) : null;
@@ -222,115 +272,115 @@ async function updateRecipe(req, res) {
             recipe_name: recipeName,
             description: description,
             photo: photoUrl,
+            
             user_id: userRef, // Salva como referência
-            category_id: categoryRef, // Salva como referência
-            difficulty_id: difficultyRef, // Salva como referência
-            time_id: timeRef, // Salva como referência
-            // CAMPO CORRIGIDO: Salva no Firestore como 'preparation_mode'
-            preparation_mode: preparationSteps, // <<-- Alterado de 'preparation_steps' para 'preparation_mode'
+            // Denormaliza os labels das categorias, dificuldades e tempos
+            category_id: categoryRef,
+            category_label: categoryDoc && categoryDoc.exists ? categoryDoc.data().label : 'Não definida',
+            
+            difficulty_id: difficultyRef,
+            difficulty_label: difficultyDoc && difficultyDoc.exists ? difficultyDoc.data().label : 'Não definida',
+            
+            time_id: timeRef,
+            time_label: timeDoc && timeDoc.exists ? timeDoc.data().label : 'Não definido',
+            
+            preparation_mode: preparationSteps,
             ingredients: ingredientsToSave,
-            ingredient_food_type: uniqueFoodTypes,
-            updated_at: admin.firestore.FieldValue.serverTimestamp()
+            ingredient_food_type: uniqueFoodTypeLabels,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
         };
 
         await db.collection('recipes').doc(recipeId).update(updatedRecipeData);
 
+        console.log(`[updateRecipe] Receita ${recipeId} atualizada com sucesso.`);
         res.status(200).send({ message: 'Receita atualizada com sucesso!' });
 
     } catch (error) {
-        console.error('Erro ao atualizar receita:', error);
+        console.error('[updateRecipe] Erro ao atualizar receita:', error);
         res.status(500).send({ message: 'Erro interno do servidor ao atualizar receita.' });
+    } finally {
+        console.log('--- END: updateRecipe ---\n');
     }
 }
 
 // --- Função para listar receitas (com filtros opcionais) ---
 async function listRecipes(req, res) {
+    console.log('\n--- CALL: listRecipes ---');
     try {
         const { foodType, categoryId, userId, ...otherFilters } = req.query; // Pega filtros da query string
 
         let queryRef = db.collection('recipes');
 
         // --- Aplicar filtros usando nomes de campos do Firestore (snake_case) ---
+        // Aqui, `foodType` no query string do frontend deve ser o LABEL (string)
         if (foodType) {
             queryRef = queryRef.where('ingredient_food_type', 'array-contains', foodType);
         }
+        
+        // Se no Firestore o category_id é salvo como DocumentReference, a query precisa ser feita com a referência.
         if (categoryId) {
-            // Se no Firestore o category_id é salvo como DocumentReference, a query precisa ser feita com a referência.
             queryRef = queryRef.where('category_id', '==', db.collection('categories').doc(categoryId));
         }
+        
+        // Semelhante ao categoryId, se user_id for salvo como DocumentReference.
         if (userId) {
-            // Semelhante ao categoryId, se user_id for salvo como DocumentReference.
             queryRef = queryRef.where('user_id', '==', db.collection('users').doc(userId));
         }
-
 
         const recipesSnapshot = await queryRef.get();
 
         const recipes = [];
         // Mapear os dados do Firestore (snake_case) para o RecipeListItem do frontend (camelCase)
-        for (const doc of recipesSnapshot.docs) { // Usando for...of para await dentro do loop se precisar
-            const data = doc.data();
+        for (const doc of recipesSnapshot.docs) {
+            const data = doc.data(); // <--- data está definido aqui
 
-            let categoryName = null;
-            if (data.category_id && data.category_id.get) { // Verifica se é uma DocumentReference
-                const categoryDoc = await data.category_id.get();
-                if (categoryDoc.exists) {
-                    categoryName = categoryDoc.data().label;
-                }
-            }
-
-            // Repita para difficulty, time, user se precisar dos nomes na lista
-            let difficultyName = null;
-            if (data.difficulty_id && data.difficulty_id.get) {
-                const difficultyDoc = await data.difficulty_id.get();
-                if (difficultyDoc.exists) {
-                    difficultyName = difficultyDoc.data().label;
-                }
-            }
-
-            let timeName = null;
-            if (data.time_id && data.time_id.get) {
-                const timeDoc = await data.time_id.get();
-                if (timeDoc.exists) {
-                    timeName = timeDoc.data().label;
-                }
-            }
-
-            let userName = null;
-            if (data.user_id && data.user_id.get) {
-                const userDoc = await data.user_id.get();
-                if (userDoc.exists) {
-                    userName = userDoc.data().user_name; // Ajuste para o campo de nome de usuário real
+            // Os labels já estão denormalizados no documento da receita!
+            // Não precisamos mais fazer .get() para category, difficulty, time.
+            let userName = 'Desconhecido';
+            // AQUI ESTAVA O ERRO: VOCÊ ESTAVA USANDO firestoreData.user_id AO INVÉS DE data.user_id
+            if (data.user_id && data.user_id.get) { 
+                try {
+                    const userDoc = await data.user_id.get(); // <--- AGORA USA 'data'
+                    if (userDoc.exists) {
+                        // AJUSTE ESTA LINHA:
+                        userName = userDoc.data().user_name || userDoc.data().displayName || userDoc.data().email;
+                        console.log(`[listRecipes] Nome de usuário na lista para receita ${doc.id}:`, userName); // Log de depuração
+                    }
+                } catch (userError) {
+                    console.error(`Erro ao buscar nome de usuário para ID ${data.user_id.id}:`, userError); // <--- AGORA USA 'data'
                 }
             }
 
 
             recipes.push({
                 id: doc.id,
-                recipeName: data.recipe_name || 'Sem Nome', // Converte de recipe_name para recipeName
-                photoUrl: data.photo || 'assets/placeholder.png', // Converte de photo para photoUrl
+                recipeName: data.recipe_name || 'Sem Nome',
+                photoUrl: data.photo || 'assets/placeholder.png',
                 description: data.description || '', // Pode truncar para a lista se quiser
-                // Inclua IDs de referência para que o frontend possa usá-los se precisar
+                
+                // Inclua IDs de referência
                 categoryId: data.category_id ? data.category_id.id : null,
                 difficultyId: data.difficulty_id ? data.difficulty_id.id : null,
                 timeId: data.time_id ? data.time_id.id : null,
                 userId: data.user_id ? data.user_id.id : null,
-                // Inclua os nomes populados para a lista, se necessário
-                categoryName: categoryName,
-                difficultyName: difficultyName,
-                timeName: timeName,
+                
+                // Inclua os labels denormalizados
+                categoryLabel: data.category_label || 'Não definida',
+                difficultyLabel: data.difficulty_label || 'Não definida',
+                timeLabel: data.time_label || 'Não definido',
                 userName: userName
             });
         }
-
+        console.log(`[listRecipes] Retornando ${recipes.length} receitas.`);
         res.status(200).send(recipes);
 
     } catch (error) {
-        console.error('Erro ao listar receitas:', error);
+        console.error('[listRecipes] Erro ao listar receitas:', error);
         res.status(500).send({ message: 'Erro interno do servidor.' });
+    } finally {
+        console.log('--- END: listRecipes ---\n');
     }
 }
-
 
 // --- Exporta as funções do controlador ---
 module.exports = {

@@ -41,9 +41,9 @@
             </div>
 
             <div class="specifications">
-              <app-info-item iconClass="bi bi-bookmark" text="{{ receitaData.recipe?.categoryName }}"></app-info-item>
-              <app-info-item iconClass="bi bi-clock" text="{{ receitaData.recipe?.timeName }}"></app-info-item>
-              <app-info-item iconClass="bi bi-graph-up" text="{{ receitaData.recipe?.difficultyName }}"></app-info-item>
+              <app-info-item iconClass="bi bi-bookmark" text="{{ receitaData.recipe?.categoryLabel }}"></app-info-item>
+              <app-info-item iconClass="bi bi-clock" text="{{ receitaData.recipe?.timeLabel }}"></app-info-item>
+              <app-info-item iconClass="bi bi-graph-up" text="{{ receitaData.recipe?.difficultyLabel }}"></app-info-item>
             </div>
 
             <div class="description" *ngIf="receitaData.recipe?.description">
@@ -71,7 +71,7 @@
                     Nenhum ingrediente adicionado.
                 </li>
                 <li *ngFor="let ingredient of receitaData.recipe.ingredients">
-                    {{ ingredient.quantity }} {{ ingredient.unitName }} de {{ ingredient.name }}
+                    {{ ingredient.quantity }} {{ ingredient.unitLabel }} de {{ ingredient.name }}
                 </li>
               </ul>
             </div>
@@ -101,5 +101,5 @@
         <p>Carregando receita...</p>
       </div>
     </div>
-  </div> 
-</div> 
+  </div>
+</div>
