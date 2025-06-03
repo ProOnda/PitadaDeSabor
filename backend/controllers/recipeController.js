@@ -99,11 +99,17 @@ async function getRecipeById(req, res) {
 async function createRecipe(req, res) {
     console.log('\n--- CALL: createRecipe ---');
     try {
+        // NOVO LOG: Conteúdo completo do corpo da requisição
+        console.log('BACKEND - createRecipe: Conteúdo completo do req.body:', JSON.stringify(req.body, null, 2));
+
         const {
-            recipeName, description, photoUrl, userId,
+            recipeName, description, photoUrl, userId, // <<< userId vem do req.body
             categoryId, difficultyId, timeId, preparationSteps,
             ingredients
         } = req.body;
+
+        // NOVO LOG: userId recebido
+        console.log('BACKEND - createRecipe: userId recebido no req.body:', userId);
 
         // Validações básicas (adicione mais conforme necessário)
         if (!recipeName || !userId || !ingredients || !Array.isArray(ingredients)) {
@@ -130,6 +136,7 @@ async function createRecipe(req, res) {
             categoryId ? db.collection('categories').doc(categoryId).get() : Promise.resolve(null),
             difficultyId ? db.collection('difficulties').doc(difficultyId).get() : Promise.resolve(null),
             timeId ? db.collection('times').doc(timeId).get() : Promise.resolve(null),
+            // NOVO LOG: Verificando se userId é válido antes de tentar buscar o documento do usuário
             userId ? db.collection('users').doc(userId).get() : Promise.resolve(null),
             db.collection('units').get(), // Fetch all units
             db.collection('foodTypes').get() // Fetch all food types
@@ -148,13 +155,12 @@ async function createRecipe(req, res) {
             ingredient_name: ing.name,
             quantity: ing.quantity,
             unit_id: ing.unitId ? db.collection('units').doc(ing.unitId) : null,
-            unit_label: ing.unitId ? (unitsMap.get(ing.unitId) || 'N/A') : 'N/A', // <<-- AQUI
+            unit_label: ing.unitId ? (unitsMap.get(ing.unitId) || 'N/A') : 'N/A',
             food_type_id: ing.foodTypeId ? db.collection('foodTypes').doc(ing.foodTypeId) : null,
-            food_type_label: ing.foodTypeId ? (foodTypesMap.get(ing.foodTypeId) || 'N/A') : 'N/A' // <<-- AQUI
+            food_type_label: ing.foodTypeId ? (foodTypesMap.get(ing.foodTypeId) || 'N/A') : 'N/A'
         }));
 
         // Geração do campo `ingredient_food_type` para consultas futuras (Firestore snake_case)
-        // Isso é para o array 'ingredient_food_type' que pode ser usado em queries 'array-contains'
         const uniqueFoodTypeLabels = [...new Set(ingredientsToSave.map(ing => ing.food_type_label).filter(Boolean))];
 
         // Converte os IDs de string para DocumentReference antes de salvar no Firestore
@@ -162,6 +168,9 @@ async function createRecipe(req, res) {
         const difficultyRef = difficultyId ? db.collection('difficulties').doc(difficultyId) : null;
         const timeRef = timeId ? db.collection('times').doc(timeId) : null;
         const userRef = userId ? db.collection('users').doc(userId) : null; // user_id precisa ser DocumentReference
+
+        // NOVO LOG: ID da referência do usuário antes de salvar
+        console.log('BACKEND - createRecipe: userRef ID (referência para salvar):', userRef ? userRef.id : 'Nulo');
 
 
         const newRecipeData = {
@@ -189,14 +198,17 @@ async function createRecipe(req, res) {
 
         const docRef = await db.collection('recipes').add(newRecipeData);
 
-        console.log(`[createRecipe] Receita criada com sucesso. ID: ${docRef.id}`);
+        console.log(`BACKEND - createRecipe: Receita criada com sucesso. ID: ${docRef.id}`);
+        // NOVO LOG: ID do usuário salvo na receita (para confirmar)
+        console.log('BACKEND - createRecipe: user_id salvo na receita:', newRecipeData.user_id ? newRecipeData.user_id.id : 'Nulo');
+
         res.status(201).send({
             message: 'Receita criada com sucesso!',
             recipeId: docRef.id
         });
 
     } catch (error) {
-        console.error('[createRecipe] Erro ao criar receita:', error);
+        console.error('BACKEND - createRecipe: Erro ao criar receita:', error);
         res.status(500).send({ message: 'Erro interno do servidor ao criar receita.' });
     } finally {
         console.log('--- END: createRecipe ---\n');
@@ -229,14 +241,14 @@ async function updateRecipe(req, res) {
             categoryDoc,
             difficultyDoc,
             timeDoc,
-            userDoc, // userDoc para createRecipe e updateRecipe
+            userDoc,
             allUnitsSnapshot,
             allFoodTypesSnapshot
         ] = await Promise.all([
             categoryId ? db.collection('categories').doc(categoryId).get() : Promise.resolve(null),
             difficultyId ? db.collection('difficulties').doc(difficultyId).get() : Promise.resolve(null),
             timeId ? db.collection('times').doc(timeId).get() : Promise.resolve(null),
-            userId ? db.collection('users').doc(userId).get() : Promise.resolve(null), // Busca o userDoc aqui
+            userId ? db.collection('users').doc(userId).get() : Promise.resolve(null),
             db.collection('units').get(), // Fetch all units
             db.collection('foodTypes').get() // Fetch all food types
         ]);
@@ -254,9 +266,9 @@ async function updateRecipe(req, res) {
             ingredient_name: ing.name,
             quantity: ing.quantity,
             unit_id: ing.unitId ? db.collection('units').doc(ing.unitId) : null,
-            unit_label: ing.unitId ? (unitsMap.get(ing.unitId) || 'N/A') : 'N/A', // <<-- AQUI
+            unit_label: ing.unitId ? (unitsMap.get(ing.unitId) || 'N/A') : 'N/A',
             food_type_id: ing.foodTypeId ? db.collection('foodTypes').doc(ing.foodTypeId) : null,
-            food_type_label: ing.foodTypeId ? (foodTypesMap.get(ing.foodTypeId) || 'N/A') : 'N/A' // <<-- AQUI
+            food_type_label: ing.foodTypeId ? (foodTypesMap.get(ing.foodTypeId) || 'N/A') : 'N/A'
         }));
 
         // Re-gera o campo `ingredient_food_type` em cada atualização para manter a consistência
@@ -337,17 +349,15 @@ async function listRecipes(req, res) {
             // Os labels já estão denormalizados no documento da receita!
             // Não precisamos mais fazer .get() para category, difficulty, time.
             let userName = 'Desconhecido';
-            // AQUI ESTAVA O ERRO: VOCÊ ESTAVA USANDO firestoreData.user_id AO INVÉS DE data.user_id
             if (data.user_id && data.user_id.get) { 
                 try {
-                    const userDoc = await data.user_id.get(); // <--- AGORA USA 'data'
+                    const userDoc = await data.user_id.get();
                     if (userDoc.exists) {
-                        // AJUSTE ESTA LINHA:
                         userName = userDoc.data().user_name || userDoc.data().displayName || userDoc.data().email;
                         console.log(`[listRecipes] Nome de usuário na lista para receita ${doc.id}:`, userName); // Log de depuração
                     }
                 } catch (userError) {
-                    console.error(`Erro ao buscar nome de usuário para ID ${data.user_id.id}:`, userError); // <--- AGORA USA 'data'
+                    console.error(`Erro ao buscar nome de usuário para ID ${data.user_id.id}:`, userError);
                 }
             }
 
