@@ -1,14 +1,23 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageHeaderComponent } from '../../../components/item-displays/page-header/page-header.component';
+import { ReceitaService } from '../../../services/receita/receita.service';
+import { RecipeCreationPayload, IngredientPayload } from '../../../interfaces/recipe.interfaces';
+import { AuthService } from 'src/app/services/auth/auth.service';
+import { Router } from '@angular/router';
 
-// Interface para o modelo de ingrediente no formulário
+// Se você estiver usando Firebase Authentication, importe o User do Firebase
+// import { User } from '@angular/fire/auth'; // OU import * as firebase from 'firebase/app';
+// Se não tiver certeza, pode usar `any` temporariamente
+
+// Interface para o modelo de ingrediente no formulário (agora com IDs)
 interface IngredientForm {
-  ingredient_name: string;
+  name: string;
   quantity: number | null;
-  unit: string; // Corrigido para 'unit' conforme o HTML
-  foodType: string; // Adicionado foodType
+  unitId: string;
+  foodTypeId: string;
+  fdcId?: string;
 }
 
 interface StepForm {
@@ -28,65 +37,71 @@ interface StepForm {
 })
 export class RecipeCreationPage implements OnInit {
 
-  // Propriedades para os campos principais do formulário
   recipeTitle: string = '';
   recipeDescription: string = '';
-  recipeTime: string = '';
-  recipeDifficulty: string = '';
-  recipeCategory: string = '';
+  recipeTimeId: string = '';
+  recipeDifficultyId: string = '';
+  recipeCategoryId: string = '';
 
-  ingredients: IngredientForm[] = []; // Usando a interface IngredientForm
+  ingredients: IngredientForm[] = [];
   preparationSteps: StepForm[] = [];
 
   imagemPreviewUrl: string | ArrayBuffer | null = null;
   selectedFile: File | null = null;
 
-  constructor(
-    private location: Location,
-  ) { }
+  currentUserUid: string | null = null;
+
+  private location = inject(Location);
+  private receitaService = inject(ReceitaService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  constructor() { }
 
   ngOnInit(): void {
-    // Garante que sempre haja pelo menos uma linha de ingrediente ao iniciar
     if (this.ingredients.length === 0) {
-      this.ingredients.push({ ingredient_name: '', quantity: null, unit: '', foodType: '' }); // Inicializa foodType
+      this.ingredients.push({ name: '', quantity: null, unitId: '', foodTypeId: '' });
     }
-    // Garante que sempre haja pelo menos um passo de preparo ao iniciar
     if (this.preparationSteps.length === 0) {
       this.addPreparationStep();
     }
+
+    // Corrigido: Usando authState e tipando 'user'
+    this.authService.authState.subscribe((user: any | null) => { // Use 'any | null' ou User | null se importar o tipo User do Firebase
+      if (user) {
+        this.currentUserUid = user.uid;
+        console.log('User UID obtido:', this.currentUserUid);
+      } else {
+        this.currentUserUid = null;
+        console.warn('Usuário não logado na página de criação de receita. Redirecionando ou exibindo mensagem.');
+        // this.router.navigate(['/login']);
+      }
+    });
   }
 
   onBackClick(): void {
     this.location.back();
   }
 
-  /**
-   * Adiciona uma nova linha de ingrediente APENAS se a última linha estiver preenchida.
-   */
   addIngredient(): void {
     const lastIngredient = this.ingredients[this.ingredients.length - 1];
-    // Valida se o nome do ingrediente, quantidade, unidade E foodType estão preenchidos na última linha
-    if (this.ingredients.length > 0 && 
-        (!lastIngredient.ingredient_name || lastIngredient.ingredient_name.trim() === '' || 
-         lastIngredient.quantity === null || 
-         lastIngredient.quantity === 0 || 
-         !lastIngredient.unit || lastIngredient.unit.trim() === '' || // Verifica se a unidade está preenchida
-         !lastIngredient.foodType || lastIngredient.foodType.trim() === '')) { // Verifica se foodType está preenchido
-      alert('Por favor, preencha o nome, a quantidade, a unidade e o tipo de alimento do ingrediente atual antes de adicionar um novo.');
-      return; 
+    if (this.ingredients.length > 0 &&
+        (!lastIngredient.name || lastIngredient.name.trim() === '' ||
+         lastIngredient.quantity === null ||
+         lastIngredient.quantity <= 0 ||
+         !lastIngredient.unitId || lastIngredient.unitId.trim() === '' ||
+         !lastIngredient.foodTypeId || lastIngredient.foodTypeId.trim() === '')) {
+      alert('Por favor, preencha o nome, a quantidade (maior que zero), a unidade e o tipo de alimento do ingrediente atual antes de adicionar um novo.');
+      return;
     }
-    this.ingredients.push({ ingredient_name: '', quantity: null, unit: '', foodType: '' }); // Inicializa foodType
+    this.ingredients.push({ name: '', quantity: null, unitId: '', foodTypeId: '' });
   }
 
-  /**
-   * Remove uma linha de ingrediente. Garante que sempre haja pelo menos uma linha.
-   */
   removeIngredient(index: number): void {
     if (this.ingredients.length > 1) {
       this.ingredients.splice(index, 1);
     } else {
-      // Se for o último ingrediente, limpa os campos em vez de remover a linha
-      this.ingredients[0] = { ingredient_name: '', quantity: null, unit: '', foodType: '' }; // Limpa foodType também
+      this.ingredients[0] = { name: '', quantity: null, unitId: '', foodTypeId: '' };
     }
   }
 
@@ -109,7 +124,7 @@ export class RecipeCreationPage implements OnInit {
 
   getStepPlaceholder(index: number): string {
     const numbers = ['primeiro', 'segundo', 'terceiro', 'quarto', 'quinto', 'sexto', 'sétimo', 'oitavo', 'nono', 'décimo'];
-    const ordinal = numbers[index] || (index + 1).toString(); 
+    const ordinal = numbers[index] || (index + 1).toString();
     return `Descreva o ${ordinal} passo da receita...`;
   }
 
@@ -131,59 +146,83 @@ export class RecipeCreationPage implements OnInit {
     }
   }
 
-  saveRecipe(): void {
-    // Validação final antes de salvar
+  async saveRecipe(): Promise<void> {
     if (!this.recipeTitle.trim()) {
       alert('Por favor, preencha o título da receita.');
       return;
     }
+    if (!this.recipeCategoryId) {
+        alert('Por favor, selecione a categoria da receita.');
+        return;
+    }
+    if (!this.recipeDifficultyId) {
+        alert('Por favor, selecione a dificuldade da receita.');
+        return;
+    }
+    if (!this.recipeTimeId) {
+        alert('Por favor, selecione o tempo de preparo da receita.');
+        return;
+    }
+    if (!this.currentUserUid) {
+        alert('Erro: Usuário não logado. Por favor, faça login para criar uma receita.');
+        return;
+    }
 
-    // Validação para cada ingrediente
     for (const ingredient of this.ingredients) {
-      if (!ingredient.ingredient_name.trim() || ingredient.quantity === null || ingredient.quantity === 0 || !ingredient.unit.trim() || !ingredient.foodType.trim()) {
-        alert('Por favor, preencha todos os campos (Nome, Qtd, Unid., Tipo de Alimento) para todos os ingredientes.');
+      if (!ingredient.name.trim() || ingredient.quantity === null || ingredient.quantity <= 0 || !ingredient.unitId.trim() || !ingredient.foodTypeId.trim()) {
+        alert('Por favor, preencha todos os campos (Nome, Qtd, Unid., Tipo de Alimento) para todos os ingredientes e certifique-se que a quantidade é maior que zero.');
         return;
       }
     }
 
-    // Filtra passos vazios antes de enviar (se houver algum)
     const filteredPreparationSteps = this.preparationSteps
         .map(step => step.description.trim())
         .filter(step => step.length > 0);
 
-    // Se todos os passos forem vazios e for o único passo, pode não haver passos.
-    // Você pode decidir se um array vazio é aceitável ou se exige pelo menos um passo.
     if (filteredPreparationSteps.length === 0) {
         alert('Por favor, adicione pelo menos um passo de preparo.');
         return;
     }
 
-    console.log('Dados da Receita para Salvar:', {
-      recipeName: this.recipeTitle,
-      description: this.recipeDescription,
-      timeId: this.recipeTime,
-      difficultyId: this.recipeDifficulty,
-      categoryId: this.recipeCategory,
-      
-      // Envia os ingredientes com o novo campo foodType
-      ingredients: this.ingredients.map(ing => ({
-        ingredient_name: ing.ingredient_name.trim(),
-        quantity: ing.quantity,
-        unit: ing.unit,
-        foodType: ing.foodType // Inclui o foodType
-      })),
-      preparationSteps: filteredPreparationSteps,
-      photoUrl: this.selectedFile ? this.selectedFile.name : null
-    });
-
+    let photoUrlToSave: string | null = null;
     if (this.selectedFile) {
-      console.log('Arquivo de imagem para upload:', this.selectedFile);
-      // Aqui você integraria com o seu serviço de upload de imagens (Firebase Storage, etc.)
+        // Implemente seu serviço de upload de imagem real aqui
+        console.log('Simulando upload de imagem. Nome do arquivo:', this.selectedFile.name);
+        photoUrlToSave = `https://exemplo.com/path/to/uploaded/images/${this.selectedFile.name}`;
+    } else {
+        photoUrlToSave = 'https://via.placeholder.com/150?text=No+Image';
     }
 
-    // Ações de salvar a receita via serviço (ex: receitaService.createRecipe)
-    alert('Receita Salva! (Verifique o console para os dados)');
-    // this.router.navigate(['/feed']); // Navega para o feed após salvar
+    const ingredientsPayload: IngredientPayload[] = this.ingredients.map(ing => ({
+      name: ing.name.trim(),
+      quantity: ing.quantity!,
+      unitId: ing.unitId,
+      foodTypeId: ing.foodTypeId,
+    }));
+
+    const recipeData: RecipeCreationPayload = {
+      recipeName: this.recipeTitle.trim(),
+      description: this.recipeDescription.trim(),
+      photoUrl: photoUrlToSave,
+      userId: this.currentUserUid!,
+      categoryId: this.recipeCategoryId,
+      difficultyId: this.recipeDifficultyId,
+      timeId: this.recipeTimeId,
+      preparationSteps: filteredPreparationSteps,
+      ingredients: ingredientsPayload,
+    };
+
+    console.log('Dados da Receita para Salvar no Backend:', recipeData);
+
+    try {
+      const response = await this.receitaService.saveRecipe(recipeData).toPromise();
+      console.log('Receita criada com sucesso!', response);
+      alert('Receita criada com sucesso!');
+      this.router.navigate(['/feed']);
+    } catch (error) {
+      console.error('Erro ao criar receita:', error);
+      alert('Erro ao criar receita. Verifique o console do navegador e o terminal do backend para mais detalhes.');
+    }
   }
 
   cancelRecipe(): void {

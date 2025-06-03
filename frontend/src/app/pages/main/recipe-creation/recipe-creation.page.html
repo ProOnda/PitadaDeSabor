@@ -35,12 +35,12 @@
 
                 <div class="grupo-formulario">
                     <div class="seletor-wrapper">
-                        <select id="tempo" name="tempo" [(ngModel)]="recipeTime"> 
+                        <select id="tempo" name="tempo" [(ngModel)]="recipeTimeId" required> 
                             <option value="" disabled selected hidden>Tempo</option>
-                            <option value="15min">Até 30 minutos</option>
-                            <option value="30min">30 minutos - 60 minutos</option>
-                            <option value="1h">60 minutos - 120 minutos</option>
-                            <option value="2h+">Mais de 120 minutos</option>
+                            <option value="1">Até 30 minutos</option>
+                            <option value="2">30 minutos - 60 minutos</option>
+                            <option value="3">60 minutos - 120 minutos</option>
+                            <option value="4">Mais de 120 minutos</option>
                         </select>
                         <i class="bi bi-chevron-down"></i>
                     </div>
@@ -48,11 +48,11 @@
 
                 <div class="grupo-formulario">
                     <div class="seletor-wrapper">
-                        <select id="dificuldade" name="dificuldade" [(ngModel)]="recipeDifficulty">
+                        <select id="dificuldade" name="dificuldade" [(ngModel)]="recipeDifficultyId" required>
                             <option value="" disabled selected hidden>Dificuldade</option>
-                            <option value="facil">Fácil</option>
-                            <option value="medio">Médio</option>
-                            <option value="dificil">Difícil</option>
+                            <option value="1">Fácil</option>
+                            <option value="2">Médio</option>
+                            <option value="3">Difícil</option>
                         </select>
                         <i class="bi bi-chevron-down"></i>
                     </div>
@@ -60,11 +60,11 @@
 
                 <div class="grupo-formulario">
                     <div class="seletor-wrapper">
-                        <select id="categoria" name="categoria" [(ngModel)]="recipeCategory">
+                        <select id="categoria" name="categoria" [(ngModel)]="recipeCategoryId" required>
                             <option value="" disabled selected hidden>Categoria</option>
-                            <option value="lanches">Lanches</option>
-                            <option value="refeicoes">Refeições</option>
-                            <option value="sobremesas">Sobremesas</option>
+                            <option value="1">Lanches</option>
+                            <option value="2">Refeições</option>
+                            <option value="3">Sobremesas</option>
                         </select>
                         <i class="bi bi-chevron-down"></i>
                     </div>
@@ -79,7 +79,7 @@
                                 <div class="input-container-custom">
                                     <input 
                                         type="text" 
-                                        [(ngModel)]="ingredient.ingredient_name" 
+                                        [(ngModel)]="ingredient.name" 
                                         name="ingrediente-{{i}}" 
                                         [attr.id]="'inputIngrediente-' + i" 
                                         placeholder="Nome do Ingrediente"
@@ -95,14 +95,14 @@
 
                             <div class="grupo-formulario unidade-select">
                                 <div class="seletor-wrapper">
-                                    <select [(ngModel)]="ingredient.unit" name="unidade-{{i}}" [attr.id]="'selectUnidade-' + i"> 
+                                    <select [(ngModel)]="ingredient.unitId" name="unidade-{{i}}" [attr.id]="'selectUnidade-' + i" required> 
                                         <option value="" disabled selected hidden>Unid.</option> 
-                                        <option value="g">Gramas</option>
-                                        <option value="ml">Mililitros</option>
-                                        <option value="unid">Unidade(s)</option>
-                                        <option value="col_sopa">Colher de Sopa</option>
-                                        <option value="col_cha">Colher de Chá</option>
-                                        <option value="xic">Xícara(s)</option>
+                                        <option value="1">Gramas</option>
+                                        <option value="2">Mililitros</option>
+                                        <option value="3">Unidade(s)</option>
+                                        <option value="4">Colher de Sopa</option>
+                                        <option value="5">Colher de Chá</option>
+                                        <option value="6">Xícara(s)</option>
                                     </select>
                                     <i class="bi bi-chevron-down"></i>
                                 </div>
@@ -110,18 +110,18 @@
 
                             <div class="grupo-formulario foodtype-select">
                                 <div class="seletor-wrapper">
-                                    <select [(ngModel)]="ingredient.foodType" name="foodtype-{{i}}" [attr.id]="'selectFoodType-' + i"> 
-                                        <option value="" disabled selected hidden>Tipo de Alimento</option> 
-                                        <option value="vegetal">Vegetais</option>
-                                        <option value="fruta">Frutas</option>
-                                        <option value="carne">Carnes, Aves e Peixes</option>
-                                        <option value="laticinio">Laticínios e Ovos</option>
-                                        <option value="grao">Cereais e Grãos</option>
-                                        <option value="especiaria">Especiarias e Condimentos</option>
-                                        <option value="leguminosa">Leguminosas</option>
-                                        <option value="oleos">Óleos e Gorduras</option>
-                                        <option value="acucar">Açúcares e Doces</option>
-                                        <option value="bebida">Bebidas</option>
+                                    <select [(ngModel)]="ingredient.foodTypeId" name="foodtype-{{i}}" [attr.id]="'selectFoodType-' + i" required> 
+                                        <option value="" disabled selected hidden>Tipo de Alimento</option>
+                                        <option value="1">Carnes, Aves e Peixes</option> 
+                                        <option value="2">Laticínios e Ovos</option>
+                                        <option value="3">Cereais e Grãos</option>
+                                        <option value="4">Leguminosas</option>
+                                        <option value="5">Frutas</option>
+                                        <option value="6">Vegetais</option>
+                                        <option value="7">Óleos e Gorduras</option>
+                                        <option value="8">Açúcares e Doces</option>
+                                        <option value="9">Especiarias e Condimentos</option>
+                                        <option value="10">Bebidas</option>
                                     </select>
                                     <i class="bi bi-chevron-down"></i>
                                 </div>

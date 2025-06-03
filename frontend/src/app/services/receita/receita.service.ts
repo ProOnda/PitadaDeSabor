@@ -1,12 +1,13 @@
 // src/app/services/receita/receita.service.ts
+
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { environment } from '../../../environments/environment'; // Para a URL do backend
+import { environment } from '../../../environments/environment';
 
-// Importe as interfaces atualizadas
-import { RecipeDetail, RecipeListItem, RecipeContent, IngredientDetail } from '../../interfaces/recipe.interfaces'; // Ajuste o caminho
+// Importe as interfaces atualizadas (incluindo as novas de payload)
+import { RecipeDetail, RecipeListItem, RecipeContent, IngredientDetail, RecipeCreationPayload } from '../../interfaces/recipe.interfaces';
 
 @Injectable({
   providedIn: 'root',
@@ -17,18 +18,15 @@ export class ReceitaService {
 
   constructor() { }
 
-  // Busca detalhes de uma receita (backend fará a agregação)
   buscarReceitaPorIdComDetalhes(id: string): Observable<RecipeDetail | undefined> {
     return this.http.get<RecipeDetail>(`${this.backendApiUrl}/recipes/${id}`).pipe(
       catchError(error => {
         console.error('Erro ao buscar receita por ID do backend:', error);
-        // Retorna undefined para indicar que a receita não pôde ser carregada
         return of(undefined);
       })
     );
   }
 
-  // Lista receitas (backend fará a filtragem/listagem)
   getRecipes(foodType?: string, categoryId?: string, userId?: string): Observable<RecipeListItem[]> {
     let params = new HttpParams();
     if (foodType) {
@@ -49,10 +47,8 @@ export class ReceitaService {
     );
   }
 
-  // Salva ou atualiza uma receita
-  // O frontend enviará um objeto RecipeContent (sem o 'id' inicial se for criação)
-  // E o backend fará a lógica de criar/atualizar e gerar ingredientFoodTypes
-  saveRecipe(recipeData: RecipeContent & { id?: string }): Observable<{ message: string; recipeId?: string }> {
+  // **AJUSTE AQUI**: A interface de entrada deve ser RecipeCreationPayload
+  saveRecipe(recipeData: RecipeCreationPayload & { id?: string }): Observable<{ message: string; recipeId?: string }> {
     if (recipeData.id) { // Atualizar
       const recipeId = recipeData.id;
       // Não envie o ID no corpo da requisição para PUT
@@ -61,14 +57,15 @@ export class ReceitaService {
       return this.http.put<{ message: string }>(`${this.backendApiUrl}/recipes/${recipeId}`, dataToSend).pipe(
         catchError(error => {
           console.error('Erro ao atualizar receita no backend:', error);
-          throw error; // Propagar o erro para o componente
+          throw error;
         })
       );
     } else { // Criar
+      // O backend espera o payload RecipeCreationPayload, que não tem 'id'
       return this.http.post<{ message: string; recipeId?: string }>(`${this.backendApiUrl}/recipes`, recipeData).pipe(
         catchError(error => {
           console.error('Erro ao criar receita no backend:', error);
-          throw error; // Propagar o erro
+          throw error;
         })
       );
     }
@@ -77,7 +74,14 @@ export class ReceitaService {
   deleteRecipe(id: string): Observable<any> {
     return this.http.delete(`${this.backendApiUrl}/recipes/${id}`).pipe(
       catchError(error => {
-        console.error('Erro ao deletar receita no backend:', error);
+/*************  ✨ Windsurf Command ⭐  *************/
+  /**
+   * Deleta uma receita do backend com o ID especificado
+   * @param id O ID da receita a ser deletada
+   * @returns Um Observable que emite um objeto any com o resultado da operação
+   *          Caso haja um erro, ele irá propagá-lo para que o componente possa lidar com ele
+   */
+/*******  e6c7d803-d17c-42df-983d-a4aa6fc8e77e  *******/        console.error('Erro ao deletar receita no backend:', error);
         throw error;
       })
     );
