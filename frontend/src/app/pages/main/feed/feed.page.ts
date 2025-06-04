@@ -14,12 +14,6 @@ import { Router } from '@angular/router';
 // Importe a interface correta para o item da lista de receitas
 import { RecipeListItem } from '../../../../app/interfaces/recipe.interfaces';
 
-// A interface ReceitaComId será substituída por RecipeListItem
-// interface ReceitaComId {
-//   id: string;
-//   recipe: any;
-// }
-
 @Component({
   selector: 'app-feed',
   standalone: true,
@@ -36,7 +30,6 @@ import { RecipeListItem } from '../../../../app/interfaces/recipe.interfaces';
   styleUrls: ['./feed.page.scss'],
 })
 export class FeedPage implements OnInit, OnDestroy {
-  // Use a nova interface RecipeListItem
   receitas: RecipeListItem[] = [];
   loading = true;
   error: string | null = null;
@@ -52,10 +45,7 @@ export class FeedPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.carregarReceitas();
     this.updateSaudacao();
-    // O authService.getUserName() pode retornar null inicialmente,
-    // então a subscrição ao userName$ é mais robusta.
-    // this.userName = this.authService.getUserName();
-
+    
     this.timeSubscription = interval(60000).subscribe(() => {
       this.updateSaudacao();
     });
@@ -72,7 +62,7 @@ export class FeedPage implements OnInit, OnDestroy {
   }
 
   updateSaudacao(): void {
-    const now = new Date(Date.now() - (3 * 60 * 60 * 1000)); // Ajuste para o horário de Brasília (UTC-3)
+    const now = new Date(Date.now() - (3 * 60 * 60 * 1000));
     const hour = now.getHours();
 
     if (hour >= 0 && hour < 12) {
@@ -87,37 +77,43 @@ export class FeedPage implements OnInit, OnDestroy {
   carregarReceitas() {
     this.loading = true;
     this.error = null;
-    // CHAME O NOVO MÉTODO getRecipes() DO SEU RECEITASERVICE
-    this.receitaService.getRecipes().subscribe( // `getRecipes()` agora retorna RecipeListItem[]
-      (data: RecipeListItem[]) => { // Tipagem explícita para clareza
+    
+    // <<<<< CORREÇÃO AQUI: Chamando getRecipes() >>>>>
+    this.receitaService.getRecipes().subscribe({
+      next: (data: RecipeListItem[]) => {
         console.log('Dados das receitas carregados:', data);
         data.forEach(item => {
-          console.log('Item da receita:', item); // Verifique a estrutura de cada item
+          console.log('Item da receita:', item);
         });
         this.receitas = data;
         this.loading = false;
       },
-      (error) => {
-        this.error = error.message || 'Erro ao carregar receitas.';
+      error: (error: unknown) => {
+        console.error('Erro ao carregar receitas:', error);
+        let errorMessage = 'Não foi possível carregar as receitas.';
+        if (error instanceof Error) {
+          errorMessage += ` Detalhes: ${error.message}`;
+        } else if (typeof error === 'object' && error !== null && 'message' in error) {
+          errorMessage += ` Detalhes: ${(error as any).message}`;
+        } else if (typeof error === 'string') {
+          errorMessage += ` Detalhes: ${error}`;
+        }
+        this.error = errorMessage;
         this.loading = false;
-        console.error('Erro ao carregar receitas:', error); // Log do erro completo
       }
-    );
+    });
   }
 
   handleCategoryClick(category: string) {
     console.log(`Categoria selecionada: ${category}`);
-    // Aqui você pode adicionar a lógica para filtrar as receitas por categoria
-    // e talvez navegar para uma página específica de categorias.
-    // Exemplo:
-    // this.receitaService.getRecipes(undefined, category).subscribe(
-    //   (data) => { this.receitas = data; this.loading = false; },
-    //   (error) => { this.error = error.message; this.loading = false; }
-    // );
   }
 
   openReceitaDetails(receitaId: string) {
     console.log('Função openReceitaDetails chamada com ID:', receitaId);
     this.router.navigate(['/receita-detalhe', receitaId]);
+  }
+
+  goToCreateRecipe(): void {
+    this.router.navigate(['/criar-receita']);
   }
 }

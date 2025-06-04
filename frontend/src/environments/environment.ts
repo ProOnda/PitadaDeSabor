@@ -13,7 +13,7 @@ export const environment = {
     appId: "1:410786000883:web:640b42b79bb07eb6582c86",
     measurementId: "G-ZH8CSWPBKW"
   },
-  backendApiUrl: 'http://localhost:3000/api',
+  backendApiUrl: 'http://localhost:3000',
 };
 /*
  * For easier debugging in development mode, you can import the following file

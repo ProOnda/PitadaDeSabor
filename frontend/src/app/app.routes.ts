@@ -82,5 +82,8 @@ export const routes: Routes = [
     path: 'recipe-creation',
     loadComponent: () => import('./pages/main/recipe-creation/recipe-creation.page').then( m => m.RecipeCreationPage)
   },
-
+  {
+    path: 'recipe-creation/:id', // <<<<< ESTA ROTA ESTÁ CORRETA NO SEU app.routes.ts >>>>>
+    loadComponent: () => import('./pages/main/recipe-creation/recipe-creation.page').then(m => m.RecipeCreationPage)
+  },
 ];

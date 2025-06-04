@@ -3,12 +3,13 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PageHeaderComponent } from '../../../components/item-displays/page-header/page-header.component';
 import { ReceitaService } from '../../../services/receita/receita.service';
-import { RecipeCreationPayload, IngredientPayload } from '../../../interfaces/recipe.interfaces';
-import { AuthService } from 'src/app/services/auth/auth.service'; // Ajuste o caminho para o seu AuthService
-import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs'; // <<<<< IMPORTANTE: Importar firstValueFrom
+import { RecipeCreationPayload, IngredientPayload, RecipeDetail } from '../../../interfaces/recipe.interfaces';
+import { AuthService } from 'src/app/services/auth/auth.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
-// Interfaces
+import { firstValueFrom, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
 interface IngredientForm {
   name: string;
   quantity: number | null;
@@ -29,7 +30,8 @@ interface StepForm {
     FormsModule,
     PageHeaderComponent,
   ],
-  templateUrl: './recipe-creation.page.html',
+  // <<<<< CORREÇÃO AQUI: template URL correto >>>>>
+  templateUrl: './recipe-creation.page.html', // Corrigido para o caminho correto do template
   styleUrls: ['./recipe-creation.page.scss']
 })
 export class RecipeCreationPage implements OnInit {
@@ -43,20 +45,25 @@ export class RecipeCreationPage implements OnInit {
   ingredients: IngredientForm[] = [];
   preparationSteps: StepForm[] = [];
 
-  // Propriedades de imagem (mantidas como estavam no seu código)
   imagemPreviewUrl: string | ArrayBuffer | null = null;
   selectedFile: File | null = null;
 
-  currentUserUid: string | null = null; // ID do usuário logado
+  currentUserUid: string | null = null;
+
+  editingRecipeId: string | null = null;
+  isEditMode: boolean = false;
+  pageTitle: string = 'Criar Uma Receita';
+  saveButtonText: string = 'Criar Receita';
 
   private location = inject(Location);
   private receitaService = inject(ReceitaService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   constructor() { }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     if (this.ingredients.length === 0) {
       this.ingredients.push({ name: '', quantity: null, unitId: '', foodTypeId: '' });
     }
@@ -64,9 +71,6 @@ export class RecipeCreationPage implements OnInit {
       this.addPreparationStep();
     }
 
-    // Subscrever para obter o UID do usuário logado
-    // Este `subscribe` ainda é bom para manter o `currentUserUid` atualizado em tempo real,
-    // mas o `saveRecipe` não dependerá mais apenas dele estar pronto aqui.
     console.log('FRONTEND - ngOnInit: Iniciando subscrição ao authState...');
     this.authService.authState.subscribe((user: any | null) => {
       if (user) {
@@ -77,8 +81,77 @@ export class RecipeCreationPage implements OnInit {
         console.warn('FRONTEND - ngOnInit: Usuário NÃO LOGADO (currentUserUid é null via subscribe).');
       }
     });
-
     console.log('FRONTEND - ngOnInit: currentUserUid no final do ngOnInit (pode ser null inicialmente):', this.currentUserUid);
+
+    this.editingRecipeId = this.route.snapshot.paramMap.get('id');
+    if (this.editingRecipeId) {
+      this.isEditMode = true;
+      this.pageTitle = 'Editar Receita';
+      this.saveButtonText = 'Atualizar Receita';
+      console.log(`FRONTEND - ngOnInit: Modo de edição detectado para receita ID: ${this.editingRecipeId}`);
+
+      try {
+        const recipeData: RecipeDetail | undefined = await firstValueFrom(
+          this.receitaService.buscarReceitaPorIdComDetalhes(this.editingRecipeId).pipe(
+            catchError((error) => {
+              console.error('FRONTEND - ngOnInit: Erro ao buscar receita para edição:', error);
+              alert('Erro ao carregar os dados da receita para edição. Por favor, tente novamente.');
+              this.router.navigate(['/feed']);
+              return of(undefined);
+            })
+          )
+        );
+
+        if (recipeData && recipeData.recipe) {
+          this.populateForm(recipeData.recipe);
+          console.log('FRONTEND - ngOnInit: Formulário preenchido com dados da receita.');
+        } else {
+          console.warn('FRONTEND - ngOnInit: Receita não encontrada ou dados inválidos para edição.');
+          alert('Receita não encontrada ou dados inválidos para edição.');
+          this.router.navigate(['/feed']);
+        }
+      } catch (error) {
+        console.error('FRONTEND - ngOnInit: Erro fatal ao buscar receita para edição:', error);
+        alert('Ocorreu um erro inesperado ao carregar a receita para edição.');
+        this.router.navigate(['/feed']);
+      }
+    } else {
+      console.log('FRONTEND - ngOnInit: Modo de criação de nova receita.');
+    }
+  }
+
+  private populateForm(recipe: RecipeDetail['recipe']): void {
+    if (!recipe) return;
+
+    this.recipeTitle = recipe.recipeName || '';
+    this.recipeDescription = recipe.description || '';
+    this.recipeTimeId = recipe.timeId || '';
+    this.recipeDifficultyId = recipe.difficultyId || '';
+    this.recipeCategoryId = recipe.categoryId || '';
+
+    this.ingredients = [];
+    if (recipe.ingredients && recipe.ingredients.length > 0) {
+      this.ingredients = recipe.ingredients.map(ing => ({
+        name: ing.name || '',
+        quantity: ing.quantity || null,
+        unitId: ing.unitId || '',
+        foodTypeId: ing.foodTypeId || '',
+        fdcId: ing.fdcId || undefined
+      }));
+    } else {
+      this.addIngredient();
+    }
+
+    this.preparationSteps = [];
+    if (recipe.preparationSteps && recipe.preparationSteps.length > 0) {
+      this.preparationSteps = recipe.preparationSteps.map(step => ({ description: step || '' }));
+    } else {
+      this.addPreparationStep();
+    }
+
+    if (recipe.photoUrl) {
+      this.imagemPreviewUrl = recipe.photoUrl;
+    }
   }
 
   onBackClick(): void {
@@ -130,7 +203,6 @@ export class RecipeCreationPage implements OnInit {
     return `Descreva o ${ordinal} passo da receita...`;
   }
 
-  // MÉTODO onFileSelected (MANTIDO COMO ESTAVA NO SEU CÓDIGO)
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
@@ -152,9 +224,6 @@ export class RecipeCreationPage implements OnInit {
   async saveRecipe(): Promise<void> {
     console.log('FRONTEND - saveRecipe: Função saveRecipe iniciada.');
 
-    // <<<<<<< NOVO: GARANTIR QUE currentUserUid ESTEJA DISPONÍVEL >>>>>>>
-    // Se currentUserUid ainda não estiver definido (por causa da assincronicidade),
-    // esperamos que o authService.authState emita seu primeiro valor.
     if (!this.currentUserUid) {
       console.log('FRONTEND - saveRecipe: currentUserUid é null. Aguardando authState...');
       try {
@@ -163,7 +232,7 @@ export class RecipeCreationPage implements OnInit {
           this.currentUserUid = user.uid;
           console.log('FRONTEND - saveRecipe: currentUserUid OBTIDO APÓS AGUARDAR:', this.currentUserUid);
         } else {
-          alert('Erro: Usuário não logado. Por favor, faça login para criar uma receita.');
+          alert('Erro: Usuário não logado. Por favor, faça login para criar ou editar uma receita.');
           console.error('FRONTEND - saveRecipe: Usuário não logado após aguardar authState.');
           return;
         }
@@ -174,32 +243,13 @@ export class RecipeCreationPage implements OnInit {
       }
     }
 
-    console.log('FRONTEND - saveRecipe: currentUserUid FINAL ANTES DE ENVIAR:', this.currentUserUid); // LOG CRÍTICO
+    console.log('FRONTEND - saveRecipe: currentUserUid FINAL ANTES DE ENVIAR:', this.currentUserUid);
 
-    // Validações iniciais
-    if (!this.recipeTitle.trim()) {
-      alert('Por favor, preencha o título da receita.');
-      return;
-    }
-    if (!this.recipeCategoryId) {
-        alert('Por favor, selecione a categoria da receita.');
-        return;
-    }
-    if (!this.recipeDifficultyId) {
-        alert('Por favor, selecione a dificuldade da receita.');
-        return;
-    }
-    if (!this.recipeTimeId) {
-        alert('Por favor, selecione o tempo de preparo da receita.');
-        return;
-    }
-    
-    // Esta validação agora é redundante se o bloco acima funcionar, mas mantida por segurança.
-    if (!this.currentUserUid) {
-        alert('Erro: Usuário não logado. Por favor, faça login para criar uma receita.');
-        console.error('FRONTEND - saveRecipe: currentUserUid é NULO (validação final). Não é possível criar receita.');
-        return;
-    }
+    if (!this.recipeTitle.trim()) { alert('Por favor, preencha o título da receita.'); return; }
+    if (!this.recipeCategoryId) { alert('Por favor, selecione a categoria da receita.'); return; }
+    if (!this.recipeDifficultyId) { alert('Por favor, selecione a dificuldade da receita.'); return; }
+    if (!this.recipeTimeId) { alert('Por favor, selecione o tempo de preparo da receita.'); return; }
+    if (!this.currentUserUid) { alert('Erro: Usuário não logado. Por favor, faça login para criar ou editar uma receita.'); console.error('FRONTEND - saveRecipe: currentUserUid é NULO (validação final). Não é possível criar receita.'); return; }
 
     for (const ingredient of this.ingredients) {
       if (!ingredient.name.trim() || ingredient.quantity === null || ingredient.quantity <= 0 || !ingredient.unitId.trim() || !ingredient.foodTypeId.trim()) {
@@ -217,13 +267,18 @@ export class RecipeCreationPage implements OnInit {
         return;
     }
 
-    // LÓGICA DE IMAGEM (MANTIDA COMO ESTAVA NO SEU CÓDIGO)
     let photoUrlToSave: string | null = null;
     if (this.selectedFile) {
         console.log('Simulando upload de imagem. Nome do arquivo:', this.selectedFile.name);
         photoUrlToSave = `https://exemplo.com/path/to/uploaded/images/${this.selectedFile.name}`;
     } else {
-        photoUrlToSave = 'https://via.placeholder.com/150?text=No+Image';
+        if (this.isEditMode && this.imagemPreviewUrl && typeof this.imagemPreviewUrl === 'string') {
+            photoUrlToSave = this.imagemPreviewUrl;
+            console.log('FRONTEND - saveRecipe: Modo de edição, mantendo imagem existente:', photoUrlToSave);
+        } else {
+            photoUrlToSave = 'https://via.placeholder.com/150?text=No+Image';
+            console.log('FRONTEND - saveRecipe: Nenhuma imagem selecionada. Usando placeholder:', photoUrlToSave);
+        }
     }
 
     const ingredientsPayload: IngredientPayload[] = this.ingredients.map(ing => ({
@@ -237,7 +292,7 @@ export class RecipeCreationPage implements OnInit {
       recipeName: this.recipeTitle.trim(),
       description: this.recipeDescription.trim(),
       photoUrl: photoUrlToSave,
-      userId: this.currentUserUid!, // <<< ESTE É O ID QUE SERÁ ENVIADO
+      userId: this.currentUserUid!,
       categoryId: this.recipeCategoryId,
       difficultyId: this.recipeDifficultyId,
       timeId: this.recipeTimeId,
@@ -249,19 +304,27 @@ export class RecipeCreationPage implements OnInit {
     console.log('FRONTEND - saveRecipe: userId NO PAYLOAD FINAL:', recipeData.userId);
 
     try {
-      const response = await this.receitaService.saveRecipe(recipeData).toPromise();
-      console.log('FRONTEND - saveRecipe: Receita criada com sucesso!', response);
-      alert('Receita criada com sucesso!');
+      let response;
+      if (this.isEditMode && this.editingRecipeId) {
+        console.log(`FRONTEND - saveRecipe: Chamando updateRecipe para ID: ${this.editingRecipeId}`);
+        response = await firstValueFrom(this.receitaService.updateRecipe(this.editingRecipeId, recipeData));
+        alert('Receita atualizada com sucesso!');
+      } else {
+        console.log('FRONTEND - saveRecipe: Chamando saveRecipe para nova receita.');
+        response = await this.receitaService.saveRecipe(recipeData).toPromise();
+        alert('Receita criada com sucesso!');
+      }
+      console.log('FRONTEND - saveRecipe: Operação de receita concluída!', response);
       this.router.navigate(['/feed']);
     } catch (error) {
-      console.error('FRONTEND - saveRecipe: Erro ao criar receita:', error);
-      alert('Erro ao criar receita. Verifique o console do navegador e o terminal do backend para mais detalhes.');
+      console.error('FRONTEND - saveRecipe: Erro ao salvar/atualizar receita:', error);
+      alert('Erro ao salvar/atualizar receita. Verifique o console do navegador e o terminal do backend para mais detalhes.');
     }
   }
 
   cancelRecipe(): void {
-    console.log('FRONTEND - Criação de receita cancelada.');
-    alert('Criação de receita cancelada.');
+    console.log('FRONTEND - Criação/Edição de receita cancelada.');
+    alert('Criação/Edição de receita cancelada.');
     this.onBackClick();
   }
 }

@@ -6,20 +6,33 @@ import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
-// Importe as interfaces atualizadas (incluindo as novas de payload)
+// Importe as interfaces atualizadas
 import { RecipeDetail, RecipeListItem, RecipeContent, IngredientDetail, RecipeCreationPayload } from '../../interfaces/recipe.interfaces';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ReceitaService {
-  private readonly backendApiUrl = environment.backendApiUrl;
+  // A URL base do seu backend (ex: 'http://localhost:3000')
+  private readonly backendBaseUrl = environment.backendApiUrl;
+
+  // A URL completa para as rotas de receita, que o backend espera.
+  // Se o seu server.js tem `app.use('/api/recipes', recipeRoutes);`,
+  // então a URL completa é `http://localhost:3000/api/recipes`.
+  private readonly recipesApiBaseUrl = `${this.backendBaseUrl}/api/recipes`;
+
   private http = inject(HttpClient);
 
   constructor() { }
 
+  /**
+   * Busca os detalhes de uma receita específica pelo ID.
+   * @param id O ID da receita.
+   * @returns Um Observable que emite os detalhes da receita ou undefined em caso de erro.
+   */
   buscarReceitaPorIdComDetalhes(id: string): Observable<RecipeDetail | undefined> {
-    return this.http.get<RecipeDetail>(`${this.backendApiUrl}/recipes/${id}`).pipe(
+    // Ex: GET http://localhost:3000/api/recipes/SEU_ID_DA_RECEITA
+    return this.http.get<RecipeDetail>(`${this.recipesApiBaseUrl}/${id}`).pipe(
       catchError(error => {
         console.error('Erro ao buscar receita por ID do backend:', error);
         return of(undefined);
@@ -27,6 +40,13 @@ export class ReceitaService {
     );
   }
 
+  /**
+   * Lista todas as receitas, com filtros opcionais.
+   * @param foodType Filtra por tipo de alimento.
+   * @param categoryId Filtra por ID de categoria.
+   * @param userId Filtra por ID do usuário criador.
+   * @returns Um Observable que emite uma lista de itens de receita.
+   */
   getRecipes(foodType?: string, categoryId?: string, userId?: string): Observable<RecipeListItem[]> {
     let params = new HttpParams();
     if (foodType) {
@@ -39,7 +59,8 @@ export class ReceitaService {
         params = params.set('userId', userId);
     }
 
-    return this.http.get<RecipeListItem[]>(`${this.backendApiUrl}/recipes`, { params }).pipe(
+    // Ex: GET http://localhost:3000/api/recipes?foodType=Frutas
+    return this.http.get<RecipeListItem[]>(this.recipesApiBaseUrl, { params }).pipe(
       catchError(error => {
         console.error('Erro ao listar receitas do backend:', error);
         return of([]);
@@ -47,41 +68,47 @@ export class ReceitaService {
     );
   }
 
-  // **AJUSTE AQUI**: A interface de entrada deve ser RecipeCreationPayload
-  saveRecipe(recipeData: RecipeCreationPayload & { id?: string }): Observable<{ message: string; recipeId?: string }> {
-    if (recipeData.id) { // Atualizar
-      const recipeId = recipeData.id;
-      // Não envie o ID no corpo da requisição para PUT
-      const dataToSend = { ...recipeData };
-      delete dataToSend.id;
-      return this.http.put<{ message: string }>(`${this.backendApiUrl}/recipes/${recipeId}`, dataToSend).pipe(
-        catchError(error => {
-          console.error('Erro ao atualizar receita no backend:', error);
-          throw error;
-        })
-      );
-    } else { // Criar
-      // O backend espera o payload RecipeCreationPayload, que não tem 'id'
-      return this.http.post<{ message: string; recipeId?: string }>(`${this.backendApiUrl}/recipes`, recipeData).pipe(
-        catchError(error => {
-          console.error('Erro ao criar receita no backend:', error);
-          throw error;
-        })
-      );
-    }
+  /**
+   * Salva uma nova receita (POST).
+   * @param recipeData Os dados da receita a serem salvos.
+   * @returns Um Observable que emite uma mensagem de sucesso e o ID da receita.
+   */
+  saveRecipe(recipeData: RecipeCreationPayload): Observable<{ message: string; recipeId?: string }> {
+    // Ex: POST http://localhost:3000/api/recipes
+    return this.http.post<{ message: string; recipeId?: string }>(this.recipesApiBaseUrl, recipeData).pipe(
+      catchError(error => {
+        console.error('Erro ao criar receita no backend:', error);
+        throw error;
+      })
+    );
   }
 
-  deleteRecipe(id: string): Observable<any> {
-    return this.http.delete(`${this.backendApiUrl}/recipes/${id}`).pipe(
-      catchError(error => {
-/*************  ✨ Windsurf Command ⭐  *************/
   /**
-   * Deleta uma receita do backend com o ID especificado
-   * @param id O ID da receita a ser deletada
-   * @returns Um Observable que emite um objeto any com o resultado da operação
-   *          Caso haja um erro, ele irá propagá-lo para que o componente possa lidar com ele
+   * Atualiza uma receita existente (PUT).
+   * @param recipeId O ID da receita a ser atualizada.
+   * @param recipeData Os dados da receita a serem atualizados.
+   * @returns Um Observable que emite uma mensagem de sucesso.
    */
-/*******  e6c7d803-d17c-42df-983d-a4aa6fc8e77e  *******/        console.error('Erro ao deletar receita no backend:', error);
+  updateRecipe(recipeId: string, recipeData: RecipeCreationPayload): Observable<{ message: string }> {
+    // Ex: PUT http://localhost:3000/api/recipes/:id
+    return this.http.put<{ message: string }>(`${this.recipesApiBaseUrl}/${recipeId}`, recipeData).pipe(
+      catchError(error => {
+        console.error('Erro ao atualizar receita no backend:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Deleta uma receita do backend com o ID especificado.
+   * @param id O ID da receita a ser deletada.
+   * @returns Um Observable que emite um objeto any com o resultado da operação.
+   */
+  deleteRecipe(id: string): Observable<any> {
+    // Ex: DELETE http://localhost:3000/api/recipes/:id
+    return this.http.delete(`${this.recipesApiBaseUrl}/${id}`).pipe(
+      catchError(error => {
+        console.error('Erro ao deletar receita no backend:', error);
         throw error;
       })
     );

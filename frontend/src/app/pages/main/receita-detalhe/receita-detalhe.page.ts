@@ -1,14 +1,14 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ReceitaService } from '../../../services/receita/receita.service'; // Ajustado para o caminho correto do serviço
+import { ReceitaService } from '../../../services/receita/receita.service';
 import { PageHeaderComponent } from '../../../components/item-displays/page-header/page-header.component';
 import { InfoItemComponent } from '../../../components/item-displays/info-item/info-item.component';
 import { Observable, of, Subscription } from 'rxjs';
 import { switchMap, catchError, map, tap } from 'rxjs/operators';
 
-// Importe as interfaces do arquivo centralizado
 import { RecipeDetail, IngredientDetail } from '../../../interfaces/recipe.interfaces';
+import { AuthService } from 'src/app/services/auth/auth.service';
 
 @Component({
   selector: 'app-receita-detalhe',
@@ -29,17 +29,25 @@ export class ReceitaDetalhePage implements OnInit, OnDestroy {
   isFavorite: boolean = false;
   showIngredients: boolean = true;
 
+  loggedInUserUid: string | null = null;
+
   private route = inject(ActivatedRoute);
   private receitaService = inject(ReceitaService);
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   private recipeSubscription: Subscription | undefined;
+  private authSubscription: Subscription | undefined;
 
   constructor() { }
 
   ngOnInit() {
-    // Inscreve-se nos parâmetros da rota para obter o ID da receita
-    this.route.paramMap.pipe(
+    this.authSubscription = this.authService.authState.subscribe(user => {
+      this.loggedInUserUid = user ? user.uid : null;
+      console.log('ReceitaDetalhePage: UID do usuário logado:', this.loggedInUserUid);
+    });
+
+    this.recipeSubscription = this.route.paramMap.pipe(
       map(params => params.get('id')),
       tap(id => {
         this.receitaId = id;
@@ -59,7 +67,7 @@ export class ReceitaDetalhePage implements OnInit, OnDestroy {
                 this.error = 'Receita não encontrada ou dados inválidos.';
               }
             }),
-            catchError((error: unknown) => { // Correção: especifica o tipo 'unknown'
+            catchError((error: unknown) => {
               console.error('Erro ao carregar detalhes da receita:', error);
               let errorMessage = 'Não foi possível carregar os detalhes da receita.';
               if (error instanceof Error) {
@@ -87,13 +95,14 @@ export class ReceitaDetalhePage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // É uma boa prática desinscrever-se de subscrições manuais
     if (this.recipeSubscription) {
       this.recipeSubscription.unsubscribe();
     }
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
   }
 
-  // Método para recarregar os detalhes da receita (usado no botão de tentar novamente)
   loadRecipeDetails(): void {
     if (this.receitaId) {
       this.loading = true;
@@ -105,7 +114,7 @@ export class ReceitaDetalhePage implements OnInit, OnDestroy {
             this.error = 'Receita não encontrada ou dados inválidos.';
           }
         }),
-        catchError((error: unknown) => { // Correção: especifica o tipo 'unknown'
+        catchError((error: unknown) => {
           console.error('Erro ao recarregar detalhes da receita:', error);
           let errorMessage = 'Não foi possível recarregar os detalhes da receita.';
           if (error instanceof Error) {
@@ -128,37 +137,34 @@ export class ReceitaDetalhePage implements OnInit, OnDestroy {
     }
   }
 
-  // Suas funções de interação
   verificarSeFavorita() {
-    this.isFavorite = Math.random() < 0.5; // Lógica de exemplo
+    this.isFavorite = Math.random() < 0.5;
   }
 
   toggleFavorite() {
     this.isFavorite = !this.isFavorite;
     console.log('Favorito toggled:', this.isFavorite);
-    // Implemente a lógica de API para salvar/remover favorito aqui
   }
 
   addToCart() {
     console.log('Adicionar ao carrinho clicado');
-    // Implemente a lógica de adicionar ao carrinho aqui
   }
 
   editRecipe(id: string): void {
-    console.log('Editar receita:', id);
-    this.router.navigate(['/edit-recipe', id]); // Exemplo de navegação para tela de edição
+    console.log('Navegando para editar receita:', id);
+    // <<<<< MUDANÇA AQUI: NAVEGA PARA A ROTA DE EDIÇÃO COM O ID >>>>>
+    this.router.navigate(['/recipe-creation', id]);
   }
 
   deleteRecipe(id: string): void {
     console.log('Deletar receita:', id);
-    // Exemplo de lógica de deleção com confirmação (você pode usar um modal customizado)
-    if (confirm('Tem certeza que deseja deletar esta receita?')) { // Usar modal customizado em apps reais
+    if (confirm('Tem certeza que deseja deletar esta receita?')) {
       this.receitaService.deleteRecipe(id).subscribe({
-        next: () => { // Usando next para sucesso
+        next: () => {
           console.log('Receita deletada com sucesso!');
-          this.router.navigate(['/feed']); // Navegar de volta para o feed após deletar
+          this.router.navigate(['/feed']);
         },
-        error: (error: unknown) => { // Correção: especifica o tipo 'unknown' no erro
+        error: (error: unknown) => {
           console.error('Erro ao deletar receita:', error);
           let errorMessage = 'Erro desconhecido ao deletar a receita.';
           if (error instanceof Error) {

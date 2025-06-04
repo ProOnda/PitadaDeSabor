@@ -16,4 +16,7 @@ router.put('/:id', recipeController.updateRecipe);
 // Rota para listar receitas (com filtros opcionais)
 router.get('/', recipeController.listRecipes);
 
+// Rota para deletar uma receita
+router.delete('/:id', recipeController.deleteRecipe);
+
 module.exports = router;

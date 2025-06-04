@@ -1,6 +1,7 @@
 <div class="criacao-receita-page-container">
     <div class="content">
-        <app-page-header [title]="'Criar Uma Receita'" [showBackButton]="true" (backButtonClick)="onBackClick()"></app-page-header>
+        <!-- <<<<< TÍTULO DINÂMICO DA PÁGINA >>>>> -->
+        <app-page-header [title]="pageTitle" [showBackButton]="true" (backButtonClick)="onBackClick()"></app-page-header>
 
         <div class="criacao-receita-conteudo">
             <div class="criar-receita-esquerda">
@@ -23,7 +24,7 @@
 
                 <div class="grupo-formulario">
                     <div class="input-container-custom">
-                        <input type="text" id="tituloReceita" name="tituloReceita" placeholder="Título" [(ngModel)]="recipeTitle"> 
+                        <input type="text" id="tituloReceita" name="tituloReceita" placeholder="Título" [(ngModel)]="recipeTitle" required> 
                     </div>
                 </div>
 
@@ -89,7 +90,7 @@
 
                             <div class="grupo-formulario quantidade-input">
                                 <div class="input-container-custom">
-                                    <input type="number" [(ngModel)]="ingredient.quantity" name="quantidade-{{i}}" placeholder="Qtd" min="0" step="any" [attr.id]="'quantidade-' + i"> 
+                                    <input type="number" [(ngModel)]="ingredient.quantity" name="quantidade-{{i}}" placeholder="Qtd" min="0" step="any" [attr.id]="'quantidade-' + i" required> 
                                 </div>
                             </div>
 
@@ -149,6 +150,7 @@
                                 name="passo-{{i}}" 
                                 [attr.id]="'passo-' + i" 
                                 placeholder="{{ getStepPlaceholder(i) }}" 
+                                required
                             />
                         </div>
                         <button type="button" (click)="removePreparationStep(i)" class="botao-remover" *ngIf="preparationSteps.length > 1">
@@ -161,8 +163,9 @@
                     </button>
                 </div>
             </div>
+            <!-- <<<<< TEXTO DO BOTÃO DINÂMICO >>>>> -->
             <button class="botao-criar-receita" (click)="saveRecipe()">
-                Criar Receita
+                {{ saveButtonText }}
             </button>
         </div>
     </div>
