@@ -1,0 +1,71 @@
+.option-section-container {
+  width: 100%; // Ajusta para a largura do contêiner pai
+  margin: 30px 0;
+  box-sizing: border-box; // Inclui padding na largura total
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px; // Espaço entre o cabeçalho e as opções
+
+  .icon-wrapper {
+    width: 18px;
+    height: 18px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    // Estilo para o ícone (pode ajustar a cor conforme necessário)
+    i {
+      font-size: 16px; // Tamanho do ícone
+      color: #AD2F33; // Cor do ícone (vermelho do seu exemplo)
+    }
+  }
+
+  .section-title {
+    color: #F0F0F0;
+    font-size: 14px;
+    white-space: nowrap; // Evita quebra de linha
+  }
+}
+
+.options-wrapper {
+  display: flex;
+  flex-wrap: wrap; // Permite que as opções quebrem para a próxima linha se não houver espaço
+  gap: 15px; // Espaçamento entre as opções
+}
+
+.option-item {
+  background: #1D1D19;
+  border-radius: 8px;
+  padding: 10px 15px; // Padding interno para o texto e o fundo
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease; // Transição suave
+
+  &:hover {
+    background-color: darken(#1D1D19, 5%); // Escurece um pouco ao passar o mouse
+  }
+
+  &:active {
+    transform: scale(0.98); // Pequena escala para feedback de clique
+  }
+
+  &.selected {
+    background-color: #67161F; // Cor de destaque para a opção selecionada
+    color: #FFFFFF;
+    font-weight: 700; // Opcional: negrito para selecionado
+  }
+
+  .option-label {
+    color: #F0F0F0;
+    font-size: 12px;
+    white-space: nowrap; // Evita quebra de linha dentro do item
+  }
+}

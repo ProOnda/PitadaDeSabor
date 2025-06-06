@@ -1,0 +1,57 @@
+<ion-content [fullscreen]="true" class="feed-page">
+  <div class="feed-page-content">
+    <div class="header">
+      <div class="texts">
+        <p class="greeting">{{ saudacao }}, {{ userName || 'Usuário' }}!</p>
+        <p class="question">Qual Vai Ser A Receita Do Dia?</p>
+      </div>
+    </div>
+
+    <!-- <<<<< MUDANÇA AQUI: Adicionando o evento (filterClick) >>>>> -->
+    <app-search-bar
+      (searchChange)="handleSearchChange($event)"
+      (filterClick)="goToFilterPage()"
+    ></app-search-bar>
+
+    <div class="categories-container">
+      <app-category-item
+        label="Lanches"
+        (categoryClick)="handleCategoryClick($event)"
+      >
+        <i class="bi bi-cup-straw"></i>
+      </app-category-item>
+      <app-category-item
+        label="Refeições"
+        (categoryClick)="handleCategoryClick($event)"
+      >
+        <i class="bi bi-egg-fried"></i>
+      </app-category-item>
+      <app-category-item
+        label="Sobremesas"
+        (categoryClick)="handleCategoryClick($event)"
+      >
+        <i class="bi bi-cake"></i>
+      </app-category-item>
+    </div>
+
+    <app-item-list-section title="As Mais Recentes" iconClass="bi bi-plus-lg"></app-item-list-section>
+
+    <div *ngIf="loading" class="loading">Carregando receitas...</div>
+    <div *ngIf="error" class="error">Erro: {{ error }}</div>
+
+    <div *ngIf="!loading && !error && receitas.length === 0">
+      Nenhuma receita encontrada.
+    </div>
+
+    <div *ngIf="!loading && !error && receitas.length > 0" class="receitas-container">
+      <app-receita-card-horizontal
+        *ngFor="let receitaComId of receitas"
+        [receita]="receitaComId"
+        (click)="openReceitaDetails(receitaComId.id)"
+      ></app-receita-card-horizontal>
+    </div>
+
+    <app-feed-menu></app-feed-menu>
+
+  </div>
+</ion-content>

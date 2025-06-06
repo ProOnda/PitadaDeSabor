@@ -1,0 +1,19 @@
+<div class="option-section-container">
+  <div class="section-header">
+    <div class="icon-wrapper">
+      <i class="{{ iconClass }}"></i>
+    </div>
+    <div class="section-title">{{ title }}</div>
+  </div>
+
+  <div class="options-wrapper">
+    <div
+      *ngFor="let option of options"
+      class="option-item"
+      [class.selected]="isSelected(option.value)"
+      (click)="onOptionClick(option.value)"
+    >
+      <div class="option-label">{{ option.label }}</div>
+    </div>
+  </div>
+</div>
