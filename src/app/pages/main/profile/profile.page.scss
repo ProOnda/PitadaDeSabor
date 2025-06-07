@@ -1,0 +1,183 @@
+/* Base para toda a página de perfil */
+.profile-page {
+  --background: #11110F; /* Fundo escuro como na imagem */
+}
+
+.container {
+  max-width: 85%;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Estilos para o cabeçalho personalizado */
+.page-header-container-custom {
+  margin-bottom: 20px;
+  app-page-header {
+    --page-header-title-color: #F0F0F0;
+    --page-header-back-button-color: #F0F0F0;
+  }
+}
+
+/* Conteúdo principal do perfil */
+.profile-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 20px;
+}
+
+/* Seção do Perfil do Usuário */
+.user-profile-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.profile-picture-container {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 15px;
+  border: 2px solid #F0DBBE; /* Borda ao redor da imagem de perfil */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #2a2a2a; /* Fundo para o placeholder */
+}
+
+.profile-picture {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-name {
+  color: #F0F0F0;
+  font-size: 1.5em;
+  font-family: 'Mulish', sans-serif;
+  font-weight: 700;
+  margin: 0 0 5px 0;
+}
+
+.posts-count {
+  color: #F0F0F0;
+  font-size: 0.9em;
+  font-family: 'Mulish', sans-serif;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.section-title {
+  width: 100%;
+  color: #F0DBBE;
+  font-size: 1.2em;
+  font-family: 'Mulish', sans-serif;
+  font-weight: 700;
+  text-align: left;
+  margin-bottom: 20px;
+  padding-left: 15px; /* Alinha com o conteúdo do card */
+}
+
+
+/* Mensagens de status (carregando, erro, sem receitas) */
+.loading-message,
+.error-message,
+.no-recipes-message {
+  color: #f0f0f0;
+  font-size: 1.1em;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin-top: 20px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.error-message {
+  color: var(--ion-color-danger);
+  background-color: var(--ion-color-danger-tint);
+  border: 1px solid var(--ion-color-danger);
+}
+
+.no-recipes-message {
+  color: var(--ion-color-primary-shade);
+  background-color: var(--ion-color-primary-tint);
+  border: 1px solid var(--ion-color-primary);
+}
+
+
+/* Grid de receitas criadas pelo usuário */
+.recipes-grid {
+  display: grid;
+  gap: 30px;
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(311px, 1fr)); /* Mantido para consistência */
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Estilo individual do card de receita para o perfil */
+.recipe-card {
+  width: 100%;
+  background-color: #1D1D19; /* Fundo do card */
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.recipe-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+.recipe-image-container {
+  width: 100%;
+  height: 200px; /* Altura fixa para a imagem do card no perfil */
+  overflow: hidden;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+}
+
+.recipe-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.recipe-info {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.recipe-title {
+  color: #F0F0F0;
+  font-size: 1.1em;
+  font-family: 'Mulish', sans-serif;
+  font-weight: 700;
+  margin: 0;
+}
+
+.recipe-meta {
+  color: #A0A0A0;
+  font-size: 0.85em;
+  font-family: 'Mulish', sans-serif;
+  font-weight: 400;
+  opacity: 0.7;
+}

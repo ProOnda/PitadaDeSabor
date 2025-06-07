@@ -83,7 +83,6 @@
             </div>
           </div>
 
-          <!-- <<<<< AQUI ESTÁ A MUDANÇA: Adicionando *ngIf para os botões de ação >>>>> -->
           <div class="action-buttons" *ngIf="loggedInUserUid && receitaData.recipe?.userId === loggedInUserUid">
               <button class="action-button primary-button" (click)="editRecipe(receitaData.id)">
                 <i class="bi bi-pencil-square"></i> Editar Receita

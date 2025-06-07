@@ -21,19 +21,21 @@ import {
   endAt,
   DocumentReference,
   Timestamp,
-  serverTimestamp
+  serverTimestamp,
+  arrayUnion,
+  arrayRemove,
 } from '@angular/fire/firestore';
-import { Auth } from '@angular/fire/auth';
+// Removido: import { Auth } from '@angular/fire/auth'; // Não é usado diretamente aqui, mas em AuthService
 
 import { RecipeDetail, RecipeListItem, IngredientDetail, RecipeCreationPayload } from '../../interfaces/recipe.interfaces';
-import { UserData } from '../../interfaces/recipe.interfaces'; // <<<<< CORRIGIDO: Assumindo user.interfaces.ts
+import { UserData } from '../../interfaces/user.interfaces'; // Confirme o caminho da interface UserData
 
 @Injectable({
   providedIn: 'root',
 })
 export class ReceitaService {
   private firestore: Firestore = inject(Firestore);
-  private auth: Auth = inject(Auth);
+  // private auth: Auth = inject(Auth); // Não é necessário injetar Auth diretamente aqui
 
   private recipesCollection = collection(this.firestore, 'recipes');
   private categoriesCollection = collection(this.firestore, 'categories');
@@ -43,7 +45,117 @@ export class ReceitaService {
   private unitsCollection = collection(this.firestore, 'units');
   private foodTypesCollection = collection(this.firestore, 'foodTypes');
 
-  constructor() { }
+  private foodTypeIdToLabelMap = new Map<string, string>();
+
+  constructor() {
+    this.loadFoodTypesMap();
+  }
+
+  private async loadFoodTypesMap() {
+    try {
+      const snapshot = await getDocs(this.foodTypesCollection);
+      snapshot.forEach(doc => {
+        this.foodTypeIdToLabelMap.set(doc.id, doc.data()['label']);
+      });
+      console.log('[ReceitaService] Mapeamento de foodTypes carregado:', this.foodTypeIdToLabelMap);
+    } catch (error) {
+      console.error('Erro ao carregar mapeamento de foodTypes:', error);
+    }
+  }
+
+  getRecipesByCreator(creatorId: string): Observable<RecipeListItem[]> {
+    // A query deve ser por referência de documento para o campo 'user_id'
+    const userRef = doc(this.firestore, 'users', creatorId);
+    const q = query(this.recipesCollection, where('user_id', '==', userRef));
+
+    return from(getDocs(q)).pipe(
+      switchMap(async (recipesSnapshot) => {
+        const recipes: RecipeListItem[] = [];
+        const userPromises: Promise<any>[] = []; // Para buscar nomes de usuário (mesmo que já saibamos o criador, podemos precisar de outros dados)
+
+        for (const recipeDoc of recipesSnapshot.docs) {
+          const data = recipeDoc.data() as any;
+
+          let userName = 'Desconhecido';
+          // Se o user_id é uma DocumentReference, buscamos o nome do usuário
+          if (data.user_id instanceof DocumentReference) {
+            userPromises.push(
+              getDoc(data.user_id).then(userDoc => {
+                if (userDoc.exists()) {
+                  const userData = userDoc.data() as UserData;
+                  return userData.user_name || userData.displayName || userData.email || 'Desconhecido';
+                }
+                return 'Desconhecido';
+              }).catch(userError => {
+                console.error(`Erro ao buscar nome de usuário para ID ${data.user_id.id}:`, userError);
+                return 'Desconhecido';
+              })
+            );
+          } else {
+            // Se não for uma DocumentReference, mas for uma string (UID), trate como tal
+            // Ou se for algum outro tipo, mantenha como 'Desconhecido'
+            userPromises.push(
+              getDoc(doc(this.firestore, 'users', data.user_id)).then(userDoc => { // Tenta buscar pelo UID como string
+                if (userDoc.exists()) {
+                  const userData = userDoc.data() as UserData;
+                  return userData.user_name || userData.displayName || userData.email || 'Desconhecido';
+                }
+                return 'Desconhecido';
+              }).catch(userError => {
+                console.error(`Erro ao buscar nome de usuário para ID ${data.user_id}:`, userError);
+                return 'Desconhecido';
+              })
+            );
+          }
+
+          recipes.push({
+            id: recipeDoc.id,
+            recipeName: data.recipe_name || 'Sem Nome',
+            photoUrl: data.photo || 'assets/placeholder.png',
+            description: data.description || '',
+
+            categoryId: data.category_id ? data.category_id.id : null,
+            difficultyId: data.difficulty_id ? data.difficulty_id.id : null,
+            timeId: data.time_id ? data.time_id.id : null,
+            userId: data.user_id ? (data.user_id instanceof DocumentReference ? data.user_id.id : data.user_id) : null, // Guarda o ID, seja da ref ou string
+
+            categoryLabel: data.category_label || 'Não definida',
+            difficultyLabel: data.difficulty_label || 'Não definida',
+            timeLabel: data.time_label || 'Não definido',
+            userName: '', // Será preenchido após Promise.all
+
+            ingredientFoodTypes: Array.isArray(data.ingredient_food_type) ? data.ingredient_food_type : [],
+            createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : null,
+            readTime: this.calculateReadTimeFromTimeId(data.time_id),
+          });
+        }
+
+        const resolvedUserNames = await Promise.all(userPromises);
+        resolvedUserNames.forEach((name, index) => {
+          recipes[index].userName = name;
+        });
+
+        console.log(`[getRecipesByCreator] Retornando ${recipes.length} receitas para o criador ${creatorId}.`);
+        return recipes;
+      }),
+      catchError(error => {
+        console.error('Erro ao buscar receitas por criador:', error);
+        return of([]);
+      })
+    );
+  }
+
+  private calculateReadTimeFromTimeId(timeId: string | undefined): number {
+    if (!timeId) return 5;
+
+    switch (timeId) {
+      case '1': return 10;
+      case '2': return 25;
+      case '3': return 45;
+      case '4': return 75;
+      default: return 5;
+    }
+  }
 
   buscarReceitaPorIdComDetalhes(id: string): Observable<RecipeDetail | undefined> {
     const recipeDocRef = doc(this.recipesCollection, id);
@@ -70,18 +182,22 @@ export class ReceitaService {
         }
 
         let userName = 'Desconhecido';
-        if (firestoreData.user_id instanceof DocumentReference) {
-          try {
-            const userDoc = await getDoc(firestoreData.user_id);
-            if (userDoc.exists()) {
-              const userData = userDoc.data() as UserData;
-              userName = userData.user_name || userData.displayName || userData.email || 'Desconhecido';
-              console.log(`[getRecipeById] Nome de usuário obtido para receita ${id}:`, userName);
+        if (firestoreData.user_id) { // Verifica se user_id existe
+            try {
+                const userRef = firestoreData.user_id instanceof DocumentReference
+                    ? firestoreData.user_id
+                    : doc(this.firestore, 'users', firestoreData.user_id); // Assume que é um UID string se não for referência
+                const userDoc = await getDoc(userRef);
+                if (userDoc.exists()) {
+                    const userData = userDoc.data() as UserData;
+                    userName = userData.user_name || userData.displayName || userData.email || 'Desconhecido';
+                    console.log(`[getRecipeById] Nome de usuário obtido para receita ${id}:`, userName);
+                }
+            } catch (userError) {
+                console.error(`Erro ao buscar nome de usuário para ID ${firestoreData.user_id}:`, userError);
             }
-          } catch (userError) {
-            console.error(`Erro ao buscar nome de usuário para ID ${firestoreData.user_id.id}:`, userError);
-          }
         }
+
 
         const aggregatedRecipe: RecipeDetail = {
           id: recipeDoc.id,
@@ -101,12 +217,11 @@ export class ReceitaService {
             timeId: firestoreData.time_id ? firestoreData.time_id.id : null,
             timeLabel: firestoreData.time_label || 'Não definido',
 
-            userId: firestoreData.user_id ? firestoreData.user_id.id : null,
+            userId: firestoreData.user_id ? (firestoreData.user_id instanceof DocumentReference ? firestoreData.user_id.id : firestoreData.user_id) : null,
             userName: userName,
 
             createdAt: firestoreData.createdAt instanceof Timestamp ? firestoreData.createdAt.toDate().toISOString() : null,
             updatedAt: firestoreData.updatedAt instanceof Timestamp ? firestoreData.updatedAt.toDate().toISOString() : null,
-            // Certifique-se de que ingredient_food_type é preenchido aqui se for usado na exibição
             ingredientFoodTypes: Array.isArray(firestoreData.ingredient_food_type) ? firestoreData.ingredient_food_type : []
           }
         };
@@ -124,18 +239,29 @@ export class ReceitaService {
     categories?: string[],
     time?: string[],
     difficulty?: string[],
-    foodTypes?: string[], // Agora esperado como array de IDs
+    foodTypes?: string[],
     recipeName?: string
   }): Observable<RecipeListItem[]> {
     let q = query(this.recipesCollection);
 
-    // FILTRO DE TIPOS DE ALIMENTOS: Usando 'array-contains-any' com IDs
     if (filters?.foodTypes && filters.foodTypes.length > 0) {
-      if (filters.foodTypes.length <= 10) { // Firebase suporta array-contains-any com até 10 elementos.
-        q = query(q, where('ingredient_food_type', 'array-contains-any', filters.foodTypes));
-      } else {
-        console.warn('Limite de 10 valores para array-contains-any excedido. Filtrando apenas os primeiros 10.');
-        q = query(q, where('ingredient_food_type', 'array-contains-any', filters.foodTypes.slice(0, 10)));
+      const selectedFoodTypeLabels: string[] = [];
+      filters.foodTypes.forEach(id => {
+        const label = this.foodTypeIdToLabelMap.get(id);
+        if (label) {
+          selectedFoodTypeLabels.push(label);
+        }
+      });
+
+      console.log("[ReceitaService] Filtrando por rótulos de foodTypes:", selectedFoodTypeLabels);
+
+      if (selectedFoodTypeLabels.length > 0) {
+        if (selectedFoodTypeLabels.length <= 10) {
+          q = query(q, where('ingredient_food_type', 'array-contains-any', selectedFoodTypeLabels));
+        } else {
+          console.warn('Limite de 10 valores para array-contains-any excedido. Filtrando apenas os primeiros 10.');
+          q = query(q, where('ingredient_food_type', 'array-contains-any', selectedFoodTypeLabels.slice(0, 10)));
+        }
       }
     }
 
@@ -151,7 +277,6 @@ export class ReceitaService {
 
     if (filters?.recipeName) {
       const searchTermLower = filters.recipeName.toLowerCase();
-      // Necessário um índice no Firestore para recipe_name_lower
       q = query(q, orderBy('recipe_name_lower'), startAt(searchTermLower), endAt(searchTermLower + '\uf8ff'));
     }
 
@@ -164,19 +289,27 @@ export class ReceitaService {
           const data = recipeDoc.data() as any;
 
           let userName = 'Desconhecido';
-          if (data.user_id instanceof DocumentReference) {
-            userPromises.push(
-              getDoc(data.user_id).then(userDoc => {
-                if (userDoc.exists()) {
-                  const userData = userDoc.data() as UserData;
-                  return userData.user_name || userData.displayName || userData.email || 'Desconhecido';
-                }
-                return 'Desconhecido';
-              }).catch(userError => {
-                console.error(`Erro ao buscar nome de usuário para ID ${data.user_id.id}:`, userError);
-                return 'Desconhecido';
-              })
-            );
+          if (data.user_id) { // Verifica se user_id existe
+            try {
+              const userRef = data.user_id instanceof DocumentReference
+                ? data.user_id
+                : doc(this.firestore, 'users', data.user_id);
+              userPromises.push(
+                getDoc(userRef).then(userDoc => {
+                  if (userDoc.exists()) {
+                    const userData = userDoc.data() as UserData;
+                    return userData.user_name || userData.displayName || userData.email || 'Desconhecido';
+                  }
+                  return 'Desconhecido';
+                }).catch(userError => {
+                  console.error(`Erro ao buscar nome de usuário para ID ${data.user_id}:`, userError);
+                  return 'Desconhecido';
+                })
+              );
+            } catch (error) {
+              console.error(`Erro inesperado ao processar user_id ${data.user_id}:`, error);
+              userPromises.push(Promise.resolve('Desconhecido'));
+            }
           } else {
             userPromises.push(Promise.resolve('Desconhecido'));
           }
@@ -190,13 +323,15 @@ export class ReceitaService {
             categoryId: data.category_id ? data.category_id.id : null,
             difficultyId: data.difficulty_id ? data.difficulty_id.id : null,
             timeId: data.time_id ? data.time_id.id : null,
-            userId: data.user_id ? data.user_id.id : null,
+            userId: data.user_id ? (data.user_id instanceof DocumentReference ? data.user_id.id : data.user_id) : null,
 
             categoryLabel: data.category_label || 'Não definida',
             difficultyLabel: data.difficulty_label || 'Não definida',
             timeLabel: data.time_label || 'Não definido',
-            userName: '', // Será preenchido após Promise.all
-            ingredientFoodTypes: Array.isArray(data.ingredient_food_type) ? data.ingredient_food_type : [] // Assumindo IDs
+            userName: '',
+            ingredientFoodTypes: Array.isArray(data.ingredient_food_type) ? data.ingredient_food_type : [],
+            createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : null,
+            readTime: this.calculateReadTimeFromTimeId(data.time_id),
           });
         }
 
@@ -222,7 +357,7 @@ export class ReceitaService {
           ...resolvedData,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
-          recipe_name_lower: resolvedData.recipe_name.toLowerCase() // Necessário um índice para recipe_name_lower
+          recipe_name_lower: resolvedData.recipe_name.toLowerCase()
         });
         console.log(`[createRecipe] Receita criada com sucesso. ID: ${docRef.id}`);
         return { message: 'Receita criada com sucesso!', recipeId: docRef.id };
@@ -241,7 +376,7 @@ export class ReceitaService {
         await updateDoc(recipeDocRef, {
           ...resolvedData,
           updatedAt: serverTimestamp(),
-          recipe_name_lower: resolvedData.recipe_name.toLowerCase() // Necessário um índice para recipe_name_lower
+          recipe_name_lower: resolvedData.recipe_name.toLowerCase()
         });
         console.log(`[updateRecipe] Receita ${recipeId} atualizada com sucesso.`);
         return { message: 'Receita atualizada com sucesso!' };
@@ -272,14 +407,12 @@ export class ReceitaService {
       categoryDoc,
       difficultyDoc,
       timeDoc,
-      userDoc,
       allUnitsSnapshot,
       allFoodTypesSnapshot
     ] = await Promise.all([
       recipeData.categoryId ? getDoc(doc(this.firestore, 'categories', recipeData.categoryId)) : Promise.resolve(null),
       recipeData.difficultyId ? getDoc(doc(this.firestore, 'difficulties', recipeData.difficultyId)) : Promise.resolve(null),
       recipeData.timeId ? getDoc(doc(this.firestore, 'times', recipeData.timeId)) : Promise.resolve(null),
-      recipeData.userId ? getDoc(doc(this.firestore, 'users', recipeData.userId)) : Promise.resolve(null),
       getDocs(this.unitsCollection),
       getDocs(this.foodTypesCollection)
     ]);
@@ -293,21 +426,20 @@ export class ReceitaService {
       fdc_id: ing.fdcId || null,
       ingredient_name: ing.name,
       quantity: ing.quantity,
-      unit_id: ing.unitId ? doc(this.unitsCollection, ing.unitId) : null,
+      unit_id: ing.unitId ? doc(this.firestore, 'units', ing.unitId) : null,
       unit_label: ing.unitId ? (unitsMap.get(ing.unitId) || 'N/A') : 'N/A',
       food_type_id: ing.foodTypeId ? doc(this.foodTypesCollection, ing.foodTypeId) : null,
       food_type_label: ing.foodTypeId ? (foodTypesMap.get(ing.foodTypeId) || 'N/A') : 'N/A'
     }));
 
-    // ESTA É A MUDANÇA CRUCIAL: Mapeia os IDs dos tipos de alimento
-    const uniqueFoodTypeIds = [...new Set(recipeData.ingredients.map(ing => ing.foodTypeId).filter(Boolean))] as string[];
+    const uniqueFoodTypeLabels = [...new Set(ingredientsToSave.map(ing => ing.food_type_label).filter(Boolean))];
 
     return {
       recipe_name: recipeData.recipeName,
       description: recipeData.description,
       photo: recipeData.photoUrl,
 
-      user_id: recipeData.userId ? doc(this.usersCollection, recipeData.userId) : null,
+      user_id: recipeData.userId ? doc(this.usersCollection, recipeData.userId) : null, // user_id agora é uma referência
       category_id: recipeData.categoryId ? doc(this.categoriesCollection, recipeData.categoryId) : null,
       category_label: categoryDoc && categoryDoc.exists() ? categoryDoc.data()['label'] : 'Não definida',
 
@@ -319,7 +451,149 @@ export class ReceitaService {
 
       preparation_mode: recipeData.preparationSteps,
       ingredients: ingredientsToSave,
-      ingredient_food_type: uniqueFoodTypeIds, // <<<<< AGORA SALVA OS IDs AQUI PARA FILTRAGEM EFICIENTE
+      ingredient_food_type: uniqueFoodTypeLabels,
     };
+  }
+
+  isRecipeFavorite(userId: string, recipeId: string): Observable<boolean> {
+    if (!userId || !recipeId) {
+      return of(false);
+    }
+    const userDocRef = doc(this.usersCollection, userId);
+    return from(getDoc(userDocRef)).pipe(
+      map(userDoc => {
+        if (userDoc.exists()) {
+          const userData = userDoc.data() as UserData;
+          return userData.favoriteRecipeIds?.includes(recipeId) || false;
+        }
+        return false;
+      }),
+      catchError(error => {
+        console.error('Erro ao verificar status de favorito:', error);
+        return of(false);
+      })
+    );
+  }
+
+  toggleFavoriteRecipe(userId: string, recipeId: string, isCurrentlyFavorite: boolean): Observable<void> {
+    if (!userId || !recipeId) {
+      console.error('UserId ou RecipeId inválidos para alternar favoritos.');
+      return of(undefined);
+    }
+
+    const userDocRef = doc(this.usersCollection, userId);
+    const updateData = isCurrentlyFavorite ?
+      { favoriteRecipeIds: arrayRemove(recipeId) } :
+      { favoriteRecipeIds: arrayUnion(recipeId) };
+
+    return from(updateDoc(userDocRef, updateData)).pipe(
+      map(() => {
+        console.log(`Receita ${recipeId} ${isCurrentlyFavorite ? 'removida de' : 'adicionada a'} favoritos do usuário ${userId}.`);
+      }),
+      catchError(error => {
+        console.error('Erro ao alternar favorito:', error);
+        throw error;
+      })
+    );
+  }
+
+  getFavoriteRecipes(userId: string): Observable<RecipeListItem[]> {
+    if (!userId) {
+      console.log('UserId não fornecido para buscar favoritos.');
+      return of([]);
+    }
+    const userDocRef = doc(this.usersCollection, userId);
+    return from(getDoc(userDocRef)).pipe(
+      switchMap(userDoc => {
+        if (userDoc.exists()) {
+          const userData = userDoc.data() as UserData;
+          const favoriteRecipeIds = userData.favoriteRecipeIds || [];
+
+          if (favoriteRecipeIds.length === 0) {
+            return of([]);
+          }
+
+          const validFavoriteRecipeIds = favoriteRecipeIds.filter(id => id && id.trim() !== '');
+
+          if (validFavoriteRecipeIds.length === 0) {
+            console.log('Nenhum ID de receita favorito válido após a filtragem.');
+            return of([]);
+          }
+
+          const idsToQuery = validFavoriteRecipeIds.length > 10
+            ? validFavoriteRecipeIds.slice(0, 10)
+            : validFavoriteRecipeIds;
+
+
+          const q = query(this.recipesCollection, where('__name__', 'in', idsToQuery));
+
+          return from(getDocs(q)).pipe(
+            switchMap(async snapshot => {
+              const recipes: RecipeListItem[] = [];
+              const userPromises: Promise<any>[] = [];
+
+              for (const recipeDoc of snapshot.docs) {
+                const data = recipeDoc.data() as any;
+
+                let userName = 'Desconhecido';
+                if (data.user_id) { // Verifica se user_id existe
+                    try {
+                        const userRef = data.user_id instanceof DocumentReference
+                            ? data.user_id
+                            : doc(this.firestore, 'users', data.user_id);
+                        userPromises.push(
+                            getDoc(userRef).then(userDocData => {
+                                if (userDocData.exists()) {
+                                    const userDataResult = userDocData.data() as UserData;
+                                    return userDataResult.user_name || userDataResult.displayName || userDataResult.email || 'Desconhecido';
+                                }
+                                return 'Desconhecido';
+                            }).catch(userError => {
+                                console.error(`Erro ao buscar nome de usuário para ID ${data.user_id}:`, userError);
+                                return 'Desconhecido';
+                            })
+                        );
+                    } catch (error) {
+                        console.error(`Erro inesperado ao processar user_id ${data.user_id}:`, error);
+                        userPromises.push(Promise.resolve('Desconhecido'));
+                    }
+                } else {
+                  userPromises.push(Promise.resolve('Desconhecido'));
+                }
+
+                recipes.push({
+                  id: recipeDoc.id,
+                  recipeName: data.recipe_name || 'Sem Nome',
+                  photoUrl: data.photo || 'assets/placeholder.png',
+                  description: data.description || '',
+                  categoryId: data.category_id ? data.category_id.id : null,
+                  difficultyId: data.difficulty_id ? data.difficulty_id.id : null,
+                  timeId: data.time_id ? data.time_id.id : null,
+                  userId: data.user_id ? (data.user_id instanceof DocumentReference ? data.user_id.id : data.user_id) : null,
+                  categoryLabel: data.category_label || 'Não definida',
+                  difficultyLabel: data.difficulty_label || 'Não definida',
+                  timeLabel: data.time_label || 'Não definido',
+                  userName: '',
+                  ingredientFoodTypes: Array.isArray(data.ingredient_food_type) ? data.ingredient_food_type : [],
+                  createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : null,
+                  readTime: this.calculateReadTimeFromTimeId(data.time_id),
+                });
+              }
+
+              const resolvedUserNames = await Promise.all(userPromises);
+              resolvedUserNames.forEach((name, index) => {
+                recipes[index].userName = name;
+              });
+              return recipes;
+            })
+          );
+        }
+        return of([]);
+      }),
+      catchError(error => {
+        console.error('Erro ao buscar receitas favoritas:', error);
+        return of([]);
+      })
+    );
   }
 }

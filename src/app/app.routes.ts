@@ -68,7 +68,7 @@ export const routes: Routes = [
   },
   {
     path: 'profile',
-    loadComponent: () => import('./pages/settings/profile/profile.page').then( m => m.ProfilePage)
+    loadComponent: () => import('./pages/main/profile/profile.page').then( m => m.ProfilePage)
   },
   {
     path: 'about-app',
@@ -81,7 +81,8 @@ export const routes: Routes = [
   {
     path: 'recipe-creation/:id', // <<<<< ESTA ROTA ESTÁ CORRETA NO SEU app.routes.ts >>>>>
     loadComponent: () => import('./pages/main/recipe-creation/recipe-creation.page').then(m => m.RecipeCreationPage)
-  },  {
+  },
+  {
     path: 'favorites',
     loadComponent: () => import('./pages/main/favorites/favorites.page').then( m => m.FavoritesPage)
   },

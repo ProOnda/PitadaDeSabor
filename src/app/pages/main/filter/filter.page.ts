@@ -130,7 +130,7 @@ export class FilterPage implements OnInit {
   navigateToRecipeDetail(recipeId: string): void {
     console.log('Navegando para detalhes da receita:', recipeId);
     // Certifique-se de que esta rota '/recipe/:id' está configurada no seu app-routing.module.ts
-    this.router.navigate(['/recipe', recipeId]);
+    this.router.navigate(['/receita-detalhe', recipeId]); // Use o nome exato da rota aqui!
   }
 
   // Novo método para voltar à tela de filtros a partir dos resultados

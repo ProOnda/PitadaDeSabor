@@ -1,13 +1,38 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>favorites</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content [fullscreen]="true" class="favorites-page">
+  <div class="container">
+    <div class="favorites-content">
+      <p *ngF="isLoading" class="loading-message">Carregando favoritos...</p>
+      <p *ngIf="error" class="error-message">{{ error }}</p>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">favorites</ion-title>
-    </ion-toolbar>
-  </ion-header>
+      <ng-container *ngIf="favoriteRecipes$ | async as recipes">
+        <div *ngIf="!isLoading && recipes.length > 0" class="recipes-grid">
+          <div *ngFor="let recipe of recipes" class="recipe-card" [class.expanded]="isDetailsVisible(recipe.id)">
+            <div class="recipe-image-container">
+              <div class="background-shape"></div>
+              <img [src]="recipe.photoUrl || 'https://placehold.co/311x229'" alt="{{ recipe.recipeName }}" class="recipe-image">
+            </div>
+
+            <div class="recipe-header-section" (click)="toggleRecipeDetails(recipe.id); $event.stopPropagation()">
+              <h4 class="recipe-name">{{ recipe.recipeName }}</h4>
+              <div class="details-toggle"
+                   [class.open]="isDetailsVisible(recipe.id)">
+                <i class="bi" [class.bi-chevron-up]="isDetailsVisible(recipe.id)" [class.bi-chevron-down]="!isDetailsVisible(recipe.id)"></i>
+              </div>
+            </div>
+
+            <div class="recipe-details" [class.visible]="isDetailsVisible(recipe.id)">
+              <p class="recipe-description">{{ recipe.description }}</p>
+              <button class="learn-more-button" (click)="navigateToRecipeDetail(recipe.id); $event.stopPropagation()">Saiba Mais</button>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="!isLoading && !error && recipes.length === 0" class="no-favorites-message">
+          Você ainda não tem nenhuma receita favorita. Adicione algumas!
+        </p>
+
+        <app-feed-menu></app-feed-menu>
+
+      </ng-container>
+    </div>
+  </div>
 </ion-content>

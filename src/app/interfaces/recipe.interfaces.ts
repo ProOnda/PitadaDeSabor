@@ -1,7 +1,5 @@
 // src/app/interfaces/recipe.interfaces.ts
 
-// ... (outras interfaces já existentes) ...
-
 // **NOVAS INTERFACES PARA ENVIO DE DADOS AO BACKEND**
 
 // Interface para um ingrediente no payload de criação/atualização
@@ -56,7 +54,7 @@ export interface RecipeContent {
 
   createdAt?: string;
   updatedAt?: string;
-  ingredientFoodTypes?: string[]; // Array de IDs de tipos de alimento para filtragem
+  ingredientFoodTypes?: string[]; // Array de IDs de tipos de alimento para filtragem (agora armazena rótulos)
 }
 
 export interface RecipeDetail {
@@ -77,22 +75,15 @@ export interface RecipeListItem {
   difficultyLabel?: string;
   timeLabel?: string;
   userName?: string;
-  ingredientFoodTypes?: string[]; // Array de IDs de tipos de alimento para filtragem
+  ingredientFoodTypes?: string[]; // Array de IDs de tipos de alimento para filtragem (agora armazena rótulos)
+
+  // ADICIONADAS ESTAS DUAS PROPRIEDADES QUE ESTAVAM FALTANDO
+  createdAt?: string;
+  readTime?: number;
 }
 
-// src/app/interfaces/common.interfaces.ts (ou onde você guarda suas interfaces)
-
+// Interface OptionItem agora exportada de recipe.interfaces.ts
 export interface OptionItem {
   label: string;
   value: string; // Geralmente o ID
-}
-
-// src/app/interfaces/user.interfaces.ts
-export interface UserData {
-  user_name?: string;
-  displayName?: string;
-  email?: string;
-  // Adicione outras propriedades do seu documento de usuário aqui, se houver
-  // Ex: uid?: string;
-  // Ex: photoURL?: string;
 }
