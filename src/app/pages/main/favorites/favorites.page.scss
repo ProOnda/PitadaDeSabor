@@ -1,25 +1,53 @@
-/* Base para toda a página de favoritos */
-.favorites-page {
-  --background: #11110F; /* Fundo escuro como na imagem */
-}
+/* src/app/pages/main/favorites/favorites.page.scss */
 
-.container {
-  max-width: 85%;
-  margin: 30px auto;
-  height: 100%;
+/* Main wrapper para controlar a altura total da página e o overflow */
+.favorites-page-wrapper {
   display: flex;
   flex-direction: column;
+  height: 100vh; /* Ocupa a altura total da viewport */
+  background-color: #11110F; /* Fundo escuro como na imagem */
+  color: #f0f0f0; /* Cor do texto padrão */
+  overflow: hidden; /* Importante: Esconde a barra de rolagem principal do navegador */
 }
 
+/* Container do cabeçalho da página (agora fora do scrollable content) */
+.page-header-container-custom {
+  width: 85%; /* Alinha com a largura do conteúdo principal */
+  margin: 20px auto 0 auto; /* Margem superior e centraliza horizontalmente */
+  box-sizing: border-box;
+}
 
-/* Conteúdo principal dos favoritos */
-.favorites-content {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* Container principal rolável (substitui a rolagem do ion-content) */
+.page-content-scrollable {
+  flex: 1; /* Faz esta div ocupar todo o espaço restante verticalmente */
+  overflow-y: auto; /* Habilita a rolagem vertical quando o conteúdo transborda */
+  -webkit-overflow-scrolling: touch; /* Suaviza a rolagem em dispositivos iOS */
+  padding: 0; /* Garante que não haja padding extra */
+}
+
+/* Conteúdo centralizado e com largura principal */
+.content {
+  width: 100%; /* Ocupa 100% da largura do .page-content-scrollable */
+  max-width: 768px; /* Limite a largura geral do conteúdo em telas maiores */
+  margin: 0 auto; /* Centraliza o conteúdo horizontalmente */
+  padding: 0; /* Ajuste o padding vertical aqui, se necessário. Seções internas podem ter seu próprio padding. */
+  display: flex; /* Adicionado display flex para o .content */
+  flex-direction: column; /* Coloca os itens em coluna */
+  align-items: center; /* Centraliza horizontalmente o main-favorites-display */
+}
+
+/* Conteúdo principal dos favoritos (loading, error, grid de receitas) */
+.main-favorites-display {
+  width: 85%; /* Define a largura desejada para o conteúdo principal */
+  margin: 20px auto; /* Centraliza horizontalmente e adiciona margem vertical */
+  box-sizing: border-box;
   padding-bottom: 20px; /* Adicionado padding para evitar que o último card fique colado no fundo */
+  flex-grow: 1; /* Permite que esta seção cresça e empurre o menu para baixo, se ele estiver aqui */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Alinha os itens à esquerda dentro desta seção */
 }
+
 
 /* Mensagens de status (carregando, erro, sem favoritos) */
 .loading-message,
@@ -34,7 +62,8 @@
   width: 100%;
   max-width: 400px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  text-align: center; /* Centraliza o texto */
+  text-align: center;
+  align-self: center; /* Centraliza estas mensagens dentro de .main-favorites-display */
 }
 
 .error-message {
@@ -54,8 +83,7 @@
   display: grid;
   gap: 30px;
   width: 100%;
-
-  grid-template-columns: repeat(auto-fill, minmax(311px, 1fr)); /* Mantido o minmax para flexibilidade */
+  grid-template-columns: repeat(auto-fill, minmax(311px, 1fr));
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr;
@@ -65,24 +93,24 @@
 /* Estilo individual do card de receita */
 .recipe-card {
   width: 100%;
-  min-height: 32vh; /* Altura mínima para o estado inicial colapsado */
-  position: relative; /* Mantido relative para contexto, mas o conteúdo flui internamente */
+  min-height: 26vh;
+  position: relative;
   background-color: transparent;
-  overflow: hidden; /* Garante que o conteúdo que excede a altura inicial seja ocultado */
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.4s ease, border-radius 0.4s ease, min-height 0.4s ease-out; /* Transição para todas as propriedades que mudam */
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.4s ease, border-radius 0.4s ease, min-height 0.4s ease-out;
   cursor: pointer;
-  display: flex; /* Transforma o card em um flex container */
-  flex-direction: column; /* Organiza os itens em coluna */
-  border-radius: 14px; /* Arredondamento inicial do card */
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
 }
 
 /* ESTILOS MODIFICADOS PARA O ESTADO EXPANDIDO */
 .recipe-card.expanded {
-  min-height: unset; /* Remove a altura mínima no estado expandido para se ajustar ao conteúdo */
-  height: auto; /* A altura do card se ajusta ao conteúdo */
-  background-color: #1D1D19; /* Fundo do card quando expandido */
-  border-radius: 14px; /* Arredondamento do card quando expandido */
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6); /* Sombra mais intensa quando expandido */
+  min-height: unset;
+  height: auto;
+  background-color: #1D1D19;
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
 }
 
 .recipe-card:hover {
@@ -94,46 +122,43 @@
 /* Contêiner da Imagem e seu fundo arredondado */
 .recipe-image-container {
   width: 100%;
-  height: 25vh; /* Altura do container da imagem */
-  position: relative; /* Mudado para relative para fazer parte do fluxo do flexbox */
-  left: 0px;
-  top: 0px;
-  border-radius: 14px; /* Arredondamento do container da imagem */
+  height: 20vh;
+  position: relative;
+  border-radius: 14px;
   overflow: hidden;
-  z-index: 1; /* Permanece acima de outros elementos se houver sobreposição */
+  z-index: 1;
 }
 
 .recipe-image-container .background-shape {
   width: 100%;
-  height: 25vh; /* Altura da forma de fundo */
-  background: #F4F9FB; /* Cor de fundo da forma */
+  height: 20vh;
+  background: #F4F9FB;
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 1; /* Abaixo da imagem, mas dentro do contêiner */
-  border-radius: 20.79px; /* Arredondamento da forma de fundo */
+  z-index: 1;
+  border-radius: 20.79px;
 }
 
 .recipe-image-container .recipe-image {
   width: 100%;
-  height: auto; /* Permite que a altura da imagem se ajuste */
+  height: auto;
   position: absolute;
   left: 0px;
-  top: -19px; /* Deslocamento para cima como na imagem */
+  top: -19px;
   object-fit: cover;
-  z-index: 2; /* Acima da forma de fundo */
+  z-index: 2;
 }
 
 /* Seção do Título da Receita e Triângulo de Expansão/Retração */
 .recipe-header-section {
   width: 100%;
-  /* Removido position: absolute; e top: 188px; para que siga o fluxo do flex container */
-  margin-top: 15px; /* Adiciona um espaço abaixo da imagem */
+  margin-top: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 15px; /* Ajustado padding para consistência */
-  z-index: 5; /* Permanece acima */
+  padding: 0 15px;
+  z-index: 5;
 }
 
 .recipe-name {
@@ -171,24 +196,22 @@
 
 /* Detalhes Expansíveis: Descrição e Botão "Saiba Mais" */
 .recipe-details {
-  /* Removido position: absolute; e top: 100%; para que siga o fluxo do flex container */
   width: 100%;
-  background-color: transparent; /* Fundo transparente para se misturar com o card.expanded */
-  padding: 0 15px; /* Padding inicial zero para estar oculto */
-  max-height: 0; /* Essencial para ocultar e animar */
-  overflow: hidden; /* Esconde o conteúdo que excede o max-height */
-  transition: max-height 0.4s ease-out, padding 0.4s ease-out; /* Removido 'top' da transição */
+  background-color: transparent;
+  padding: 0 15px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out, padding 0.4s ease-out;
   display: flex;
   flex-direction: column;
-  z-index: 0; /* Abaixo dos elementos iniciais */
+  z-index: 0;
 }
 
 /* Estado visível (quando o usuário clica) */
 .recipe-details.visible {
-  max-height: 500px; /* Valor grande o suficiente para a descrição se expandir totalmente */
-  padding: 15px; /* Padding normal quando visível */
-  position: relative; /* Volta ao fluxo para ocupar espaço real */
-  /* Removido 'top: 227px;' pois não é mais absoluto */
+  max-height: 500px;
+  padding: 15px;
+  position: relative;
   z-index: 3;
 }
 
@@ -205,32 +228,43 @@
 }
 
 .learn-more-button {
-  /* Propriedades para um botão HTML puro */
-  padding: 0; /* Equivalente a --padding-start: 0; --padding-end: 0; */
+  padding: 0;
   font-size: 12px;
   font-family: 'Mulish', sans-serif;
-  color: #F0F0F0; /* Equivalente a --color: #F0F0F0; */
+  color: #F0F0F0;
   text-align: right;
   width: 100%;
   margin-top: 5px;
-  background-color: transparent; /* Fundo transparente */
-  border: none; /* Remove a borda padrão do botão */
-  cursor: pointer; /* Indica que é clicável */
-  -webkit-appearance: none; /* Reseta estilos padrão em Webkit */
-  -moz-appearance: none; /* Reseta estilos padrão em Mozilla */
-  appearance: none; /* Reseta estilos padrão */
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 /* Estilos de hover, focus, active para o botão HTML puro */
 .learn-more-button:hover {
-  text-decoration: underline; /* Um feedback visual simples ao passar o mouse */
+  text-decoration: underline;
 }
 
 .learn-more-button:focus {
-  outline: none; /* Remove o outline de foco padrão */
-  box-shadow: 0 0 0 2px rgba(240, 240, 240, 0.5); /* Adiciona um box-shadow de foco personalizado */
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(240, 240, 240, 0.5);
 }
 
 .learn-more-button:active {
-  color: rgba(240, 240, 240, 0.8); /* Um feedback visual ao clicar */
+  color: rgba(240, 240, 240, 0.8);
+}
+
+/* Media Queries para Responsividade */
+@media (max-width: 768px) {
+  /* No novo layout, o .content pode ter 100% de largura e o .main-favorites-display ajustar */
+  /* .content {
+    width: 95%;
+    padding: 15px 0;
+  } */
+  .recipe-header-section {
+    padding: 0 10px; /* Ajuste para telas menores */
+  }
 }

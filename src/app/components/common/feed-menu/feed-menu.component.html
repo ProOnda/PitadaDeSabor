@@ -9,7 +9,7 @@
   <button class="menu-item home" [class.active]="activeRoute.startsWith('/feed')" (click)="navigateTo('/feed')">
     <i class="bi bi-house-door-fill"></i>
   </button>
-  <button class="menu-item cart" (click)="navigateTo('/favorites')">
+  <button class="menu-item heart" [class.active]="activeRoute.startsWith('/favorites')"(click)="navigateTo('/favorites')">
     <i class="bi bi-heart-fill"></i>
   </button>
   <button class="menu-item profile" (click)="navigateTo('/profile')">

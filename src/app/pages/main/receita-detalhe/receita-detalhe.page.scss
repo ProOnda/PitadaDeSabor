@@ -17,11 +17,15 @@
 
 /* O .content que já existia no seu HTML, agora como filho do .page-content-scrollable */
 .content {
-  width: 90%;
-  max-width: 700px; /* Limita a largura máxima para telas maiores */
+  width: 85%; /* Largura do contêiner principal da página */
   margin: 0 auto; /* Centraliza o conteúdo horizontalmente */
   padding: 20px 0; /* Adicione padding vertical aqui para espaço no topo e base do conteúdo rolável */
-  /* Remova height: 100%; se estiver aqui */
+}
+
+/* <<<<< NOVO ESTILO AQUI: Para o main-recipe-display >>>>> */
+.main-recipe-display {
+  width: 90%;
+  margin: 0 auto;
 }
 
 /* Estilos para os componentes de carregamento e erro */
@@ -29,6 +33,9 @@
   text-align: center;
   padding: 20px;
   color: #F0DBBE;
+  width: 100%; /* Garante que ocupe o espaço disponível dentro do main-recipe-display */
+  margin: 0 auto; /* Centraliza-o */
+  box-sizing: border-box; /* Inclui padding na largura total */
 }
 .error-state button {
   background-color: #AD2F33;
@@ -40,14 +47,21 @@
   margin-top: 10px;
 }
 
+.recipe-container {
+  width: 100%; /* Ocupa 100% do main-recipe-display */
+  margin: 0 auto; /* Centraliza */
+}
+
 .recipe-image-container {
-  width: 100%;
+  width: 100%; /* Ocupa 100% do recipe-container */
   height: 25vh;
   border-radius: 14px;
   overflow: hidden;
   margin-bottom: 16px;
-  margin: 10% auto 0 auto; /* Ajuste este margin-top conforme necessário */
-
+  margin-top: 10%; /* Ajuste este margin-top conforme necessário */
+  // Remova 'margin: 10% auto 0 auto;' e deixe apenas 'margin-top' se você quiser que o image-container não se centralize com auto
+  // ou centralize-o dentro do recipe-container se ele também for flex
+  
   img {
     display: block;
     width: 100%;

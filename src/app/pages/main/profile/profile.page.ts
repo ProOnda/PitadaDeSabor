@@ -14,6 +14,10 @@ import { RecipeListItem } from 'src/app/interfaces/recipe.interfaces';
 import { UserData } from 'src/app/interfaces/user.interfaces';
 
 import { PageHeaderComponent } from 'src/app/components/item-displays/page-header/page-header.component';
+import { PersonCardComponent } from 'src/app/components/item-displays/person-card/person-card.component';
+import { ItemListSectionComponent } from 'src/app/components/item-displays/item-list-section/item-list-section.component';
+import { FeedMenuComponent } from 'src/app/components/common/feed-menu/feed-menu.component';
+
 
 @Component({
   selector: 'app-profile',
@@ -23,7 +27,10 @@ import { PageHeaderComponent } from 'src/app/components/item-displays/page-heade
   imports: [
     CommonModule,
     IonicModule,
-    PageHeaderComponent
+    PageHeaderComponent,
+    PersonCardComponent,
+    ItemListSectionComponent,
+    FeedMenuComponent
   ],
 })
 export class ProfilePage implements OnInit, OnDestroy {
@@ -57,9 +64,9 @@ export class ProfilePage implements OnInit, OnDestroy {
 
     this.subscriptions.add(
       this.authService.authState.pipe(
-        filter(user => !!user?.uid), // Garante que userId não é null
+        filter(user => !!user?.uid),
         switchMap(user => {
-          const userId = user!.uid; // user! é seguro devido ao filter anterior
+          const userId = user!.uid;
           return this.authService.getCurrentUserData(userId).pipe(
             tap((userData: UserData | null) => {
               if (userData) {
