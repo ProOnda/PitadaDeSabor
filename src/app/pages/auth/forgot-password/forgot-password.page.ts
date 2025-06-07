@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { IonContent } from '@ionic/angular/standalone'; // Importe IonContent
+import { IonContent } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../../../components/common/button/button.component';
 import { CustomInputComponent } from '../../../components/common/custom-input/custom-input.component';
+import { Auth } from '@angular/fire/auth';
+import { sendPasswordResetEmail } from 'firebase/auth';
 
 @Component({
   selector: 'app-forgot-password',
@@ -13,7 +15,7 @@ import { CustomInputComponent } from '../../../components/common/custom-input/cu
   standalone: true,
   imports: [
     CommonModule,
-    IonContent, // Adicione IonContent aos imports
+    IonContent,
     RouterModule,
     ReactiveFormsModule,
     ButtonComponent,
@@ -23,12 +25,11 @@ import { CustomInputComponent } from '../../../components/common/custom-input/cu
 export class ForgotPasswordPage implements OnInit {
   forgotPasswordForm: FormGroup;
   errorMessage: string = '';
-  successMessage: string = '';
 
   constructor(
     private formBuilder: FormBuilder,
     private router: Router,
-    // Adicione aqui o seu serviço de autenticação (ex: private authService: AuthService)
+    private auth: Auth
   ) {
     this.forgotPasswordForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
@@ -37,12 +38,23 @@ export class ForgotPasswordPage implements OnInit {
 
   ngOnInit() {}
 
-  resetPassword() {
+  async resetPassword() {
     if (this.forgotPasswordForm.valid) {
       const email = this.forgotPasswordForm.value.email;
-      // ... (restante da sua lógica)
+
+      try {
+        await sendPasswordResetEmail(this.auth, email);
+        this.errorMessage = '';
+        this.router.navigate(['/password-sent']);
+      } catch (error: any) {
+        if (error.code === 'auth/user-not-found') {
+          this.errorMessage = 'Nenhum usuário encontrado com esse email.';
+        } else {
+          this.errorMessage = 'Ocorreu um erro ao enviar o email. Tente novamente.';
+        }
+      }
     } else {
-      // ... (restante da sua lógica)
+      this.errorMessage = 'Por favor, insira um email válido.';
     }
   }
 
