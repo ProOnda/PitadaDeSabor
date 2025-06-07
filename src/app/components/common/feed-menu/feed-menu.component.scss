@@ -1,5 +1,5 @@
 .feed-menu-container {
-  width: 300px;
+  width: 310px;
   height: 60px;
   position: fixed; /* Fixa o elemento na tela */
   bottom: 0; /* Alinha à parte inferior */
@@ -23,7 +23,7 @@
 .add-button {
   width: 65px;
   height: 65px;
-  left: 120px; /* Mantém o botão adicionar centralizado */
+  left: 128px; /* Mantém o botão adicionar centralizado */
   top: -15px;
   position: absolute;
   background: none;
@@ -78,12 +78,12 @@
 }
 
 .menu-item.profile {
-  left: 195px;
+  left: 210px;
   color: rgba(240, 240, 240);
 }
 
 .menu-item.settings {
-  left: 255px;
+  left: 265px;
   color: rgba(240, 240, 240);
 }
 

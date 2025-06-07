@@ -1,6 +1,7 @@
 // src/app/services/receita/receita.service.ts
 
 import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, from, forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -25,17 +26,22 @@ import {
   arrayUnion,
   arrayRemove,
 } from '@angular/fire/firestore';
-// Removido: import { Auth } from '@angular/fire/auth'; // Não é usado diretamente aqui, mas em AuthService
 
 import { RecipeDetail, RecipeListItem, IngredientDetail, RecipeCreationPayload } from '../../interfaces/recipe.interfaces';
-import { UserData } from '../../interfaces/user.interfaces'; // Confirme o caminho da interface UserData
+import { UserData } from '../../interfaces/user.interfaces';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ReceitaService {
   private firestore: Firestore = inject(Firestore);
-  // private auth: Auth = inject(Auth); // Não é necessário injetar Auth diretamente aqui
+  private http: HttpClient = inject(HttpClient);
+
+
+  private cloudinaryCloudName = 'do64wlw72'; // Seu Cloud Name
+  private cloudinaryUploadPreset = 'PitadaDeSabor'; // Seu Upload Preset
+
+  private cloudinaryUploadUrl = `https://api.cloudinary.com/v1_1/${this.cloudinaryCloudName}/image/upload`;
 
   private recipesCollection = collection(this.firestore, 'recipes');
   private categoriesCollection = collection(this.firestore, 'categories');
@@ -63,21 +69,33 @@ export class ReceitaService {
     }
   }
 
+  uploadRecipeImage(file: File): Observable<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.cloudinaryUploadPreset);
+
+    return this.http.post<any>(this.cloudinaryUploadUrl, formData).pipe(
+      map((response: any) => response.secure_url),
+      catchError(error => {
+        console.error('Erro no upload de imagem para o Cloudinary:', error);
+        throw error;
+      })
+    );
+  }
+
   getRecipesByCreator(creatorId: string): Observable<RecipeListItem[]> {
-    // A query deve ser por referência de documento para o campo 'user_id'
     const userRef = doc(this.firestore, 'users', creatorId);
     const q = query(this.recipesCollection, where('user_id', '==', userRef));
 
     return from(getDocs(q)).pipe(
       switchMap(async (recipesSnapshot) => {
         const recipes: RecipeListItem[] = [];
-        const userPromises: Promise<any>[] = []; // Para buscar nomes de usuário (mesmo que já saibamos o criador, podemos precisar de outros dados)
+        const userPromises: Promise<any>[] = [];
 
         for (const recipeDoc of recipesSnapshot.docs) {
           const data = recipeDoc.data() as any;
 
           let userName = 'Desconhecido';
-          // Se o user_id é uma DocumentReference, buscamos o nome do usuário
           if (data.user_id instanceof DocumentReference) {
             userPromises.push(
               getDoc(data.user_id).then(userDoc => {
@@ -92,10 +110,8 @@ export class ReceitaService {
               })
             );
           } else {
-            // Se não for uma DocumentReference, mas for uma string (UID), trate como tal
-            // Ou se for algum outro tipo, mantenha como 'Desconhecido'
             userPromises.push(
-              getDoc(doc(this.firestore, 'users', data.user_id)).then(userDoc => { // Tenta buscar pelo UID como string
+              getDoc(doc(this.firestore, 'users', data.user_id)).then(userDoc => {
                 if (userDoc.exists()) {
                   const userData = userDoc.data() as UserData;
                   return userData.user_name || userData.displayName || userData.email || 'Desconhecido';
@@ -111,19 +127,18 @@ export class ReceitaService {
           recipes.push({
             id: recipeDoc.id,
             recipeName: data.recipe_name || 'Sem Nome',
-            photoUrl: data.photo || 'assets/placeholder.png',
+            photoUrl: data.photo_url || data.photo || 'assets/placeholder.png', // Aqui já pega photo_url ou photo (legacy)
             description: data.description || '',
 
             categoryId: data.category_id ? data.category_id.id : null,
             difficultyId: data.difficulty_id ? data.difficulty_id.id : null,
             timeId: data.time_id ? data.time_id.id : null,
-            userId: data.user_id ? (data.user_id instanceof DocumentReference ? data.user_id.id : data.user_id) : null, // Guarda o ID, seja da ref ou string
+            userId: data.user_id ? (data.user_id instanceof DocumentReference ? data.user_id.id : data.user_id) : null,
 
             categoryLabel: data.category_label || 'Não definida',
             difficultyLabel: data.difficulty_label || 'Não definida',
             timeLabel: data.time_label || 'Não definido',
-            userName: '', // Será preenchido após Promise.all
-
+            userName: '',
             ingredientFoodTypes: Array.isArray(data.ingredient_food_type) ? data.ingredient_food_type : [],
             createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate().toISOString() : null,
             readTime: this.calculateReadTimeFromTimeId(data.time_id),
@@ -182,17 +197,17 @@ export class ReceitaService {
         }
 
         let userName = 'Desconhecido';
-        if (firestoreData.user_id) { // Verifica se user_id existe
+        if (firestoreData.user_id) {
             try {
-                const userRef = firestoreData.user_id instanceof DocumentReference
-                    ? firestoreData.user_id
-                    : doc(this.firestore, 'users', firestoreData.user_id); // Assume que é um UID string se não for referência
-                const userDoc = await getDoc(userRef);
-                if (userDoc.exists()) {
-                    const userData = userDoc.data() as UserData;
-                    userName = userData.user_name || userData.displayName || userData.email || 'Desconhecido';
-                    console.log(`[getRecipeById] Nome de usuário obtido para receita ${id}:`, userName);
-                }
+              const userRef = firestoreData.user_id instanceof DocumentReference
+                  ? firestoreData.user_id
+                  : doc(this.firestore, 'users', firestoreData.user_id);
+              const userDoc = await getDoc(userRef);
+              if (userDoc.exists()) {
+                  const userData = userDoc.data() as UserData;
+                  userName = userData.user_name || userData.displayName || userData.email || 'Desconhecido';
+                  console.log(`[getRecipeById] Nome de usuário obtido para receita ${id}:`, userName);
+              }
             } catch (userError) {
                 console.error(`Erro ao buscar nome de usuário para ID ${firestoreData.user_id}:`, userError);
             }
@@ -204,7 +219,7 @@ export class ReceitaService {
           recipe: {
             recipeName: firestoreData.recipe_name || 'Sem Nome',
             description: firestoreData.description || '',
-            photoUrl: firestoreData.photo || 'assets/placeholder.png',
+            photoUrl: firestoreData.photo_url || firestoreData.photo || 'assets/placeholder.png',
             preparationSteps: Array.isArray(firestoreData.preparation_mode) ? firestoreData.preparation_mode : [],
             ingredients: ingredientsFormatted,
 
@@ -289,16 +304,16 @@ export class ReceitaService {
           const data = recipeDoc.data() as any;
 
           let userName = 'Desconhecido';
-          if (data.user_id) { // Verifica se user_id existe
+          if (data.user_id) {
             try {
               const userRef = data.user_id instanceof DocumentReference
                 ? data.user_id
                 : doc(this.firestore, 'users', data.user_id);
               userPromises.push(
-                getDoc(userRef).then(userDoc => {
-                  if (userDoc.exists()) {
-                    const userData = userDoc.data() as UserData;
-                    return userData.user_name || userData.displayName || userData.email || 'Desconhecido';
+                getDoc(userRef).then(userDocData => {
+                  if (userDocData.exists()) {
+                    const userDataResult = userDocData.data() as UserData;
+                    return userDataResult.user_name || userDataResult.displayName || userDataResult.email || 'Desconhecido';
                   }
                   return 'Desconhecido';
                 }).catch(userError => {
@@ -317,7 +332,7 @@ export class ReceitaService {
           recipes.push({
             id: recipeDoc.id,
             recipeName: data.recipe_name || 'Sem Nome',
-            photoUrl: data.photo || 'assets/placeholder.png',
+            photoUrl: data.photo_url || data.photo || 'assets/placeholder.png',
             description: data.description || '',
 
             categoryId: data.category_id ? data.category_id.id : null,
@@ -339,8 +354,6 @@ export class ReceitaService {
         resolvedUserNames.forEach((name, index) => {
           recipes[index].userName = name;
         });
-
-        console.log(`[listRecipes] Retornando ${recipes.length} receitas.`);
         return recipes;
       }),
       catchError(error => {
@@ -353,12 +366,20 @@ export class ReceitaService {
   saveRecipe(recipeData: RecipeCreationPayload): Observable<{ message: string; recipeId?: string }> {
     return from(this.resolveRecipeReferences(recipeData)).pipe(
       switchMap(async resolvedData => {
-        const docRef = await addDoc(this.recipesCollection, {
+        const dataToSave = {
           ...resolvedData,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
           recipe_name_lower: resolvedData.recipe_name.toLowerCase()
-        });
+        };
+        // <<<<< REMOVIDO: Lógica redundante de renomear 'photo' para 'photo_url' >>>>>
+        // A propriedade 'photo_url' já está sendo definida corretamente no resolveRecipeReferences
+        // if (dataToSave.photo) {
+        //   dataToSave.photo_url = dataToSave.photo;
+        //   delete dataToSave.photo;
+        // }
+
+        const docRef = await addDoc(this.recipesCollection, dataToSave);
         console.log(`[createRecipe] Receita criada com sucesso. ID: ${docRef.id}`);
         return { message: 'Receita criada com sucesso!', recipeId: docRef.id };
       }),
@@ -373,11 +394,19 @@ export class ReceitaService {
     const recipeDocRef = doc(this.recipesCollection, recipeId);
     return from(this.resolveRecipeReferences(recipeData)).pipe(
       switchMap(async resolvedData => {
-        await updateDoc(recipeDocRef, {
+        const dataToUpdate = {
           ...resolvedData,
           updatedAt: serverTimestamp(),
           recipe_name_lower: resolvedData.recipe_name.toLowerCase()
-        });
+        };
+        // <<<<< REMOVIDO: Lógica redundante de renomear 'photo' para 'photo_url' >>>>>
+        // A propriedade 'photo_url' já está sendo definida corretamente no resolveRecipeReferences
+        // if (dataToUpdate.photo) {
+        //   dataToUpdate.photo_url = dataToUpdate.photo;
+        //   delete dataToUpdate.photo;
+        // }
+
+        await updateDoc(recipeDocRef, dataToUpdate);
         console.log(`[updateRecipe] Receita ${recipeId} atualizada com sucesso.`);
         return { message: 'Receita atualizada com sucesso!' };
       }),
@@ -437,9 +466,9 @@ export class ReceitaService {
     return {
       recipe_name: recipeData.recipeName,
       description: recipeData.description,
-      photo: recipeData.photoUrl,
-
-      user_id: recipeData.userId ? doc(this.usersCollection, recipeData.userId) : null, // user_id agora é uma referência
+      photo_url: recipeData.photoUrl, // <<< AGORA É SEMPRE 'photo_url' AQUI >>>
+      
+      user_id: recipeData.userId ? doc(this.usersCollection, recipeData.userId) : null,
       category_id: recipeData.categoryId ? doc(this.categoriesCollection, recipeData.categoryId) : null,
       category_label: categoryDoc && categoryDoc.exists() ? categoryDoc.data()['label'] : 'Não definida',
 
@@ -536,7 +565,7 @@ export class ReceitaService {
                 const data = recipeDoc.data() as any;
 
                 let userName = 'Desconhecido';
-                if (data.user_id) { // Verifica se user_id existe
+                if (data.user_id) {
                     try {
                         const userRef = data.user_id instanceof DocumentReference
                             ? data.user_id
@@ -564,12 +593,14 @@ export class ReceitaService {
                 recipes.push({
                   id: recipeDoc.id,
                   recipeName: data.recipe_name || 'Sem Nome',
-                  photoUrl: data.photo || 'assets/placeholder.png',
+                  photoUrl: data.photo_url || data.photo || 'assets/placeholder.png',
                   description: data.description || '',
+
                   categoryId: data.category_id ? data.category_id.id : null,
                   difficultyId: data.difficulty_id ? data.difficulty_id.id : null,
                   timeId: data.time_id ? data.time_id.id : null,
                   userId: data.user_id ? (data.user_id instanceof DocumentReference ? data.user_id.id : data.user_id) : null,
+
                   categoryLabel: data.category_label || 'Não definida',
                   difficultyLabel: data.difficulty_label || 'Não definida',
                   timeLabel: data.time_label || 'Não definido',

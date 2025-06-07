@@ -10,6 +10,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
+// <<<<< IMPORTAÇÃO DO SERVIÇO DE COMPRESSÃO DE IMAGEM >>>>>
+import { NgxImageCompressService } from 'ngx-image-compress';
+
 interface IngredientForm {
   name: string;
   quantity: number | null;
@@ -30,8 +33,7 @@ interface StepForm {
     FormsModule,
     PageHeaderComponent,
   ],
-  // <<<<< CORREÇÃO AQUI: template URL correto >>>>>
-  templateUrl: './recipe-creation.page.html', // Corrigido para o caminho correto do template
+  templateUrl: './recipe-creation.page.html',
   styleUrls: ['./recipe-creation.page.scss']
 })
 export class RecipeCreationPage implements OnInit {
@@ -46,7 +48,7 @@ export class RecipeCreationPage implements OnInit {
   preparationSteps: StepForm[] = [];
 
   imagemPreviewUrl: string | ArrayBuffer | null = null;
-  selectedFile: File | null = null;
+  selectedFile: File | null = null; // Agora será um objeto File real para upload
 
   currentUserUid: string | null = null;
 
@@ -60,6 +62,8 @@ export class RecipeCreationPage implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  // <<<<< INJEÇÃO DO SERVIÇO DE COMPRESSÃO DE IMAGEM >>>>>
+  private imageCompress = inject(NgxImageCompressService);
 
   constructor() { }
 
@@ -151,6 +155,8 @@ export class RecipeCreationPage implements OnInit {
 
     if (recipe.photoUrl) {
       this.imagemPreviewUrl = recipe.photoUrl;
+      // Se for uma URL externa, selectedFile permanece null (não temos o File original)
+      this.selectedFile = null;
     }
   }
 
@@ -203,23 +209,76 @@ export class RecipeCreationPage implements OnInit {
     return `Descreva o ${ordinal} passo da receita...`;
   }
 
-  onFileSelected(event: Event): void {
+  // <<<<< LÓGICA CORRETA DE SELEÇÃO E COMPRESSÃO DE IMAGEM >>>>>
+  async onFileSelected(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
-      this.selectedFile = input.files[0];
+      const file = input.files[0];
+      
+      // Verifica o tipo de arquivo
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor, selecione um arquivo de imagem (JPG, PNG, GIF, etc.).');
+        this.selectedFile = null;
+        this.imagemPreviewUrl = null;
+        return;
+      }
 
-      const reader = new FileReader();
+      console.log(`FRONTEND - onFileSelected: Tamanho original da imagem: ${file.size / 1024} KB`);
 
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        this.imagemPreviewUrl = reader.result;
-      };
+      try {
+        // Converte File para base64 para compressão
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async (e: ProgressEvent<FileReader>) => {
+          const base64Image = e.target?.result as string;
 
-      reader.readAsDataURL(this.selectedFile);
+          // Comprime a imagem (qualidade de 70%, 70% de largura/altura, formato original)
+          // `quality` e `ratio` podem ser ajustados conforme sua necessidade
+          const compressedBase64 = await this.imageCompress.compressFile(
+            base64Image,
+            -1, // orientation: -1 for auto (default)
+            70, // percentage for quality (70%)
+            70 // percentage for width/height (70% do original)
+          );
+          console.log(`FRONTEND - onFileSelected: Tamanho da imagem comprimida: ${this.imageCompress.byteCount(compressedBase64) / 1024} KB`);
+
+          // Converte a imagem comprimida de volta para File
+          const compressedFile = this.base64ToFile(compressedBase64, file.name, file.type);
+          
+          this.selectedFile = compressedFile; // Armazena o arquivo COMPRIMIDO
+          this.imagemPreviewUrl = compressedBase64; // Atualiza o preview com a imagem COMPRIMIDA
+        };
+        reader.onerror = (error) => {
+          console.error('FRONTEND - onFileSelected: Erro ao ler o arquivo:', error);
+          alert('Erro ao carregar a imagem.');
+          this.selectedFile = null;
+          this.imagemPreviewUrl = null;
+        };
+
+      } catch (error) {
+        console.error('FRONTEND - onFileSelected: Erro durante a compressão da imagem:', error);
+        alert('Erro ao processar a imagem. Tente uma imagem diferente.');
+        this.selectedFile = null;
+        this.imagemPreviewUrl = null;
+      }
     } else {
       this.selectedFile = null;
       this.imagemPreviewUrl = null;
     }
   }
+
+  // Método auxiliar para converter Base64 para File
+  private base64ToFile(base64Data: string, filename: string, mimeType: string): File {
+    const byteString = atob(base64Data.split(',')[1]);
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    const blob = new Blob([ab], { type: mimeType });
+    return new File([blob], filename, { type: mimeType });
+  }
+
 
   async saveRecipe(): Promise<void> {
     console.log('FRONTEND - saveRecipe: Função saveRecipe iniciada.');
@@ -268,18 +327,31 @@ export class RecipeCreationPage implements OnInit {
     }
 
     let photoUrlToSave: string | null = null;
+
+    // <<<<< LÓGICA CORRETA DE UPLOAD DE IMAGEM PARA O CLOUDINARY >>>>>
     if (this.selectedFile) {
-        console.log('Simulando upload de imagem. Nome do arquivo:', this.selectedFile.name);
-        photoUrlToSave = `https://exemplo.com/path/to/uploaded/images/${this.selectedFile.name}`;
+        console.log('FRONTEND - saveRecipe: Imagem selecionada para upload. Enviando para o Cloudinary...');
+        try {
+            // Chama o método do service para fazer o upload para o Cloudinary
+            photoUrlToSave = await firstValueFrom(this.receitaService.uploadRecipeImage(this.selectedFile));
+            console.log('FRONTEND - saveRecipe: URL da imagem do Cloudinary obtida:', photoUrlToSave);
+        } catch (uploadError) {
+            console.error('FRONTEND - saveRecipe: Erro ao fazer upload da imagem para o Cloudinary:', uploadError);
+            alert('Erro ao fazer upload da imagem. Por favor, tente novamente.');
+            return;
+        }
     } else {
-        if (this.isEditMode && this.imagemPreviewUrl && typeof this.imagemPreviewUrl === 'string') {
+        // Se não houver novo arquivo selecionado, mas estiver em modo de edição e já houver uma URL válida, mantenha-a.
+        // A lógica do placeholder precisa ser robusta para não sobrescrever URL existente.
+        if (this.isEditMode && typeof this.imagemPreviewUrl === 'string' && this.imagemPreviewUrl && !this.imagemPreviewUrl.startsWith('https://placehold.co') && !this.imagemPreviewUrl.startsWith('https://via.placeholder.com')) {
             photoUrlToSave = this.imagemPreviewUrl;
             console.log('FRONTEND - saveRecipe: Modo de edição, mantendo imagem existente:', photoUrlToSave);
         } else {
-            photoUrlToSave = 'https://via.placeholder.com/150?text=No+Image';
+            photoUrlToSave = 'https://placehold.co/150x150?text=Sem+Foto'; // Placeholder padrão
             console.log('FRONTEND - saveRecipe: Nenhuma imagem selecionada. Usando placeholder:', photoUrlToSave);
         }
     }
+
 
     const ingredientsPayload: IngredientPayload[] = this.ingredients.map(ing => ({
       name: ing.name.trim(),
@@ -291,7 +363,7 @@ export class RecipeCreationPage implements OnInit {
     const recipeData: RecipeCreationPayload = {
       recipeName: this.recipeTitle.trim(),
       description: this.recipeDescription.trim(),
-      photoUrl: photoUrlToSave,
+      photoUrl: photoUrlToSave, // Usa a URL da imagem (do Cloudinary ou placeholder)
       userId: this.currentUserUid!,
       categoryId: this.recipeCategoryId,
       difficultyId: this.recipeDifficultyId,
@@ -300,7 +372,7 @@ export class RecipeCreationPage implements OnInit {
       ingredients: ingredientsPayload,
     };
 
-    console.log('FRONTEND - saveRecipe: Payload final enviado ao backend:', recipeData);
+    console.log('FRONTEND - saveRecipe: Payload final enviado para o serviço de receitas:', recipeData);
     console.log('FRONTEND - saveRecipe: userId NO PAYLOAD FINAL:', recipeData.userId);
 
     try {
@@ -311,14 +383,14 @@ export class RecipeCreationPage implements OnInit {
         alert('Receita atualizada com sucesso!');
       } else {
         console.log('FRONTEND - saveRecipe: Chamando saveRecipe para nova receita.');
-        response = await this.receitaService.saveRecipe(recipeData).toPromise();
+        response = await firstValueFrom(this.receitaService.saveRecipe(recipeData)); // Usando firstValueFrom
         alert('Receita criada com sucesso!');
       }
       console.log('FRONTEND - saveRecipe: Operação de receita concluída!', response);
       this.router.navigate(['/feed']);
     } catch (error) {
       console.error('FRONTEND - saveRecipe: Erro ao salvar/atualizar receita:', error);
-      alert('Erro ao salvar/atualizar receita. Verifique o console do navegador e o terminal do backend para mais detalhes.');
+      alert('Erro ao salvar/atualizar receita. Verifique o console do navegador para mais detalhes.');
     }
   }
 
