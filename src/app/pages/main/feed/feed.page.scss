@@ -16,6 +16,7 @@
   overflow-y: auto; /* >>> Habilita a rolagem vertical *apenas quando o conteúdo transborda* <<< */
   -webkit-overflow-scrolling: touch; /* Suaviza a rolagem em dispositivos iOS */
   padding: 0; /* Garante que não haja padding extra neste nível */
+  margin: 20px 0px;
 
   /* >>> Estilos para esconder a barra de rolagem no WebKit (Chrome, Safari) <<< */
   &::-webkit-scrollbar {
@@ -36,11 +37,35 @@
  
 .header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin: 20px auto 0 auto; /* Ajusta a margem superior para espaçamento */
-  width: 90%; /* Ocupa a largura total do feed-page-content */
+  flex-direction: column;
+  padding: 20px;
+  background-color: #11110F;
+  color: #f0f0f0;
 }
+
+.header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.home-text {
+  color: #AD2F33;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0;
+}
+
+// <<<<< AJUSTE: Estilos para a imagem de perfil >>>>>
+.profile-image {
+  width: 60px; /* Tamanho da imagem de perfil */
+  height: 60px; /* Tamanho da imagem de perfil */
+  border-radius: 50%; /* Torna a imagem circular */
+  object-fit: cover; /* Garante que a imagem preencha o círculo sem distorcer */
+}
+
  
 .texts {
   flex-grow: 1;

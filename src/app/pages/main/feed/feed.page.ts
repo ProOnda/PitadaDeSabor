@@ -8,10 +8,12 @@ import { ReceitaService } from '../../../services/receita/receita.service';
 import { ReceitaCardHorizontalComponent } from '../../../components/item-displays/receita-card-horizontal/receita-card-horizontal.component';
 import { ItemListSectionComponent } from '../../../components/item-displays/item-list-section/item-list-section.component';
 import { AuthService } from '../../../services/auth/auth.service';
-import { Subscription, interval } from 'rxjs';
-import { Router } from '@angular/router'; // Importe o Router
+import { Subscription, interval, of } from 'rxjs'; // Adicionado 'of'
+import { Router } from '@angular/router';
+import { switchMap, tap, catchError } from 'rxjs/operators'; // Adicionados operadores para loadUserData
 
 import { RecipeListItem } from '../../../../app/interfaces/recipe.interfaces';
+import { UserData } from '../../../../app/interfaces/user.interfaces'; // Importar UserData
 
 @Component({
   selector: 'app-feed',
@@ -34,36 +36,43 @@ export class FeedPage implements OnInit, OnDestroy {
   error: string | null = null;
   saudacao: string = '';
   userName: string | null = null;
+  userPhotoUrl: string | null = null; // <<<<< NOVO: Propriedade para a URL da foto do usuário >>>>>
   searchTerm: string = '';
 
   private timeSubscription: Subscription | undefined;
+  private authSubscription: Subscription | undefined; // <<<<< NOVO: Inscrição para o authState >>>>>
   private receitaService: ReceitaService = inject(ReceitaService);
   private authService: AuthService = inject(AuthService);
-  private router: Router = inject(Router); // Injete o Router
+  private router: Router = inject(Router);
 
   constructor() {}
 
   ngOnInit(): void {
     this.carregarReceitas();
     this.updateSaudacao();
+    this.loadUserData(); // <<<<< CHAMAR O MÉTODO PARA CARREGAR DADOS DO USUÁRIO >>>>>
     
     this.timeSubscription = interval(60000).subscribe(() => {
       this.updateSaudacao();
     });
 
-    this.authService.userName$.subscribe(name => {
-      this.userName = name;
-    });
+    // Esta parte foi movida para loadUserData para uma gestão mais centralizada
+    // this.authService.userName$.subscribe(name => {
+    //   this.userName = name;
+    // });
   }
 
   ngOnDestroy(): void {
     if (this.timeSubscription) {
       this.timeSubscription.unsubscribe();
     }
+    if (this.authSubscription) { // <<<<< NOVO: Desinscrever o authSubscription >>>>>
+      this.authSubscription.unsubscribe();
+    }
   }
 
   updateSaudacao(): void {
-    const now = new Date(Date.now() - (3 * 60 * 60 * 1000));
+    const now = new Date(Date.now() - (3 * 60 * 60 * 1000)); // Ajuste para fuso horário, se necessário
     const hour = now.getHours();
 
     if (hour >= 0 && hour < 12) {
@@ -73,6 +82,38 @@ export class FeedPage implements OnInit, OnDestroy {
     } else {
       this.saudacao = 'Boa noite';
     }
+  }
+
+  // <<<<< NOVO/ATUALIZADO: Método para carregar os dados do usuário, incluindo a foto >>>>>
+  private loadUserData(): void {
+    this.authSubscription = this.authService.authState.pipe(
+      switchMap(firebaseUser => {
+        if (firebaseUser) {
+          // Busca os dados adicionais do usuário no Firestore
+          return this.authService.getCurrentUserData(firebaseUser.uid).pipe(
+            tap((userData: UserData | null) => {
+              if (userData) {
+                this.userName = userData.user_name || userData.displayName || firebaseUser.email || 'Usuário';
+                this.userPhotoUrl = userData.photoURL || 'https://placehold.co/40x40'; // Atribui a URL da foto
+              } else {
+                this.userName = firebaseUser.email || 'Usuário';
+                this.userPhotoUrl = 'https://placehold.co/40x40'; // Fallback se não encontrar dados no Firestore
+              }
+            }),
+            catchError(error => {
+              console.error('Erro ao carregar dados do usuário:', error);
+              this.userName = firebaseUser.email || 'Usuário';
+              this.userPhotoUrl = 'https://placehold.co/40x40'; // Fallback em caso de erro
+              return of(null); // Retorna um Observable vazio para não quebrar a stream
+            })
+          );
+        } else {
+          this.userName = 'Usuário';
+          this.userPhotoUrl = 'https://placehold.co/40x40'; // Fallback se não houver usuário logado
+          return of(null); // Retorna um Observable vazio para não quebrar a stream
+        }
+      })
+    ).subscribe();
   }
 
   carregarReceitas(): void {
@@ -122,9 +163,8 @@ export class FeedPage implements OnInit, OnDestroy {
     this.router.navigate(['/criar-receita']);
   }
 
-  // <<<<< NOVO MÉTODO: Navegar para a página de filtro >>>>>
   goToFilterPage(): void {
     console.log('Navegando para a página de filtro...');
-    this.router.navigate(['/filter']); // Certifique-se de que 'filter' é o caminho correto da sua rota
+    this.router.navigate(['/filter']);
   }
 }

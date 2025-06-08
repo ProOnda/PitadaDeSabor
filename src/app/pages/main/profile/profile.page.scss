@@ -17,6 +17,12 @@
   box-sizing: border-box;
 }
 
+.info{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 /* Container principal rolável - Onde o conteúdo que deve rolar verticalmente estará */
 .page-content-scrollable {
   flex: 1; /* Faz esta div ocupar todo o espaço restante verticalmente */
@@ -69,14 +75,126 @@
   font-size: 12px;
   font-family: 'Mulish', sans-serif;
   opacity: 0.8;
-  margin-top: -40px; /* Ajuste a margem para ficar mais próximo do card */
-  /* Removidos `align-self` e `padding` daqui, já que o `.user-summary-wrapper` centraliza */
+  margin-top: -10px;
 }
 
-/* Mensagens de status (carregando, erro, sem receitas) */
-.loading-message,
-.error-message,
-.no-recipes-message {
+/* ESTILOS PARA UPLOAD DE FOTO DE PERFIL (NA ProfilePage) */
+.upload-foto-perfil {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.contorno {
+  // Define o tamanho da moldura externa
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  border: 1px solid #AD2F33; /* Borda principal vermelha */
+  box-shadow: 0 0 0 2px #AD2F33; /* Sombra para o efeito de anel mais robusto */
+  display: flex;
+  justify-content: center; /* Centraliza horizontalmente o conteúdo interno */
+  align-items: center;   /* Centraliza verticalmente o conteúdo interno */
+  overflow: hidden; /* Garante que qualquer conteúdo que exceda a borda seja cortado */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  margin-bottom: 15px; /* Espaçamento entre o contorno e o botão de salvar */
+
+  &:hover {
+    border-color: darken(#AD2F33, 10%);
+    box-shadow: 0 0 0 3px darken(#AD2F33, 10%);
+    transform: scale(1.02);
+  }
+}
+
+.upload-area-perfil {
+  // Esta é a área clicável (o label) que contém a imagem e os ícones.
+  // Ela deve preencher o espaço interno do .contorno
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: calc(100% - 10px); /* Preenche o contorno menos um pequeno padding para a borda interna */
+  height: calc(100% - 10px); /* Preenche o contorno menos um pequeno padding para a borda interna */
+  background-color: #1D1D19; /* Fundo para o caso de não ter imagem */
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  // A borda e a sombra foram movidas para .contorno, então removemos daqui
+  // margin-bottom foi movido para .contorno
+}
+
+.upload-area-perfil input[type="file"] {
+  display: none;
+}
+
+.upload-icon-wrapper-perfil {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  color: #404040;
+  font-size: 4em;
+}
+
+.upload-icon-wrapper-perfil .bi-image {
+  font-size: 80px;
+}
+
+.upload-plus-icon-perfil {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  font-size: 0.8em;
+  color: #F0F0F0;
+  background-color: #AD2F33;
+  border-radius: 50%;
+  padding: 5px;
+  line-height: 1;
+}
+
+.imagem-preview-perfil {
+  position: absolute;
+  width: 100%; /* A imagem preenche a área de upload */
+  height: 100%; /* A imagem preenche a área de upload */
+  object-fit: cover; /* Garante que a imagem cubra a área sem distorcer */
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.upload-text-perfil {
+  position: absolute;
+  bottom: 15px;
+  font-size: 0.7em;
+  color: #606060;
+  text-align: center;
+  width: 80%;
+}
+
+.botao-salvar-foto-perfil {
+  background-color: #AD2F33;
+  color: #F0F0F0;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+  width: auto;
+
+  &:hover {
+    background-color: darken(#AD2F33, 5%);
+  }
+}
+
+
+/* Mensagens de status */
+.loading-message, .error-message, .no-recipes-message {
   color: #f0f0f0;
   font-size: 1.1em;
   padding: 20px;
@@ -87,7 +205,7 @@
   max-width: 400px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   text-align: center;
-  align-self: center; /* Mantém estas mensagens centralizadas */
+  align-self: center;
 }
 
 .error-message {
@@ -101,7 +219,6 @@
   background-color: var(--ion-color-primary-tint);
   border: 1px solid var(--ion-color-primary);
 }
-
 
 /* Grid de receitas criadas pelo usuário */
 .recipes-grid {
@@ -174,5 +291,15 @@ app-feed-menu {
   .page-header-container-custom,
   .profile-content {
     width: 95%; /* Ajusta a largura em telas menores para mais padding */
+  }
+
+  .contorno {
+    width: 130px; /* Ajusta o tamanho do contorno para telas menores */
+    height: 130px;
+  }
+
+  .botao-salvar-foto-perfil {
+    padding: 8px 15px;
+    font-size: 12px;
   }
 }

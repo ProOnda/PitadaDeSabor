@@ -1,44 +1,57 @@
+// src/app/services/auth/auth.service.ts
 import { Injectable } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, user, updateProfile, User } from '@angular/fire/auth';
+import {
+  Auth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  user,
+  updateProfile,
+  User as FirebaseAuthUser,
+} from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
   DocumentSnapshot,
   DocumentReference,
-  Firestore, // Importe Firestore
-} from '@angular/fire/firestore'; // Importe os módulos do Firestore
-import { UserData } from '../../interfaces/user.interfaces'; // Verifique o caminho correto para sua interface UserData
-import { BehaviorSubject, Observable, map, switchMap, of, from } from 'rxjs'; // Adicione 'from' e 'of' aqui
-import { catchError } from 'rxjs/operators'; // Adicione 'catchError' aqui
+  Firestore,
+  collection,
+} from '@angular/fire/firestore';
+import { UserData } from '../../interfaces/user.interfaces'; // Caminho corrigido
+import { BehaviorSubject, Observable, map, switchMap, of, from } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-  // authState é um Observable que emite o objeto User (ou null) do Firebase Authentication
-  authState: Observable<User | null> = user(this.auth); // Tipagem mais específica
-  userName$ = new BehaviorSubject<string | null>(null);
+  private usersCollection = collection(this.firestore, 'users');
 
-  // Adicione 'private firestore: Firestore' ao construtor
+  public authState: Observable<FirebaseAuthUser | null>;
+  public userName$ = new BehaviorSubject<string | null>(null);
+
   constructor(private auth: Auth, private router: Router, private firestore: Firestore) {
     console.log('AuthService: Construtor inicializado.');
 
-    // Subscreve ao estado de autenticação para atualizar userName$
-    this.authState.subscribe(user => {
-      if (user) {
-        console.log('AuthService: authState emitiu usuário:', user.uid, user.email, user.displayName);
-        this.userName$.next(user.displayName || user.email?.split('@')[0] || 'Usuário');
-      } else {
-        console.log('AuthService: authState emitiu null (usuário deslogado ou anônimo).');
-        this.userName$.next(null);
-      }
-      // Log do currentUser do Firebase Auth diretamente para depuração
-      console.log('AuthService: auth.currentUser (após authState emitir):', this.auth.currentUser ? this.auth.currentUser.uid : 'null');
+    this.authState = user(this.auth);
+
+    this.authState.pipe(
+      switchMap(firebaseUser => {
+        if (firebaseUser) {
+          return this.getCurrentUserData(firebaseUser.uid).pipe(
+            map(userData => userData?.user_name || userData?.displayName || firebaseUser.email || null)
+          );
+        } else {
+          return of(null);
+        }
+      })
+    ).subscribe(userName => {
+      this.userName$.next(userName);
     });
 
-    // Log inicial do currentUser para ver o estado no carregamento do serviço
     console.log('AuthService: auth.currentUser (no construtor):', this.auth.currentUser ? this.auth.currentUser.uid : 'null');
   }
 
@@ -52,34 +65,49 @@ export class AuthService {
     return this.userName$.getValue();
   }
 
-  async registerUser(email: string, password: string, displayName: string): Promise<User | null> {
+  async registerUser(email: string, password: string, displayName: string): Promise<FirebaseAuthUser | null> {
     console.log('AuthService - registerUser(): Tentando registrar usuário...');
     try {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-      const user = userCredential.user;
-      await updateProfile(user, { displayName }); // Use user diretamente aqui
+      const firebaseUser = userCredential.user;
 
-      // Salvar dados no Firestore
-      if (user) {
-        await this.updateUserData(user); // Chame updateUserData para salvar no Firestore
+      if (firebaseUser) {
+        // Atualiza o perfil do usuário no Firebase Auth
+        await updateProfile(firebaseUser, { displayName: displayName, photoURL: undefined }); // photoURL inicial como undefined
+
+        // Salva os dados no Firestore, incluindo user_name e photoURL
+        const userData: UserData = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email ?? undefined, // Usa ?? undefined para compatibilidade com a interface
+          displayName: firebaseUser.displayName ?? undefined, // Usa ?? undefined para compatibilidade com a interface
+          photoURL: firebaseUser.photoURL ?? undefined, // Usa ?? undefined para compatibilidade com a interface
+          user_name: displayName, // Define user_name na criação
+          favoriteRecipeIds: [], // Inicializa como array vazio
+        };
+        await setDoc(doc(this.usersCollection, firebaseUser.uid), userData, { merge: true });
+        console.log('AuthService - registerUser(): Dados do novo usuário salvos no Firestore:', userData);
       }
 
       console.log('AuthService - registerUser(): Usuário registrado com sucesso. UID:', userCredential.user.uid);
       console.log('AuthService - registerUser(): auth.currentUser após registro:', this.auth.currentUser ? this.auth.currentUser.uid : 'null');
-      return userCredential.user;
+      return firebaseUser;
     } catch (error: any) {
       console.error('AuthService - registerUser(): Erro ao registrar usuário:', error.code, error.message);
       return Promise.reject(error);
     }
   }
 
-  async loginUser(email: string, password: string): Promise<User | null> {
+  async loginUser(email: string, password: string): Promise<FirebaseAuthUser | null> {
     console.log('AuthService - loginUser(): Tentando fazer login...');
     try {
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
+      const firebaseUser = userCredential.user;
+      if (firebaseUser) {
+        await this.saveUserDataToFirestore(firebaseUser);
+      }
       console.log('AuthService - loginUser(): Login bem-sucedido. UID:', userCredential.user.uid);
       console.log('AuthService - loginUser(): auth.currentUser após login:', this.auth.currentUser ? this.auth.currentUser.uid : 'null');
-      return userCredential.user;
+      return firebaseUser;
     } catch (error: any) {
       console.error('AuthService - loginUser(): Erro ao fazer login:', error.code, error.message);
       return Promise.reject(error);
@@ -102,7 +130,7 @@ export class AuthService {
     return this.authState.pipe(map(user => !!user));
   }
 
-  getCurrentUser(): Observable<User | null> {
+  getCurrentUser(): Observable<FirebaseAuthUser | null> {
     return this.authState;
   }
 
@@ -111,58 +139,71 @@ export class AuthService {
     return currentUser ? currentUser.getIdToken() : Promise.resolve(null);
   }
 
-  // ============== Métodos para dados do Firestore (adicionados/confirmados) ==================
+  // ============== Métodos para dados do Firestore ==================
 
-  // Método para obter dados do usuário do Firestore
-  getUserData(uid: string): Observable<UserData | null> {
+  private async saveUserDataToFirestore(user: FirebaseAuthUser): Promise<void> {
+    const userRef = doc(this.usersCollection, user.uid);
+    const userDoc = await getDoc(userRef);
+
+    const userDataToSave: UserData = {
+      uid: user.uid,
+      email: user.email ?? undefined,
+      displayName: user.displayName ?? undefined,
+      photoURL: user.photoURL ?? undefined,
+      user_name: user.displayName || user.email || 'Novo Usuário',
+      favoriteRecipeIds: userDoc.exists() ? (userDoc.data() as UserData).favoriteRecipeIds || [] : [], 
+    };
+
+    if (!userDoc.exists()) {
+      await setDoc(userRef, userDataToSave);
+      console.log('AuthService: Dados do novo usuário criados no Firestore:', userDataToSave);
+    } else {
+      await updateDoc(userRef, {
+        displayName: userDataToSave.displayName,
+        photoURL: userDataToSave.photoURL,
+        user_name: userDataToSave.user_name,
+      });
+      console.log('AuthService: Dados do usuário existente atualizados no Firestore:', userDataToSave.uid);
+    }
+  }
+
+  getCurrentUserData(uid: string): Observable<UserData | null> {
     const userDocRef: DocumentReference<UserData> = doc(this.firestore, `users/${uid}`) as DocumentReference<UserData>;
 
-    // Usamos 'from' para converter a Promise de getDoc em um Observable
     return from(getDoc(userDocRef)).pipe(
       map((docSnapshot: DocumentSnapshot<UserData>) => {
         if (docSnapshot.exists()) {
-          const userData = docSnapshot.data() as UserData;
+          const userData = docSnapshot.data();
           return { ...userData, uid: docSnapshot.id };
         } else {
-          console.log('No such user document!');
+          console.log(`AuthService: Documento do usuário ${uid} não encontrado no Firestore.`);
           return null;
         }
       }),
-      catchError(error => { // Não esqueça de importar catchError de 'rxjs/operators'
-        console.error('Error fetching user data from Firestore:', error);
+      catchError(error => {
+        console.error('AuthService: Erro ao buscar dados do usuário no Firestore:', error);
         return of(null);
       })
     );
   }
 
-  // Método para atualizar os dados do usuário no Firestore (chamado após registro, por exemplo)
-  async updateUserData(user: User): Promise<void> {
-    if (!user.uid) {
-      console.error('User UID is missing for updateUserData.');
-      return;
+  async updateUserPhotoUrl(userId: string, newPhotoUrl: string): Promise<void> {
+    if (!userId) {
+      console.error('AuthService: userId é nulo para updateUserPhotoUrl.');
+      throw new Error('User ID is required to update photo URL.');
     }
-
-    const userRef = doc(this.firestore, `users/${user.uid}`);
-
-    const userData: UserData = {
-      uid: user.uid,
-      email: user.email ?? undefined,
-      displayName: user.displayName ?? undefined,
-      photoURL: user.photoURL ?? undefined,
-      // Adicione outros campos que você deseja salvar
-    };
-
-    await setDoc(userRef, userData, { merge: true });
-    console.log('User data updated successfully in Firestore:', userData);
+    const userDocRef = doc(this.usersCollection, userId);
+    try {
+      await updateDoc(userDocRef, {
+        photoURL: newPhotoUrl,
+      });
+      console.log(`AuthService: URL da foto de perfil do usuário ${userId} atualizada para: ${newPhotoUrl}`);
+      if (this.auth.currentUser && this.auth.currentUser.uid === userId) {
+        await updateProfile(this.auth.currentUser, { photoURL: newPhotoUrl });
+      }
+    } catch (error) {
+      console.error(`AuthService: Erro ao atualizar foto de perfil do usuário ${userId} no Firestore:`, error);
+      throw error;
+    }
   }
-
-  // NOVO MÉTODO: Combina getCurrentUser com getUserData
-  getCurrentUserData(userId: string): Observable<UserData | null> {
-    // Basicamente, é o mesmo que getUserData, mas o nome é mais direto para o contexto de "dados do usuário logado"
-    // ou se você quiser garantir que o userId vem do usuário autenticado.
-    // Como você já tem getUserData, podemos simplesmente chamá-lo.
-    return this.getUserData(userId);
-  }
-
-  // ... outros métodos (se houver)
 }

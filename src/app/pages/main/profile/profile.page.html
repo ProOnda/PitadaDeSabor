@@ -10,20 +10,41 @@
       <div class="profile-content">
         
         <div class="user-summary-wrapper">
-          <app-person-card
-            [name]="userName || 'Carregando...'"
-            [avatarUrl]="userPhotoUrl || 'https://placehold.co/100x100'"
-          ></app-person-card>
-          <p class="posts-count">{{ postsCount || 0 }} postagens feitas</p>
+          <div class="grupo-formulario upload-foto-perfil">
+            <div class="contorno">
+            <label for="profileFoto" class="upload-area-perfil">
+              <input
+                type="file"
+                id="profileFoto"
+                name="profileFoto"
+                accept="image/png, image/jpeg, image/jpg"
+                style="display: none;"
+                (change)="onProfileFileSelected($event)" > <!-- NOVO EVENTO -->
+              <div class="upload-icon-wrapper-perfil" *ngIf="!profileImagePreviewUrl">
+                <i class="bi bi-image"></i>
+                <i class="bi bi-plus-lg upload-plus-icon-perfil"></i>
+              </div>
+              <img [src]="profileImagePreviewUrl!" *ngIf="profileImagePreviewUrl" class="imagem-preview-perfil" alt="Prévia da Foto de Perfil">
+              <span *ngIf="!profileImagePreviewUrl" class="upload-text">Clique para adicionar foto de perfil</span>
+            </label>
+            </div>
+          </div>
+          <!-- <<<<< NOVO: Botão de salvar para a foto de perfil >>>>> -->
+          <button class="botao-salvar-foto-perfil" *ngIf="selectedProfileFile" (click)="onSaveProfilePhoto()">
+            Salvar Foto de Perfil
+          </button>
+          <div class="info">
+            <p class="name">{{ userName || 'Carregando...' }}</p> <!-- CORREÇÃO APLICADA AQUI: de 'name' para 'userName' -->
+            <p class="posts-count">{{ postsCount || 0 }} postagens feitas</p>
+          </div>
         </div>
 
         <div class="item-list-section-container">
           <app-item-list-section
             title="Minhas Receitas"
             iconClass="bi bi-book-fill">
-           </app-item-list-section>
+            </app-item-list-section>
         </div>
-
             <p *ngIf="isLoading" class="loading-message">Carregando suas receitas...</p>
             <p *ngIf="error" class="error-message">{{ error }}</p>
 
@@ -43,6 +64,7 @@
                 Você ainda não criou nenhuma receita. Que tal compartilhar uma?
               </p>
             </ng-container>
+        
         <app-feed-menu></app-feed-menu>
       </div>
     </div>

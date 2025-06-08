@@ -6,6 +6,11 @@
     <!-- Conteúdo principal do feed - Ele terá width: 90% e margin: 0 auto; -->
     <div class="feed-page-content">
       <div class="header">
+        <div class="header-top-row">
+          <p class="home-text">Home</p>
+          <!-- <<<<< NOVO: Imagem de perfil no lugar do círculo >>>>> -->
+          <img [src]="userPhotoUrl || 'https://placehold.co/40x40'" alt="Foto de Perfil" class="profile-image">
+        </div>
         <div class="texts">
           <p class="greeting">{{ saudacao }}, {{ userName || 'Usuário' }}!</p>
           <p class="question">Qual Vai Ser A Receita Do Dia?</p>
