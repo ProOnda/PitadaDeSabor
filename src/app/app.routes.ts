@@ -39,14 +39,6 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/auth/password-sent/password-sent.page').then( m => m.PasswordSentPage)
   },
   {
-    path: 'password-reset-success',
-    loadComponent: () => import('./pages/auth/password-reset-success/password-reset-success.page').then( m => m.PasswordResetSuccessPage)
-  },
-  {
-    path: 'reset-password-new',
-    loadComponent: () => import('./pages/auth/reset-password-new/reset-password-new.page').then( m => m.ResetPasswordNewPage)
-  },
-  {
     path: 'feed',
     loadComponent: () => import('./pages/main/feed/feed.page').then( m => m.FeedPage)
   },
