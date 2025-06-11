@@ -1,7 +1,7 @@
 .receita-card-horizontal {
     overflow: hidden;
     width: 90%;
-    margin: 0 auto;
+    margin: 0px auto 30px auto;
   }
   
   .receita-image-container {
@@ -9,7 +9,6 @@
     height: 20vh; /* Altura da imagem (ajuste conforme necessário) */
     overflow: hidden;
     border-radius: 10px 0 0 10px; /* Arredonda as bordas esquerdas */
-    margin: 0 auto;
   }
   
   .receita-image-container img {
@@ -24,5 +23,27 @@
     font-size: 16px;
     color: #F0DBBE;
     font-family: sans-serif;
-    margin-bottom: 30px;
   }
+
+.receita-author-info {
+  display: flex; /* Agora em linha */
+  align-items: center; /* Centraliza verticalmente os itens */
+  margin-top: 5px; /* Ajuste o espaçamento conforme necessário */
+  font-size: 0.75em; /* Tamanho da fonte para o nome do autor e data */
+  color: #f0f0f0; /* Cor mais suave */
+}
+
+.separator {
+  margin: 0 5px; /* Espaçamento ao redor da bolinha */
+  color: #f0f0f0; /* Cor da bolinha */
+}
+
+.author-name,
+.creation-date {
+  font-size: 12px; /* Tamanho da fonte para o nome do autor e data */
+  color: #f0f0f0; /* Cor mais suave */
+  margin: 2px 0; /* Pequeno espaçamento entre eles */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

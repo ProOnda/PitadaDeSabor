@@ -54,28 +54,13 @@
 .error-message,
 .no-favorites-message {
   color: #f0f0f0;
-  font-size: 1.1em;
+  font-size: 16px;
   padding: 20px;
-  border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.1);
   margin-top: 20px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   text-align: center;
   align-self: center; /* Centraliza estas mensagens dentro de .main-favorites-display */
-}
-
-.error-message {
-  color: var(--ion-color-danger);
-  background-color: var(--ion-color-danger-tint);
-  border: 1px solid var(--ion-color-danger);
-}
-
-.no-favorites-message {
-  color: var(--ion-color-primary-shade);
-  background-color: var(--ion-color-primary-tint);
-  border: 1px solid var(--ion-color-primary);
 }
 
 /* Grid de receitas favoritas */

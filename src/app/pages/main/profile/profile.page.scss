@@ -142,14 +142,14 @@
 }
 
 .upload-icon-wrapper-perfil .bi-image {
-  font-size: 80px;
+  font-size: 40px;
 }
 
 .upload-plus-icon-perfil {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
-  font-size: 0.8em;
+  bottom: 25%;
+  right: 23%;
+  font-size: 15px;
   color: #F0F0F0;
   background-color: #AD2F33;
   border-radius: 50%;
@@ -164,15 +164,6 @@
   object-fit: cover; /* Garante que a imagem cubra a área sem distorcer */
   border-radius: 50%;
   z-index: 2;
-}
-
-.upload-text-perfil {
-  position: absolute;
-  bottom: 15px;
-  font-size: 0.7em;
-  color: #606060;
-  text-align: center;
-  width: 80%;
 }
 
 .botao-salvar-foto-perfil {
@@ -196,28 +187,13 @@
 /* Mensagens de status */
 .loading-message, .error-message, .no-recipes-message {
   color: #f0f0f0;
-  font-size: 1.1em;
+  font-size: 16px;
   padding: 20px;
-  border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.1);
   margin-top: 20px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   text-align: center;
   align-self: center;
-}
-
-.error-message {
-  color: var(--ion-color-danger);
-  background-color: var(--ion-color-danger-tint);
-  border: 1px solid var(--ion-color-danger);
-}
-
-.no-recipes-message {
-  color: var(--ion-color-primary-shade);
-  background-color: var(--ion-color-primary-tint);
-  border: 1px solid var(--ion-color-primary);
 }
 
 /* Grid de receitas criadas pelo usuário */

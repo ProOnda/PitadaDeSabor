@@ -78,5 +78,8 @@ export const routes: Routes = [
     path: 'favorites',
     loadComponent: () => import('./pages/main/favorites/favorites.page').then( m => m.FavoritesPage)
   },
-
+  {
+    path: 'category-food/:id', // <<<<< NOVA ROTA >>>>>
+    loadComponent: () => import('./pages/main/category-food/category-food.page').then(m => m.CategoryFoodPage)
+  },
 ];

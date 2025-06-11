@@ -25,6 +25,7 @@ import {
   serverTimestamp,
   arrayUnion,
   arrayRemove,
+  DocumentSnapshot,
 } from '@angular/fire/firestore';
 
 import { RecipeDetail, RecipeListItem, IngredientDetail, RecipeCreationPayload } from '../../interfaces/recipe.interfaces';
@@ -37,10 +38,8 @@ export class ReceitaService {
   private firestore: Firestore = inject(Firestore);
   private http: HttpClient = inject(HttpClient);
 
-
-  private cloudinaryCloudName = 'do64wlw72'; // Seu Cloud Name
-  private cloudinaryUploadPreset = 'PitadaDeSabor'; // Seu Upload Preset
-
+  private cloudinaryCloudName = 'do64wlw72';
+  private cloudinaryUploadPreset = 'PitadaDeSabor';
   private cloudinaryUploadUrl = `https://api.cloudinary.com/v1_1/${this.cloudinaryCloudName}/image/upload`;
 
   private recipesCollection = collection(this.firestore, 'recipes');
@@ -61,7 +60,7 @@ export class ReceitaService {
     try {
       const snapshot = await getDocs(this.foodTypesCollection);
       snapshot.forEach(doc => {
-        this.foodTypeIdToLabelMap.set(doc.id, doc.data()['label']);
+        this.foodTypeIdToLabelMap.set(doc.id, (doc.data() as any)['label']); // Casting para any aqui
       });
       console.log('[ReceitaService] Mapeamento de foodTypes carregado:', this.foodTypeIdToLabelMap);
     } catch (error) {
@@ -79,6 +78,22 @@ export class ReceitaService {
       catchError(error => {
         console.error('Erro no upload de imagem para o Cloudinary:', error);
         throw error;
+      })
+    );
+  }
+
+  getAllCategories(): Observable<{ id: string, label: string }[]> {
+    return from(getDocs(this.categoriesCollection)).pipe(
+      map(snapshot => {
+        const categories: { id: string, label: string }[] = [];
+        snapshot.forEach(doc => {
+          categories.push({ id: doc.id, label: (doc.data() as any)['label'] }); // Casting para any aqui
+        });
+        return categories;
+      }),
+      catchError(error => {
+        console.error('Erro ao buscar todas as categorias:', error);
+        return of([]);
       })
     );
   }
@@ -127,7 +142,7 @@ export class ReceitaService {
           recipes.push({
             id: recipeDoc.id,
             recipeName: data.recipe_name || 'Sem Nome',
-            photoUrl: data.photo_url || data.photo || 'assets/placeholder.png', // Aqui já pega photo_url ou photo (legacy)
+            photoUrl: data.photo_url || data.photo || 'assets/placeholder.png',
             description: data.description || '',
 
             categoryId: data.category_id ? data.category_id.id : null,
@@ -185,14 +200,32 @@ export class ReceitaService {
 
         let ingredientsFormatted: IngredientDetail[] = [];
         if (Array.isArray(firestoreData.ingredients) && firestoreData.ingredients.length > 0) {
-          ingredientsFormatted = firestoreData.ingredients.map((ing: any) => ({
-            fdcId: ing.fdc_id || null,
-            name: ing.ingredient_name,
-            quantity: ing.quantity,
-            unitId: ing.unit_id ? ing.unit_id.id : null,
-            unitLabel: ing.unit_label || 'N/A',
-            foodTypeId: ing.food_type_id ? ing.food_type_id.id : null,
-            foodTypeLabel: ing.food_type_label || 'N/A'
+          ingredientsFormatted = await Promise.all(firestoreData.ingredients.map(async (ing: any) => {
+            let unitLabel = 'N/A';
+            if (ing.unit_id) {
+              const unitDoc = await getDoc(ing.unit_id);
+              if (unitDoc.exists()) {
+                unitLabel = (unitDoc.data() as any)?.['label'] || 'N/A'; // Casting para any aqui
+              }
+            }
+
+            let foodTypeLabel = 'N/A';
+            if (ing.food_type_id) {
+              const foodTypeDoc = await getDoc(ing.food_type_id);
+              if (foodTypeDoc.exists()) {
+                foodTypeLabel = (foodTypeDoc.data() as any)?.['label'] || 'N/A'; // Casting para any aqui
+              }
+            }
+
+            return {
+              fdcId: ing.fdc_id || null,
+              name: ing.ingredient_name,
+              quantity: ing.quantity,
+              unitId: ing.unit_id ? ing.unit_id.id : null,
+              unitLabel: unitLabel,
+              foodTypeId: ing.food_type_id ? ing.food_type_id.id : null,
+              foodTypeLabel: foodTypeLabel
+            };
           }));
         }
 
@@ -281,8 +314,19 @@ export class ReceitaService {
     }
 
     if (filters?.categories && filters.categories.length > 0) {
-      q = query(q, where('category_id', '==', doc(this.firestore, 'categories', filters.categories[0])));
+        if (filters.categories.length === 1) {
+            q = query(q, where('category_id', '==', doc(this.firestore, 'categories', filters.categories[0])));
+        } else {
+            const categoryRefs = filters.categories.map(id => doc(this.firestore, 'categories', id));
+            if (categoryRefs.length <= 10) {
+                q = query(q, where('category_id', 'in', categoryRefs));
+            } else {
+                console.warn('Limite de 10 valores para filtro "in" excedido. Filtrando apenas os primeiros 10.');
+                q = query(q, where('category_id', 'in', categoryRefs.slice(0, 10)));
+            }
+        }
     }
+
     if (filters?.time && filters.time.length > 0) {
       q = query(q, where('time_id', '==', doc(this.firestore, 'times', filters.time[0])));
     }
@@ -372,13 +416,6 @@ export class ReceitaService {
           updatedAt: serverTimestamp(),
           recipe_name_lower: resolvedData.recipe_name.toLowerCase()
         };
-        // <<<<< REMOVIDO: Lógica redundante de renomear 'photo' para 'photo_url' >>>>>
-        // A propriedade 'photo_url' já está sendo definida corretamente no resolveRecipeReferences
-        // if (dataToSave.photo) {
-        //   dataToSave.photo_url = dataToSave.photo;
-        //   delete dataToSave.photo;
-        // }
-
         const docRef = await addDoc(this.recipesCollection, dataToSave);
         console.log(`[createRecipe] Receita criada com sucesso. ID: ${docRef.id}`);
         return { message: 'Receita criada com sucesso!', recipeId: docRef.id };
@@ -399,13 +436,6 @@ export class ReceitaService {
           updatedAt: serverTimestamp(),
           recipe_name_lower: resolvedData.recipe_name.toLowerCase()
         };
-        // <<<<< REMOVIDO: Lógica redundante de renomear 'photo' para 'photo_url' >>>>>
-        // A propriedade 'photo_url' já está sendo definida corretamente no resolveRecipeReferences
-        // if (dataToUpdate.photo) {
-        //   dataToUpdate.photo_url = dataToUpdate.photo;
-        //   delete dataToUpdate.photo;
-        // }
-
         await updateDoc(recipeDocRef, dataToUpdate);
         console.log(`[updateRecipe] Receita ${recipeId} atualizada com sucesso.`);
         return { message: 'Receita atualizada com sucesso!' };
@@ -447,18 +477,36 @@ export class ReceitaService {
     ]);
 
     const unitsMap = new Map<string, string>();
-    allUnitsSnapshot.forEach(d => unitsMap.set(d.id, d.data()['label']));
+    allUnitsSnapshot.forEach(d => unitsMap.set(d.id, (d.data() as any)['label'])); // Casting para any aqui
     const foodTypesMap = new Map<string, string>();
-    allFoodTypesSnapshot.forEach(d => foodTypesMap.set(d.id, d.data()['label']));
+    allFoodTypesSnapshot.forEach(d => foodTypesMap.set(d.id, (d.data() as any)['label'])); // Casting para any aqui
 
-    const ingredientsToSave = recipeData.ingredients.map(ing => ({
-      fdc_id: ing.fdcId || null,
-      ingredient_name: ing.name,
-      quantity: ing.quantity,
-      unit_id: ing.unitId ? doc(this.firestore, 'units', ing.unitId) : null,
-      unit_label: ing.unitId ? (unitsMap.get(ing.unitId) || 'N/A') : 'N/A',
-      food_type_id: ing.foodTypeId ? doc(this.foodTypesCollection, ing.foodTypeId) : null,
-      food_type_label: ing.foodTypeId ? (foodTypesMap.get(ing.foodTypeId) || 'N/A') : 'N/A'
+    const ingredientsToSave = await Promise.all(recipeData.ingredients.map(async ing => {
+      let unitLabel = 'N/A';
+      if (ing.unitId) {
+        const unitDoc = await getDoc(doc(this.firestore, 'units', ing.unitId));
+        if (unitDoc.exists()) {
+          unitLabel = (unitDoc.data() as any)?.['label'] || 'N/A'; // Casting para any aqui
+        }
+      }
+
+      let foodTypeLabel = 'N/A';
+      if (ing.foodTypeId) {
+        const foodTypeDoc = await getDoc(doc(this.foodTypesCollection, ing.foodTypeId));
+        if (foodTypeDoc.exists()) {
+          foodTypeLabel = (foodTypeDoc.data() as any)?.['label'] || 'N/A'; // Casting para any aqui
+        }
+      }
+
+      return {
+        fdc_id: ing.fdcId || null,
+        ingredient_name: ing.name,
+        quantity: ing.quantity,
+        unit_id: ing.unitId ? doc(this.firestore, 'units', ing.unitId) : null,
+        unit_label: unitLabel,
+        food_type_id: ing.foodTypeId ? doc(this.foodTypesCollection, ing.foodTypeId) : null,
+        food_type_label: foodTypeLabel,
+      };
     }));
 
     const uniqueFoodTypeLabels = [...new Set(ingredientsToSave.map(ing => ing.food_type_label).filter(Boolean))];
@@ -466,17 +514,17 @@ export class ReceitaService {
     return {
       recipe_name: recipeData.recipeName,
       description: recipeData.description,
-      photo_url: recipeData.photoUrl, // <<< AGORA É SEMPRE 'photo_url' AQUI >>>
+      photo_url: recipeData.photoUrl,
       
       user_id: recipeData.userId ? doc(this.usersCollection, recipeData.userId) : null,
       category_id: recipeData.categoryId ? doc(this.categoriesCollection, recipeData.categoryId) : null,
-      category_label: categoryDoc && categoryDoc.exists() ? categoryDoc.data()['label'] : 'Não definida',
+      category_label: categoryDoc && categoryDoc.exists() ? (categoryDoc.data() as any)['label'] : 'Não definida', // Casting para any aqui
 
       difficulty_id: recipeData.difficultyId ? doc(this.difficultiesCollection, recipeData.difficultyId) : null,
-      difficulty_label: difficultyDoc && difficultyDoc.exists() ? difficultyDoc.data()['label'] : 'Não definida',
+      difficulty_label: difficultyDoc && difficultyDoc.exists() ? (difficultyDoc.data() as any)['label'] : 'Não definida', // Casting para any aqui
 
       time_id: recipeData.timeId ? doc(this.timesCollection, recipeData.timeId) : null,
-      time_label: timeDoc && timeDoc.exists() ? timeDoc.data()['label'] : 'Não definido',
+      time_label: timeDoc && timeDoc.exists() ? (timeDoc.data() as any)['label'] : 'Não definido', // Casting para any aqui
 
       preparation_mode: recipeData.preparationSteps,
       ingredients: ingredientsToSave,

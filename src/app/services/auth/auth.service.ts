@@ -20,7 +20,7 @@ import {
   Firestore,
   collection,
 } from '@angular/fire/firestore';
-import { UserData } from '../../interfaces/user.interfaces'; // Caminho corrigido
+import { UserData } from '../../interfaces/user.interfaces';
 import { BehaviorSubject, Observable, map, switchMap, of, from } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -66,24 +66,27 @@ export class AuthService {
   }
 
   async registerUser(email: string, password: string, displayName: string): Promise<FirebaseAuthUser | null> {
-    console.log('AuthService - registerUser(): Tentando registrar usuário...');
+    console.log('AuthService - registerUser(): Tentando registrar usuário com email:', email);
     try {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
       const firebaseUser = userCredential.user;
 
       if (firebaseUser) {
-        // Atualiza o perfil do usuário no Firebase Auth
-        await updateProfile(firebaseUser, { displayName: displayName, photoURL: undefined }); // photoURL inicial como undefined
+        console.log('AuthService - registerUser(): Firebase User criado. UID:', firebaseUser.uid, 'Email do FirebaseUser:', firebaseUser.email);
+        
+        await updateProfile(firebaseUser, { displayName: displayName, photoURL: undefined });
 
-        // Salva os dados no Firestore, incluindo user_name e photoURL
         const userData: UserData = {
           uid: firebaseUser.uid,
-          email: firebaseUser.email ?? undefined, // Usa ?? undefined para compatibilidade com a interface
-          displayName: firebaseUser.displayName ?? undefined, // Usa ?? undefined para compatibilidade com a interface
-          photoURL: firebaseUser.photoURL ?? undefined, // Usa ?? undefined para compatibilidade com a interface
-          user_name: displayName, // Define user_name na criação
-          favoriteRecipeIds: [], // Inicializa como array vazio
+          email: firebaseUser.email ?? null, // <<<<< CORRIGIDO: de undefined para null >>>>>
+          displayName: firebaseUser.displayName ?? null, // <<<<< CORRIGIDO: de undefined para null >>>>>
+          photoURL: firebaseUser.photoURL ?? null, // <<<<< CORRIGIDO: de undefined para null >>>>>
+          user_name: displayName,
+          favoriteRecipeIds: [],
         };
+        
+        console.log('AuthService - registerUser(): UserData a ser salva no Firestore (antes de setDoc):', userData);
+
         await setDoc(doc(this.usersCollection, firebaseUser.uid), userData, { merge: true });
         console.log('AuthService - registerUser(): Dados do novo usuário salvos no Firestore:', userData);
       }
@@ -147,9 +150,9 @@ export class AuthService {
 
     const userDataToSave: UserData = {
       uid: user.uid,
-      email: user.email ?? undefined,
-      displayName: user.displayName ?? undefined,
-      photoURL: user.photoURL ?? undefined,
+      email: user.email ?? null, // <<<<< CORRIGIDO: de undefined para null >>>>>
+      displayName: user.displayName ?? null, // <<<<< CORRIGIDO: de undefined para null >>>>>
+      photoURL: user.photoURL ?? null, // <<<<< CORRIGIDO: de undefined para null >>>>>
       user_name: user.displayName || user.email || 'Novo Usuário',
       favoriteRecipeIds: userDoc.exists() ? (userDoc.data() as UserData).favoriteRecipeIds || [] : [], 
     };
@@ -162,6 +165,7 @@ export class AuthService {
         displayName: userDataToSave.displayName,
         photoURL: userDataToSave.photoURL,
         user_name: userDataToSave.user_name,
+        email: userDataToSave.email,
       });
       console.log('AuthService: Dados do usuário existente atualizados no Firestore:', userDataToSave.uid);
     }

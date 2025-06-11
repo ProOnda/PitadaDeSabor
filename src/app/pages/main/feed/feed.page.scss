@@ -58,12 +58,38 @@
   margin: 0;
 }
 
-// <<<<< AJUSTE: Estilos para a imagem de perfil >>>>>
-.profile-image {
-  width: 60px; /* Tamanho da imagem de perfil */
-  height: 60px; /* Tamanho da imagem de perfil */
-  border-radius: 50%; /* Torna a imagem circular */
+// <<<<< NOVOS ESTILOS PARA O CONTAINER DA IMAGEM/ÍCONE >>>>>
+.profile-image-container {
+  width: 60px; /* Tamanho do container */
+  height: 60px; /* Tamanho do container */
+  border-radius: 50%; /* Torna o container circular */
+  overflow: hidden; /* Garante que a imagem/ícone não saia do círculo */
+  background-color: #1D1D19; /* Fundo cinza para quando não há foto */
+  border: 2px solid #AD2F33; /* Borda vermelha */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra para profundidade */
+  display: flex; /* Para centralizar o conteúdo (imagem ou ícone) */
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-actual-image { /* Estilos para a tag <img> real */
+  width: 100%;
+  height: 100%;
   object-fit: cover; /* Garante que a imagem preencha o círculo sem distorcer */
+  border-radius: 50%; /* Garante que a imagem em si seja circular */
+}
+
+.profile-placeholder-icon { /* Estilos para o div que contém o ícone */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  
+  i.bi-image {
+    font-size: 20px; /* Tamanho do ícone */
+    color: #404040; /* Cor do ícone (um cinza mais claro para contraste) */
+  }
 }
 
  

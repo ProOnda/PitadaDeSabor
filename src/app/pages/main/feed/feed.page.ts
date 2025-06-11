@@ -1,3 +1,4 @@
+// src/app/pages/main/feed/feed.page.ts
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { IonContent } from '@ionic/angular/standalone';
 import { SearchBarComponent } from '../../../components/common/search-bar/search-bar.component';
@@ -8,12 +9,12 @@ import { ReceitaService } from '../../../services/receita/receita.service';
 import { ReceitaCardHorizontalComponent } from '../../../components/item-displays/receita-card-horizontal/receita-card-horizontal.component';
 import { ItemListSectionComponent } from '../../../components/item-displays/item-list-section/item-list-section.component';
 import { AuthService } from '../../../services/auth/auth.service';
-import { Subscription, interval, of } from 'rxjs'; // Adicionado 'of'
+import { Subscription, interval, of } from 'rxjs';
 import { Router } from '@angular/router';
-import { switchMap, tap, catchError } from 'rxjs/operators'; // Adicionados operadores para loadUserData
+import { switchMap, tap, catchError } from 'rxjs/operators';
 
 import { RecipeListItem } from '../../../../app/interfaces/recipe.interfaces';
-import { UserData } from '../../../../app/interfaces/user.interfaces'; // Importar UserData
+import { UserData } from '../../../../app/interfaces/user.interfaces';
 
 @Component({
   selector: 'app-feed',
@@ -36,11 +37,14 @@ export class FeedPage implements OnInit, OnDestroy {
   error: string | null = null;
   saudacao: string = '';
   userName: string | null = null;
-  userPhotoUrl: string | null = null; // <<<<< NOVO: Propriedade para a URL da foto do usuário >>>>>
+  userPhotoUrl: string | null = null; // Pode ser null
   searchTerm: string = '';
 
+  allCategories: { id: string, label: string }[] = [];
+  categoriesMap: Map<string, string> = new Map();
+
   private timeSubscription: Subscription | undefined;
-  private authSubscription: Subscription | undefined; // <<<<< NOVO: Inscrição para o authState >>>>>
+  private authSubscription: Subscription | undefined;
   private receitaService: ReceitaService = inject(ReceitaService);
   private authService: AuthService = inject(AuthService);
   private router: Router = inject(Router);
@@ -50,29 +54,25 @@ export class FeedPage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.carregarReceitas();
     this.updateSaudacao();
-    this.loadUserData(); // <<<<< CHAMAR O MÉTODO PARA CARREGAR DADOS DO USUÁRIO >>>>>
+    this.loadUserData();
+    this.loadCategories();
     
     this.timeSubscription = interval(60000).subscribe(() => {
       this.updateSaudacao();
     });
-
-    // Esta parte foi movida para loadUserData para uma gestão mais centralizada
-    // this.authService.userName$.subscribe(name => {
-    //   this.userName = name;
-    // });
   }
 
   ngOnDestroy(): void {
     if (this.timeSubscription) {
       this.timeSubscription.unsubscribe();
     }
-    if (this.authSubscription) { // <<<<< NOVO: Desinscrever o authSubscription >>>>>
+    if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
   }
 
   updateSaudacao(): void {
-    const now = new Date(Date.now() - (3 * 60 * 60 * 1000)); // Ajuste para fuso horário, se necessário
+    const now = new Date(Date.now() - (3 * 60 * 60 * 1000));
     const hour = now.getHours();
 
     if (hour >= 0 && hour < 12) {
@@ -84,36 +84,55 @@ export class FeedPage implements OnInit, OnDestroy {
     }
   }
 
-  // <<<<< NOVO/ATUALIZADO: Método para carregar os dados do usuário, incluindo a foto >>>>>
   private loadUserData(): void {
     this.authSubscription = this.authService.authState.pipe(
       switchMap(firebaseUser => {
         if (firebaseUser) {
-          // Busca os dados adicionais do usuário no Firestore
           return this.authService.getCurrentUserData(firebaseUser.uid).pipe(
             tap((userData: UserData | null) => {
               if (userData) {
                 this.userName = userData.user_name || userData.displayName || firebaseUser.email || 'Usuário';
-                this.userPhotoUrl = userData.photoURL || 'https://placehold.co/40x40'; // Atribui a URL da foto
+                // <<<<< CORREÇÃO APLICADA AQUI >>>>>
+                // Define userPhotoUrl como null se for uma URL de placeholder ou não houver foto real.
+                // Isso permite que o *ngIf="!userPhotoUrl" no HTML seja verdadeiro.
+                if (userData.photoURL && userData.photoURL !== 'https://placehold.co/100x100' && userData.photoURL !== 'https://placehold.co/40x40') {
+                  this.userPhotoUrl = userData.photoURL;
+                } else {
+                  this.userPhotoUrl = null; // Exibe o ícone placeholder
+                }
               } else {
                 this.userName = firebaseUser.email || 'Usuário';
-                this.userPhotoUrl = 'https://placehold.co/40x40'; // Fallback se não encontrar dados no Firestore
+                this.userPhotoUrl = null; // Exibe o ícone placeholder se não houver dados do usuário
               }
             }),
             catchError(error => {
               console.error('Erro ao carregar dados do usuário:', error);
               this.userName = firebaseUser.email || 'Usuário';
-              this.userPhotoUrl = 'https://placehold.co/40x40'; // Fallback em caso de erro
-              return of(null); // Retorna um Observable vazio para não quebrar a stream
+              this.userPhotoUrl = null; // Exibe o ícone placeholder em caso de erro
+              return of(null);
             })
           );
         } else {
           this.userName = 'Usuário';
-          this.userPhotoUrl = 'https://placehold.co/40x40'; // Fallback se não houver usuário logado
-          return of(null); // Retorna um Observable vazio para não quebrar a stream
+          this.userPhotoUrl = null; // Exibe o ícone placeholder se não houver usuário logado
+          return of(null);
         }
       })
     ).subscribe();
+  }
+
+  private loadCategories(): void {
+    this.receitaService.getAllCategories().subscribe({
+      next: (categories) => {
+        this.allCategories = categories;
+        this.categoriesMap.clear();
+        categories.forEach(cat => this.categoriesMap.set(cat.label, cat.id));
+        console.log('Categorias carregadas:', this.allCategories);
+      },
+      error: (err) => {
+        console.error('Erro ao carregar categorias:', err);
+      }
+    });
   }
 
   carregarReceitas(): void {
@@ -150,8 +169,16 @@ export class FeedPage implements OnInit, OnDestroy {
     this.carregarReceitas();
   }
 
-  handleCategoryClick(category: string) {
-    console.log(`Categoria selecionada: ${category}`);
+  handleCategoryClick(categoryLabel: string): void {
+    console.log(`Categoria clicada: ${categoryLabel}`);
+    const categoryId = this.categoriesMap.get(categoryLabel);
+    if (categoryId) {
+      console.log(`Navegando para CategoryFoodPage com ID: ${categoryId}`);
+      this.router.navigate(['/category-food', categoryId]);
+    } else {
+      console.warn(`ID da categoria não encontrada para o label: ${categoryLabel}`);
+      alert('Categoria não encontrada.');
+    }
   }
 
   openReceitaDetails(receitaId: string) {
