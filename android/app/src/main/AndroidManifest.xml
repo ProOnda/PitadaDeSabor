@@ -36,6 +36,10 @@
     </application>
 
     <!-- Permissions -->
-
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- <<<<< PERMISSÕES ADICIONADAS AQUI NOVAMENTE >>>>> -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/> <!-- Para Android 13 (API 33) e superior -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/> <!-- Para Android 12 (API 31) e inferior -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/> <!-- Para Android 12 (API 31) e inferior -->
+    <uses-permission android:name="android.permission.CAMERA"/> <!-- Se você também usa a câmera diretamente para tirar fotos -->
 </manifest>
