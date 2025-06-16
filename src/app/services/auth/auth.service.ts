@@ -8,6 +8,8 @@ import {
   user,
   updateProfile,
   User as FirebaseAuthUser,
+  signInWithCredential,
+  GoogleAuthProvider,
 } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import {
@@ -23,6 +25,7 @@ import {
 import { UserData } from '../../interfaces/user.interfaces';
 import { BehaviorSubject, Observable, map, switchMap, of, from } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 @Injectable({
   providedIn: 'root',
@@ -78,9 +81,9 @@ export class AuthService {
 
         const userData: UserData = {
           uid: firebaseUser.uid,
-          email: firebaseUser.email ?? null, // <<<<< CORRIGIDO: de undefined para null >>>>>
-          displayName: firebaseUser.displayName ?? null, // <<<<< CORRIGIDO: de undefined para null >>>>>
-          photoURL: firebaseUser.photoURL ?? null, // <<<<< CORRIGIDO: de undefined para null >>>>>
+          email: firebaseUser.email ?? null,
+          displayName: firebaseUser.displayName ?? null,
+          photoURL: firebaseUser.photoURL ?? null,
           user_name: displayName,
           favoriteRecipeIds: [],
         };
@@ -113,6 +116,32 @@ export class AuthService {
       return firebaseUser;
     } catch (error: any) {
       console.error('AuthService - loginUser(): Erro ao fazer login:', error.code, error.message);
+      return Promise.reject(error);
+    }
+  }
+
+  // NOVO MÉTODO: Login com Google usando Capacitor Google Auth
+  async loginWithGoogle(): Promise<FirebaseAuthUser | null> {
+    try {
+      const googleUser = await GoogleAuth.signIn();
+
+      if (!googleUser || !googleUser.authentication || !googleUser.authentication.idToken) {
+        throw new Error('Google authentication failed');
+      }
+
+      const credential = GoogleAuthProvider.credential(googleUser.authentication.idToken);
+
+      const userCredential = await signInWithCredential(this.auth, credential);
+      const firebaseUser = userCredential.user;
+
+      if (firebaseUser) {
+        await this.saveUserDataToFirestore(firebaseUser);
+      }
+
+      console.log('AuthService - loginWithGoogle(): Login Google bem-sucedido:', firebaseUser?.uid);
+      return firebaseUser;
+    } catch (error) {
+      console.error('AuthService - loginWithGoogle(): Erro no login Google:', error);
       return Promise.reject(error);
     }
   }
@@ -150,9 +179,9 @@ export class AuthService {
 
     const userDataToSave: UserData = {
       uid: user.uid,
-      email: user.email ?? null, // <<<<< CORRIGIDO: de undefined para null >>>>>
-      displayName: user.displayName ?? null, // <<<<< CORRIGIDO: de undefined para null >>>>>
-      photoURL: user.photoURL ?? null, // <<<<< CORRIGIDO: de undefined para null >>>>>
+      email: user.email ?? null,
+      displayName: user.displayName ?? null,
+      photoURL: user.photoURL ?? null,
       user_name: user.displayName || user.email || 'Novo Usuário',
       favoriteRecipeIds: userDoc.exists() ? (userDoc.data() as UserData).favoriteRecipeIds || [] : [], 
     };

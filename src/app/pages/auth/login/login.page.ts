@@ -1,5 +1,3 @@
-// src/app/pages/login/login.page.ts
-
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { IonContent, IonButton } from '@ionic/angular/standalone';
@@ -37,11 +35,6 @@ export class LoginPage implements OnInit {
   exibirSenha: boolean = false;
   senhaInputType: string = 'password';
 
-  toggleSenha() {
-    this.exibirSenha = !this.exibirSenha;
-    this.senhaInputType = this.exibirSenha ? 'text' : 'password';
-  }
-
   constructor(
     private router: Router,
     private formBuilder: FormBuilder,
@@ -54,6 +47,11 @@ export class LoginPage implements OnInit {
   }
 
   ngOnInit() {}
+
+  toggleSenha() {
+    this.exibirSenha = !this.exibirSenha;
+    this.senhaInputType = this.exibirSenha ? 'text' : 'password';
+  }
 
   async fazerLogin() {
     if (this.loginForm.valid) {
@@ -72,6 +70,18 @@ export class LoginPage implements OnInit {
       }
     } else {
       this.errorMessage = 'Por favor, preencha todos os campos corretamente.';
+    }
+  }
+
+  async fazerLoginGoogle() {
+    this.errorMessage = '';
+    try {
+      await this.authService.loginWithGoogle();
+      console.log('Login com Google realizado com sucesso!');
+      this.router.navigate(['/feed']);
+    } catch (error: any) {
+      console.error('Erro no login Google:', error);
+      this.errorMessage = error.message || 'Erro ao fazer login com Google.';
     }
   }
 

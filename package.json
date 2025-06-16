@@ -27,6 +27,7 @@
     "@capacitor/haptics": "7.0.0",
     "@capacitor/keyboard": "7.0.0",
     "@capacitor/status-bar": "7.0.0",
+    "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
     "@ionic/angular": "^8.5.1",
     "bootstrap-icons": "^1.12.1",
     "firebase": "^11.7.1",
