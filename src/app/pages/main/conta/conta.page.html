@@ -1,0 +1,16 @@
+<ion-content class="account-page">
+  <div class="container">
+    
+    <app-page-header
+      title="Conta"
+      [showBackButton]="true"
+      backButtonRoute="/configuracoes"
+    ></app-page-header>
+
+    <div class="section delete-account">
+      <p>Se você deseja excluir sua conta permanentemente, clique no botão abaixo:</p>
+      <app-button buttonType="danger" [label]="'Deletar Conta'" class="mt-3" (buttonClick)="deletarConta()"></app-button>
+    </div>
+
+  </div>
+</ion-content>

@@ -1,21 +1,23 @@
 import { Component, Input } from '@angular/core';
- import { IonicModule } from '@ionic/angular';
- import { CommonModule, Location } from '@angular/common'; // Importe Location
+import { IonicModule } from '@ionic/angular';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
- @Component({
-   selector: 'app-page-header',
-   templateUrl: './page-header.component.html',
-   styleUrls: ['./page-header.component.scss'],
-   standalone: true,
-   imports: [IonicModule, CommonModule],
- })
- export class PageHeaderComponent {
-   @Input() title: string = '';
-   @Input() showBackButton: boolean = false;
-   @Input() backButtonRoute: string = '/';
-   constructor(private location: Location) {} // Injete o Location service
+@Component({
+  selector: 'app-page-header',
+  templateUrl: './page-header.component.html',
+  styleUrls: ['./page-header.component.scss'],
+  standalone: true,
+  imports: [IonicModule, CommonModule],
+})
+export class PageHeaderComponent {
+  @Input() title = '';
+  @Input() showBackButton = false;
+  @Input() backButtonRoute = '/';
 
-   goBack() {
-     this.location.back();
-   }
- }
+  constructor(private router: Router) {}
+
+  goBack() {
+    this.router.navigateByUrl(this.backButtonRoute);
+  }
+}
