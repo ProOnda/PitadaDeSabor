@@ -8,13 +8,17 @@ export const environment = {
     apiKey: "AIzaSyCyKsZefv-k3sZbMq_uX6y2yEhnp6NcXZk",
     authDomain: "pitadadesabor-261ed.firebaseapp.com",
     projectId: "pitadadesabor-261ed",
-    storageBucket: "pitadadesabor-261ed.firebasestorage.app",
+    storageBucket: "pitadadesabor-261ed.appspot.com",
     messagingSenderId: "410786000883",
     appId: "1:410786000883:web:640b42b79bb07eb6582c86",
     measurementId: "G-ZH8CSWPBKW"
   },
   backendApiUrl: 'http://localhost:3000',
+
+  // Adicione aqui seu Client ID Google OAuth
+  googleClientId: 'SEU_CLIENT_ID_GOOGLE.apps.googleusercontent.com',
 };
+
 /*
  * For easier debugging in development mode, you can import the following file
  * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.

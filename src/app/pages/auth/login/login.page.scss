@@ -128,3 +128,25 @@ app-footer-link {
   padding-right: 40px; /* Adiciona padding à direita para o ícone do olho */
   color: #3D3D39;
 }
+
+.google-button {
+  background-color: white;
+  color: #4285f4;
+  border: 1px solid #ddd;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+
+  i {
+    font-size: 20px;
+  }
+
+  &:hover {
+    background-color: #f1f1f1;
+  }
+}

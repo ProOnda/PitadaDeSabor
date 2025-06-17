@@ -1,104 +1,117 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
-import { IonContent, IonButton } from '@ionic/angular/standalone';
-import { SocialLoginComponent } from '../../../components/item-displays/social-login/social-login.component';
-import { FooterLinkComponent } from '../../../components/item-displays/footer-link/footer-link.component';
-import { CustomInputComponent } from '../../../components/common/custom-input/custom-input.component';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ButtonComponent } from '../../../components/common/button/button.component';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth/auth.service';
+import { FooterLinkComponent } from '@components/item-displays/footer-link/footer-link.component';
+import { ButtonComponent } from '@components/common/button/button.component';
+import { CustomInputComponent } from '@components/common/custom-input/custom-input.component';
+import { IonicModule, LoadingController } from '@ionic/angular';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
-  imports: [
-    CommonModule,
-    IonContent,
-    IonButton,
-    RouterModule,
-    ReactiveFormsModule,
-    SocialLoginComponent,
-    FooterLinkComponent,
-    CustomInputComponent,
-    ButtonComponent
-  ],
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
+  standalone: true,
+  imports: [
+    IonicModule,
+    CommonModule,
+    RouterModule,
+    ReactiveFormsModule,
+    FooterLinkComponent,
+    ButtonComponent,
+    CustomInputComponent,
+  ],
 })
 export class LoginPage implements OnInit {
   loginForm: FormGroup;
-  errorMessage: string = '';
-  emailRequiredError: string = 'Email é obrigatório.';
-  emailInvalidError: string = 'Por favor, insira um email válido.';
-  passwordRequiredError: string = 'Senha é obrigatória.';
-  exibirSenha: boolean = false;
-  senhaInputType: string = 'password';
+  errorMessage = '';
+  exibirSenha = false;
+  senhaInputType = 'password';
 
   constructor(
     private router: Router,
     private formBuilder: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private loadingController: LoadingController
   ) {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
-      senha: ['', Validators.required]
+      senha: ['', Validators.required],
     });
   }
 
-  ngOnInit() {}
+  ngOnInit(): void {}
 
-  toggleSenha() {
+  toggleSenha(): void {
     this.exibirSenha = !this.exibirSenha;
     this.senhaInputType = this.exibirSenha ? 'text' : 'password';
   }
 
-  async fazerLogin() {
-    if (this.loginForm.valid) {
-      const { email, senha } = this.loginForm.value;
-      try {
-        await this.authService.loginUser(email, senha);
-        console.log('Login realizado com sucesso!');
-        this.router.navigate(['/feed']);
-      } catch (error: any) {
-        this.errorMessage = error.message || 'Erro ao fazer login.';
-        if (error.code === 'auth/invalid-credential') {
-          this.errorMessage = 'Credenciais inválidas.';
-        } else if (error.code === 'auth/user-not-found') {
-          this.errorMessage = 'Usuário não encontrado.';
-        }
-      }
-    } else {
-      this.errorMessage = 'Por favor, preencha todos os campos corretamente.';
+  getEmailErrorMessage(): string {
+    const emailControl = this.loginForm.get('email');
+    if (emailControl?.hasError('required')) {
+      return 'Email é obrigatório.';
     }
+    if (emailControl?.hasError('email')) {
+      return 'Por favor, insira um email válido.';
+    }
+    return '';
   }
 
-  async fazerLoginGoogle() {
-    this.errorMessage = '';
+  async fazerLogin(): Promise<void> {
+    if (this.loginForm.invalid) {
+      this.errorMessage = 'Por favor, preencha todos os campos corretamente.';
+      return;
+    }
+
+    const { email, senha } = this.loginForm.value;
+
+    const loading = await this.loadingController.create({
+      message: 'Entrando...',
+      spinner: 'crescent',
+    });
+    await loading.present();
+
     try {
-      await this.authService.loginWithGoogle();
-      console.log('Login com Google realizado com sucesso!');
+      await this.authService.loginUser(email, senha);
+      await loading.dismiss();
       this.router.navigate(['/feed']);
     } catch (error: any) {
-      console.error('Erro no login Google:', error);
+      await loading.dismiss();
+      this.tratarErroLogin(error);
+    }
+  }
+
+  async fazerLoginGoogle(): Promise<void> {
+    this.errorMessage = '';
+    const loading = await this.loadingController.create({
+      message: 'Entrando com Google...',
+      spinner: 'crescent',
+    });
+    await loading.present();
+
+    try {
+      await this.authService.loginWithGoogle();
+      await loading.dismiss();
+      this.router.navigate(['/feed']);
+    } catch (error: any) {
+      await loading.dismiss();
       this.errorMessage = error.message || 'Erro ao fazer login com Google.';
+      console.error('Erro no login Google:', error);
     }
   }
 
-  getEmailErrorMessage(): string {
-    if (this.loginForm.controls['email'].hasError('required')) {
-      return this.emailRequiredError;
+  private tratarErroLogin(error: any) {
+    console.error('Erro no login:', error);
+    if (error?.code === 'auth/invalid-credential') {
+      this.errorMessage = 'Credenciais inválidas.';
+    } else if (error?.code === 'auth/user-not-found') {
+      this.errorMessage = 'Usuário não encontrado.';
+    } else if (error?.code === 'auth/wrong-password') {
+      this.errorMessage = 'Senha incorreta.';
+    } else {
+      this.errorMessage = error.message || 'Erro ao fazer login.';
     }
-    if (this.loginForm.controls['email'].hasError('email')) {
-      return this.emailInvalidError;
-    }
-    return '';
-  }
-
-  getPasswordErrorMessage(): string {
-    if (this.loginForm.controls['senha'].hasError('required')) {
-      return this.passwordRequiredError;
-    }
-    return '';
   }
 }

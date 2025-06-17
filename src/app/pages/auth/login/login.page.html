@@ -9,7 +9,10 @@
       <app-custom-input label="Email" controlName="email">
         <i class="bi bi-envelope-fill"></i>
       </app-custom-input>
-      <div class="error-message" *ngIf="loginForm.controls['email'].invalid && (loginForm.controls['email'].dirty || loginForm.controls['email'].touched)">
+      <div
+        class="error-message"
+        *ngIf="loginForm.controls['email'].invalid && (loginForm.controls['email'].dirty || loginForm.controls['email'].touched)"
+      >
         {{ getEmailErrorMessage() }}
       </div>
 
@@ -17,7 +20,7 @@
         <app-custom-input [label]="'Senha'" controlName="senha" [type]="senhaInputType">
           <i class="bi bi-lock-fill"></i>
         </app-custom-input>
-        <button type="button" (click)="toggleSenha()" class="toggle-password-button">
+        <button type="button" (click)="toggleSenha()" class="toggle-password-button" aria-label="Mostrar ou ocultar senha">
           <i [ngClass]="exibirSenha ? 'bi bi-eye-slash-fill' : 'bi bi-eye-fill'"></i>
         </button>
       </div>
@@ -35,7 +38,11 @@
       <span>Ou</span>
     </div>
 
-    <app-social-login></app-social-login>
+    <div class="social-login">
+      <button class="google-button" (click)="fazerLoginGoogle()">
+        <i class="bi bi-google"></i> Entrar com Google
+      </button>
+    </div>
 
     <app-footer-link [text]="'Não tem uma conta?'" [linkText]="'Cadastre-se'" [route]="'/cadastro'"></app-footer-link>
   </div>
