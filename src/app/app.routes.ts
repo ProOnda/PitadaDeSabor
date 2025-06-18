@@ -81,9 +81,13 @@ export const routes: Routes = [
   {
     path: 'category-food/:id', // <<<<< NOVA ROTA >>>>>
     loadComponent: () => import('./pages/main/category-food/category-food.page').then(m => m.CategoryFoodPage)
-  },  {
+  },
+  {
     path: 'conta',
     loadComponent: () => import('./pages/main/conta/conta.page').then( m => m.ContaPage)
   },
-
+  {
+    path: 'verificar-email',
+    loadComponent: () => import('./pages/auth/verificar-email/verificar-email.page').then( m => m.VerificarEmailPage)
+  },
 ];

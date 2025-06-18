@@ -10,6 +10,7 @@ import {
   updateProfile,
   user,
   User as FirebaseAuthUser,
+  sendEmailVerification,
 } from '@angular/fire/auth';
 import {
   doc,
@@ -76,7 +77,11 @@ export class AuthService {
         password
       );
       const firebaseUser = userCredential.user;
+
       if (firebaseUser) {
+        if (!firebaseUser.emailVerified) {
+          throw { code: 'auth/email-not-verified', message: 'Email não verificado' };
+        }
         await this.saveUserDataToFirestore(firebaseUser);
       }
       return firebaseUser;
@@ -86,21 +91,15 @@ export class AuthService {
   }
 
   //------------------------------------
-  // 🔥 Login com Google (Web e Mobile)
+  // 🔥 Login com Google
   //------------------------------------
   async loginWithGoogle(): Promise<FirebaseAuthUser | null> {
     try {
       let userCredential;
 
       if (Capacitor.isNativePlatform()) {
-        // 👉 Login no Mobile (Android/iOS)
         const googleUser = await GoogleAuth.signIn();
-
-        if (
-          !googleUser ||
-          !googleUser.authentication ||
-          !googleUser.authentication.idToken
-        ) {
+        if (!googleUser?.authentication?.idToken) {
           throw new Error('Google authentication failed');
         }
 
@@ -110,7 +109,6 @@ export class AuthService {
 
         userCredential = await signInWithCredential(this.auth, credential);
       } else {
-        // 👉 Login no Web (localhost ou navegador)
         const provider = new GoogleAuthProvider();
         userCredential = await signInWithPopup(this.auth, provider);
       }
@@ -141,16 +139,22 @@ export class AuthService {
   }
 
   //------------------------------------
-  // 🔥 Registrar usuário com nome
+  // 🔥 Registrar usuário com verificação de e-mail
   //------------------------------------
   async registerUser(email: string, senha: string, nome: string): Promise<FirebaseAuthUser | null> {
     try {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, senha);
       const user = userCredential.user;
+
       if (user) {
         await updateProfile(user, { displayName: nome });
         await this.saveUserDataToFirestore(user);
+        await sendEmailVerification(user); // ✅ Envia e-mail de verificação
+
+        // ⚠️ Faz logout imediatamente após cadastro para impedir acesso sem verificação
+        await signOut(this.auth);
       }
+
       return user;
     } catch (error) {
       return Promise.reject(error);

@@ -1,0 +1,13 @@
+<ion-content class="verifique-email-page">
+  <div class="container">
+    <h1>Verifique seu e-mail</h1>
+    <p>Enviamos um link de verificação para o seu e-mail.</p>
+    <p>Por favor, confirme sua conta antes de acessar o app.</p>
+
+    <app-button [label]="'Reenviar e-mail de verificação'" (click)="reenviarEmail()"></app-button>
+    <app-button [label]="'Voltar para Login'" (click)="irParaLogin()"></app-button>
+
+    <div *ngIf="message" class="success-message">{{ message }}</div>
+    <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+  </div>
+</ion-content>
