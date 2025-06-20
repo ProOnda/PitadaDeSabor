@@ -1,0 +1,308 @@
+/* src/app/pages/main/favorites/favorites.page.scss */
+
+/* Main wrapper para controlar a altura total da página e o overflow */
+.favorites-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Ocupa a altura total da viewport */
+  background-color: #11110F; /* Fundo escuro como na imagem */
+  color: #f0f0f0; /* Cor do texto padrão */
+  overflow: hidden; /* Importante: Esconde a barra de rolagem principal do navegador */
+}
+
+/* Container do cabeçalho da página (agora fora do scrollable content) */
+.page-header-container-custom {
+  width: 85%; /* Alinha com a largura do conteúdo principal */
+  margin: 20px auto 0 auto; /* Margem superior e centraliza horizontalmente */
+  box-sizing: border-box;
+}
+
+/* Container principal rolável (substitui a rolagem do ion-content) */
+.page-content-scrollable {
+  flex: 1; /* Faz esta div ocupar todo o espaço restante verticalmente */
+  overflow-y: auto; /* Habilita a rolagem vertical quando o conteúdo transborda */
+  -webkit-overflow-scrolling: touch; /* Suaviza a rolagem em dispositivos iOS */
+  padding: 0; /* Garante que não haja padding extra */
+}
+
+/* Conteúdo centralizado e com largura principal */
+.content {
+  width: 100%; /* Ocupa 100% da largura do .page-content-scrollable */
+  max-width: 768px; /* Limite a largura geral do conteúdo em telas maiores */
+  margin: 0 auto; /* Centraliza o conteúdo horizontalmente */
+  padding: 0; /* Ajuste o padding vertical aqui, se necessário. Seções internas podem ter seu próprio padding. */
+  display: flex; /* Adicionado display flex para o .content */
+  flex-direction: column; /* Coloca os itens em coluna */
+  align-items: center; /* Centraliza horizontalmente o main-favorites-display */
+}
+
+/* Conteúdo principal dos favoritos (loading, error, grid de receitas) */
+.main-favorites-display {
+  width: 85%; /* Define a largura desejada para o conteúdo principal */
+  margin: 20px auto; /* Centraliza horizontalmente e adiciona margem vertical */
+  box-sizing: border-box;
+  padding-bottom: 20px; /* Adicionado padding para evitar que o último card fique colado no fundo */
+  flex-grow: 1; /* Permite que esta seção cresça e empurre o menu para baixo, se ele estiver aqui */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Alinha os itens à esquerda dentro desta seção */
+}
+
+
+/* Mensagens de status (carregando, erro, sem favoritos) */
+.loading-message,
+.error-message,
+.no-favorites-message {
+  color: #f0f0f0;
+  font-size: 16px;
+  padding: 20px;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  align-self: center; /* Centraliza estas mensagens dentro de .main-favorites-display */
+}
+
+/* Grid de receitas favoritas */
+.recipes-grid {
+  display: grid;
+  gap: 30px;
+  width: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(311px, 1fr));
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Estilo individual do card de receita */
+.recipe-card {
+  width: 100%;
+  min-height: 26vh;
+  position: relative;
+  background-color: transparent;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.4s ease, border-radius 0.4s ease, min-height 0.4s ease-out;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+}
+
+/* ESTILOS MODIFICADOS PARA O ESTADO EXPANDIDO */
+.recipe-card.expanded {
+  min-height: unset;
+  height: auto;
+  background-color: #1D1D19;
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+.recipe-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+  border-radius: 14px;
+}
+
+/* Contêiner da Imagem e seu fundo arredondado */
+.recipe-image-container {
+  width: 100%;
+  height: 20vh;
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.recipe-image-container .background-shape {
+  width: 100%;
+  height: 20vh;
+  background: #F4F9FB;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  border-radius: 20.79px;
+}
+
+.recipe-image-container .recipe-image {
+  width: 100%;
+  height: auto;
+  position: absolute;
+  left: 0px;
+  top: -19px;
+  object-fit: cover;
+  z-index: 2;
+}
+
+/* Seção do Título da Receita e Triângulo de Expansão/Retração */
+.recipe-header-section {
+  width: 100%;
+  margin-top: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  z-index: 5;
+}
+
+.recipe-name {
+  color: #F0DBBE;
+  font-size: 16px;
+  font-family: 'Mulish', sans-serif;
+  text-transform: capitalize;
+  margin: 0;
+  flex-grow: 1;
+  text-align: left;
+  word-wrap: break-word;
+}
+
+/* Triângulo de Expansão/Retração com Bootstrap Icons */
+.details-toggle {
+  width: 12px;
+  height: 6px;
+  position: relative;
+  color: #F0DBBE;
+  transition: transform 0.3s ease-in-out;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+}
+
+.details-toggle .bi {
+  font-size: 14px;
+}
+
+.details-toggle.open {
+  transform: rotate(-180deg);
+}
+
+/* Detalhes Expansíveis: Descrição e Botão "Saiba Mais" */
+.recipe-details {
+  width: 100%;
+  background-color: transparent;
+  padding: 0 15px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+  display: flex;
+  flex-direction: column;
+  z-index: 0;
+}
+
+/* Estado visível (quando o usuário clica) */
+.recipe-details.visible {
+  max-height: 500px;
+  padding: 15px;
+  position: relative;
+  z-index: 3;
+}
+
+.recipe-description {
+  font-size: 14px;
+  font-family: 'Mulish', sans-serif;
+  color: #F0F0F0;
+  line-height: 25px;
+  margin-bottom: 10px;
+  text-transform: capitalize;
+  word-wrap: break-word;
+  white-space: normal;
+  -webkit-line-clamp: unset;
+}
+
+.learn-more-button {
+  padding: 0;
+  font-size: 12px;
+  font-family: 'Mulish', sans-serif;
+  color: #F0F0F0;
+  text-align: right;
+  width: 100%;
+  margin-top: 5px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Estilos de hover, focus, active para o botão HTML puro */
+.learn-more-button:hover {
+  text-decoration: underline;
+}
+
+.learn-more-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(240, 240, 240, 0.5);
+}
+
+.learn-more-button:active {
+  color: rgba(240, 240, 240, 0.8);
+}
+
+/* Media Queries para Responsividade */
+@media (max-width: 768px) {
+  /* No novo layout, o .content pode ter 100% de largura e o .main-favorites-display ajustar */
+  /* .content {
+    width: 95%;
+    padding: 15px 0;
+  } */
+  .recipe-header-section {
+    padding: 0 10px; /* Ajuste para telas menores */
+  }
+}
+
+/* Alto Contraste */
+:host-context(.ion-palette-high-contrast) {
+  .favorites-page-wrapper,
+  .page-content-scrollable,
+  .main-favorites-display {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+
+  .loading-message,
+  .error-message,
+  .no-favorites-message {
+    color: #fff !important;
+  }
+
+  .recipe-card {
+    background-color: #000 !important;
+    border: 1px solid #444 !important;
+  }
+
+  .recipe-card.expanded {
+    background-color: #111 !important;
+    box-shadow: 0 0 0 2px #fff !important;
+  }
+
+  .recipe-header-section,
+  .recipe-description,
+  .learn-more-button {
+    color: #fff !important;
+  }
+
+  .details-toggle {
+    color: #fff !important;
+  }
+
+  .recipe-image-container .background-shape {
+    background-color: #222 !important;
+  }
+
+  .learn-more-button:hover {
+    color: #fff !important;
+    text-decoration: underline;
+  }
+
+  .learn-more-button:active {
+    color: #ccc !important;
+  }
+
+  .recipes-grid {
+    background-color: transparent !important;
+  }
+}

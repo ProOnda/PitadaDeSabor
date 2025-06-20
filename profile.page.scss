@@ -1,0 +1,341 @@
+/* src/app/pages/main/profile/profile.page.scss */
+
+/* Main wrapper para toda a página de perfil */
+.profile-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Ocupa a altura total da viewport */
+  background-color: #11110F; /* Fundo escuro como na imagem */
+  color: #f0f0f0; /* Cor do texto padrão */
+  overflow: hidden; /* >>> IMPORTANTE: Esconde a barra de rolagem principal do navegador <<< */
+}
+
+/* Container do cabeçalho da página - Fixo no topo, fora da área rolagem */
+.page-header-container-custom {
+  width: 85%; /* Alinha com a largura do conteúdo principal */
+  margin: 20px auto 0 auto; /* Margem superior e centraliza horizontalmente */
+  box-sizing: border-box;
+}
+
+.info{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Container principal rolável - Onde o conteúdo que deve rolar verticalmente estará */
+.page-content-scrollable {
+  flex: 1; /* Faz esta div ocupar todo o espaço restante verticalmente */
+  overflow-y: auto; /* >>> Habilita a rolagem vertical *apenas quando o conteúdo transborda* <<< */
+  -webkit-overflow-scrolling: touch; /* Suaviza a rolagem em dispositivos iOS */
+  padding: 0; /* Garante que não haja padding extra neste nível */
+
+  /* >>> Estilos para esconder a barra de rolagem no WebKit (Chrome, Safari) <<< */
+  &::-webkit-scrollbar {
+    width: 0px; /* Largura da barra de rolagem */
+    background: transparent; /* Cor de fundo da barra de rolagem */
+  }
+  /* >>> Estilos para esconder a barra de rolagem no Firefox <<< */
+  scrollbar-width: none; /* "none" esconde a barra de rolagem completamente */
+}
+
+/* O .container que agrupa o profile-content e o feed-menu, centralizando-os */
+.container {
+  max-width: 85%; /* Largura máxima para o conteúdo dentro da área rolagem */
+  margin: 30px auto; /* Mantém o container principal centralizado na tela E adiciona margem superior/inferior */
+  height: auto; /* A altura será determinada pelo conteúdo, permitindo rolagem */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centraliza horizontalmente o profile-content e o feed-menu */
+  padding: 0; /* Removido padding, será controlado pelos elementos internos se necessário */
+}
+
+/* Conteúdo principal do perfil (contém PersonCard, contador, e ItemListSection) */
+.profile-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Mantém este para alinhar "Minhas Receitas" à esquerda */
+  padding-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Wrapper para centralizar PersonCard e posts-count (dentro de .profile-content) */
+.user-summary-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centraliza os itens dentro deste wrapper */
+  width: 100%; /* Ocupa a largura total para centralizar */
+  margin-bottom: 20px; /* Espaço após esta seção */
+}
+
+.posts-count {
+  color: #F0F0F0;
+  font-size: 12px;
+  font-family: 'Mulish', sans-serif;
+  opacity: 0.8;
+  margin-top: -10px;
+}
+
+/* ESTILOS PARA UPLOAD DE FOTO DE PERFIL (NA ProfilePage) */
+.upload-foto-perfil {
+  margin-top: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.contorno {
+  // Define o tamanho da moldura externa
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  border: 1px solid #AD2F33; /* Borda principal vermelha */
+  box-shadow: 0 0 0 2px #AD2F33; /* Sombra para o efeito de anel mais robusto */
+  display: flex;
+  justify-content: center; /* Centraliza horizontalmente o conteúdo interno */
+  align-items: center;   /* Centraliza verticalmente o conteúdo interno */
+  overflow: hidden; /* Garante que qualquer conteúdo que exceda a borda seja cortado */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  margin-bottom: 15px; /* Espaçamento entre o contorno e o botão de salvar */
+
+  &:hover {
+    border-color: darken(#AD2F33, 10%);
+    box-shadow: 0 0 0 3px darken(#AD2F33, 10%);
+    transform: scale(1.02);
+  }
+}
+
+.upload-area-perfil {
+  // Esta é a área clicável (o label) que contém a imagem e os ícones.
+  // Ela deve preencher o espaço interno do .contorno
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: calc(100% - 10px); /* Preenche o contorno menos um pequeno padding para a borda interna */
+  height: calc(100% - 10px); /* Preenche o contorno menos um pequeno padding para a borda interna */
+  background-color: #1D1D19; /* Fundo para o caso de não ter imagem */
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  // A borda e a sombra foram movidas para .contorno, então removemos daqui
+  // margin-bottom foi movido para .contorno
+}
+
+.upload-area-perfil input[type="file"] {
+  display: none;
+}
+
+.upload-icon-wrapper-perfil {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  color: #404040;
+  font-size: 4em;
+}
+
+.upload-icon-wrapper-perfil .bi-image {
+  font-size: 40px;
+}
+
+.upload-plus-icon-perfil {
+  position: absolute;
+  bottom: 25%;
+  right: 23%;
+  font-size: 15px;
+  color: #F0F0F0;
+  background-color: #AD2F33;
+  border-radius: 50%;
+  padding: 5px;
+  line-height: 1;
+}
+
+.imagem-preview-perfil {
+  position: absolute;
+  width: 100%; /* A imagem preenche a área de upload */
+  height: 100%; /* A imagem preenche a área de upload */
+  object-fit: cover; /* Garante que a imagem cubra a área sem distorcer */
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.botao-salvar-foto-perfil {
+  background-color: #AD2F33;
+  color: #F0F0F0;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+  width: auto;
+
+  &:hover {
+    background-color: darken(#AD2F33, 5%);
+  }
+}
+
+
+/* Mensagens de status */
+.loading-message, .error-message, .no-recipes-message {
+  color: #f0f0f0;
+  font-size: 16px;
+  padding: 20px;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  align-self: center;
+}
+
+/* Grid de receitas criadas pelo usuário */
+.recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+  width: 100%;
+  padding-bottom: 20px;
+  box-sizing: border-box;
+}
+
+/* Estilo individual do card de receita para o perfil */
+.recipe-card {
+  width: 100%;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 14px;
+}
+
+.recipe-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+.recipe-image-container {
+  width: 100%;
+  height: 25vh; /* Altura fixa para a imagem do card no perfil */
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.recipe-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.recipe-info {
+  margin-top: 15px;
+  padding: 0px 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.recipe-title {
+  color: #F0F0F0;
+  font-size: 16px;
+  font-family: 'Mulish', sans-serif;
+  margin: 0;
+}
+
+.recipe-meta {
+  color: #f0f0f0;
+  font-size: 12px;
+  font-family: 'Mulish', sans-serif;
+  opacity: 0.8;
+}
+
+/* Estilos para o FeedMenuComponent */
+app-feed-menu {
+  width: 100%; /* Garante que o menu ocupe a largura total */
+  align-self: center; /* Centraliza o menu horizontalmente dentro do .container */
+  margin-top: 30px; /* Adicione um espaçamento superior se necessário */
+}
+
+/* Media Queries para Responsividade */
+@media (max-width: 768px) {
+  .page-header-container-custom,
+  .profile-content {
+    width: 95%; /* Ajusta a largura em telas menores para mais padding */
+  }
+
+  .contorno {
+    width: 130px; /* Ajusta o tamanho do contorno para telas menores */
+    height: 130px;
+  }
+
+  .botao-salvar-foto-perfil {
+    padding: 8px 15px;
+    font-size: 12px;
+  }
+}
+
+/* Alto Contraste */
+:host-context(.ion-palette-high-contrast) {
+  .profile-page-wrapper,
+  .page-content-scrollable,
+  .profile-content,
+  .recipes-grid {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+
+  .posts-count,
+  .recipe-title,
+  .recipe-meta,
+  .loading-message,
+  .error-message,
+  .no-recipes-message {
+    color: #fff !important;
+  }
+
+  .contorno {
+    border-color: #fff !important;
+    box-shadow: 0 0 0 2px #fff !important;
+  }
+
+  .upload-area-perfil {
+    background-color: #222 !important;
+  }
+
+  .upload-plus-icon-perfil {
+    background-color: #fff !important;
+    color: #000 !important;
+  }
+
+  .botao-salvar-foto-perfil {
+    background-color: #fff !important;
+    color: #000 !important;
+  }
+
+  .botao-salvar-foto-perfil:hover {
+    background-color: #fff !important;
+  }
+
+  .recipe-card {
+    background-color: #111 !important;
+    border: 1px solid #444 !important;
+  }
+
+  .recipe-card:hover {
+    box-shadow: 0 0 0 2px #fff !important;
+  }
+
+  .recipe-image-container {
+    border-radius: 14px !important;
+  }
+
+  .recipe-info {
+    color: #fff !important;
+  }
+}

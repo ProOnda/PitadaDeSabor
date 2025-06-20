@@ -1,0 +1,213 @@
+/* src/app/pages/main/feed/feed.page.scss */
+
+/* Main wrapper para toda a página de feed */
+.feed-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Ocupa a altura total da viewport */
+  background-color: #111; /* Cor de fundo da página */
+  color: #f0f0f0; /* Cor do texto padrão */
+  overflow: hidden; /* >>> IMPORTANTE: Esconde a barra de rolagem principal do navegador <<< */
+}
+
+/* Container principal rolável - Este div gerencia a rolagem do conteúdo */
+.page-content-scrollable {
+  flex: 1; /* Faz esta div ocupar todo o espaço restante verticalmente */
+  overflow-y: auto; /* >>> Habilita a rolagem vertical *apenas quando o conteúdo transborda* <<< */
+  -webkit-overflow-scrolling: touch; /* Suaviza a rolagem em dispositivos iOS */
+  padding: 0; /* Garante que não haja padding extra neste nível */
+  margin: 20px 0px;
+
+  /* >>> Estilos para esconder a barra de rolagem no WebKit (Chrome, Safari) <<< */
+  &::-webkit-scrollbar {
+    width: 0px; /* Largura da barra de rolagem */
+    background: transparent; /* Cor de fundo da barra de rolagem */
+  }
+  /* >>> Estilos para esconder a barra de rolagem no Firefox <<< */
+  scrollbar-width: none; /* "none" esconde a barra de rolagem completamente */
+}
+
+/* Conteúdo principal do feed - Ele estará dentro do .page-content-scrollable */
+.feed-page-content {
+  width: 90%; /* Mantém a largura do seu conteúdo */
+  margin: 0 auto; /* Centraliza o conteúdo horizontalmente */
+  padding-bottom: 20px; /* Adiciona padding para que o conteúdo não fique colado no final */
+  box-sizing: border-box; /* Inclui padding na largura */
+}
+ 
+.header {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background-color: #11110F;
+  color: #f0f0f0;
+}
+
+.header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.home-text {
+  color: #AD2F33;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0;
+}
+
+// <<<<< NOVOS ESTILOS PARA O CONTAINER DA IMAGEM/ÍCONE >>>>>
+.profile-image-container {
+  width: 60px; /* Tamanho do container */
+  height: 60px; /* Tamanho do container */
+  border-radius: 50%; /* Torna o container circular */
+  overflow: hidden; /* Garante que a imagem/ícone não saia do círculo */
+  background-color: #1D1D19; /* Fundo cinza para quando não há foto */
+  border: 2px solid #AD2F33; /* Borda vermelha */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Sombra para profundidade */
+  display: flex; /* Para centralizar o conteúdo (imagem ou ícone) */
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-actual-image { /* Estilos para a tag <img> real */
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Garante que a imagem preencha o círculo sem distorcer */
+  border-radius: 50%; /* Garante que a imagem em si seja circular */
+}
+
+.profile-placeholder-icon { /* Estilos para o div que contém o ícone */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  
+  i.bi-image {
+    font-size: 20px; /* Tamanho do ícone */
+    color: #404040; /* Cor do ícone (um cinza mais claro para contraste) */
+  }
+}
+
+ 
+.texts {
+  flex-grow: 1;
+  margin-left: 0; /* Removido margin-left fixo, padding será no .feed-page-content */
+}
+
+.greeting {
+  color: #F0DBBE;
+  font-size: 14px;
+  text-align: left;
+  font-family: sans-serif;
+}
+ 
+.question {
+  color: #F0DBBE;
+  font-size: 16px;
+  text-align: left;
+  font-family: sans-serif;
+  font-weight: bold;
+}
+ 
+app-search-bar {
+  margin: 16px auto; /* Centraliza horizontalmente e adiciona margem vertical */
+  width: 100%; /* Garante que ocupe a largura total */
+  display: block; /* Para que margin auto funcione */
+}
+ 
+.categories-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%; /* Ocupa 100% do feed-page-content */
+  margin: 20px auto;
+  flex-wrap: wrap; /* Permite que os itens quebrem linha em telas menores */
+  gap: 10px; /* Espaçamento entre os itens */
+
+  app-category-item {
+    flex: 1; /* Permite que os itens se ajustem e ocupem espaço */
+    min-width: 100px; /* Largura mínima para evitar que fiquem muito pequenos */
+    text-align: center; /* Centraliza o conteúdo do item */
+    
+    i {
+      font-size: 24px;
+      color: #AD2F33;
+    }
+  }
+}
+
+app-item-list-section {
+    width: 100%; /* Ocupa a largura total do feed-page-content */
+    margin-top: 30px; /* Espaçamento antes da seção de receitas */
+    display: block; /* Para garantir que ocupe a largura total */
+}
+
+.loading, .error, .no-recipes-message {
+  text-align: center;
+  padding: 20px;
+  color: #f0f0f0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.receitas-container {
+  display: flex;
+  flex-direction: column; /* Lista vertical de receitas */
+  gap: 15px; /* Espaço entre os cards de receita */
+  width: 100%;
+  padding-top: 20px; /* Espaço entre a seção e o primeiro card */
+}
+
+app-receita-card-horizontal {
+  width: 100%; /* Cada card ocupa a largura total */
+  display: block; /* Garante que a largura seja aplicada corretamente */
+}
+
+app-feed-menu {
+  width: 100%;
+  margin-top: 30px; /* Espaçamento acima do menu fixo */
+  align-self: center; /* Centraliza o menu no container principal */
+}
+
+/* Media Queries para Responsividade */
+@media (max-width: 768px) {
+  .feed-page-content {
+    width: 95%; /* Ajusta a largura em telas menores para mais padding */
+  }
+}
+
+/* Alto Contraste */
+:host-context(.ion-palette-high-contrast) {
+  .feed-page-wrapper,
+  .page-content-scrollable,
+  .feed-page-content,
+  .header,
+  .loading,
+  .error,
+  .no-recipes-message {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+
+  .home-text,
+  .greeting,
+  .question {
+    color: #fff !important; // Amarelo para contraste visual acessível
+  }
+
+  .profile-placeholder-icon i.bi-image {
+    color: #fff !important;
+  }
+
+  .categories-container app-category-item i {
+    color: #fff !important;
+  }
+
+  app-feed-menu {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+}
