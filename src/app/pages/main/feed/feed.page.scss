@@ -178,3 +178,36 @@ app-feed-menu {
     width: 95%; /* Ajusta a largura em telas menores para mais padding */
   }
 }
+
+/* Alto Contraste */
+:host-context(.ion-palette-high-contrast) {
+  .feed-page-wrapper,
+  .page-content-scrollable,
+  .feed-page-content,
+  .header,
+  .loading,
+  .error,
+  .no-recipes-message {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+
+  .home-text,
+  .greeting,
+  .question {
+    color: #fff !important; // Amarelo para contraste visual acessível
+  }
+
+  .profile-placeholder-icon i.bi-image {
+    color: #fff !important;
+  }
+
+  .categories-container app-category-item i {
+    color: #fff !important;
+  }
+
+  app-feed-menu {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+}

@@ -465,3 +465,79 @@
         background-color: darken(#AD2F33, 5%);
     }
 }
+
+/* Alto Contraste */
+:host-context(.ion-palette-high-contrast) {
+  .criacao-receita-page-container {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+
+  .input-container-custom,
+  .input-container-custom.input-container-textarea,
+  .seletor-wrapper,
+  .passo-input-container {
+    background-color: #000 !important;
+    border: 1px solid #fff !important;
+  }
+
+  input,
+  textarea,
+  select {
+    color: #fff !important;
+    background-color: transparent !important;
+
+    &::placeholder {
+      color: #AAAAAA !important;
+    }
+  }
+
+  option {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+
+  .upload-area {
+    background-color: #000 !important;
+    border: 2px dashed #fff !important;
+  }
+
+  .upload-icon-wrapper,
+  .upload-plus-icon {
+    color: #fff !important;
+  }
+
+  .imagem-preview {
+    opacity: 0.9;
+  }
+
+  .grupo-formulario label,
+  .secao-titulo {
+    color: #fff !important;
+  }
+
+  .botao-remover,
+  .botao-adicionar-ingrediente,
+  .botao-criar-receita {
+    background-color: #fff !important;
+    color: #000 !important;
+    border: none !important;
+  }
+
+  .botao-remover:hover,
+  .botao-adicionar-ingrediente:hover,
+  .botao-criar-receita:hover {
+    background-color: #fff !important;
+  }
+
+  .ingredientes-form-linha .input-container-custom,
+  .ingredientes-form-linha .seletor-wrapper,
+  .unidade-select .seletor-wrapper {
+    background-color: #000 !important;
+    border: 1px solid #fff !important;
+  }
+
+  .modo-preparo-secao::before {
+    color: #fff !important;
+  }
+}

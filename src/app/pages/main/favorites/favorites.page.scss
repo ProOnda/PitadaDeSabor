@@ -253,3 +253,56 @@
     padding: 0 10px; /* Ajuste para telas menores */
   }
 }
+
+/* Alto Contraste */
+:host-context(.ion-palette-high-contrast) {
+  .favorites-page-wrapper,
+  .page-content-scrollable,
+  .main-favorites-display {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+
+  .loading-message,
+  .error-message,
+  .no-favorites-message {
+    color: #fff !important;
+  }
+
+  .recipe-card {
+    background-color: #000 !important;
+    border: 1px solid #444 !important;
+  }
+
+  .recipe-card.expanded {
+    background-color: #111 !important;
+    box-shadow: 0 0 0 2px #fff !important;
+  }
+
+  .recipe-header-section,
+  .recipe-description,
+  .learn-more-button {
+    color: #fff !important;
+  }
+
+  .details-toggle {
+    color: #fff !important;
+  }
+
+  .recipe-image-container .background-shape {
+    background-color: #222 !important;
+  }
+
+  .learn-more-button:hover {
+    color: #fff !important;
+    text-decoration: underline;
+  }
+
+  .learn-more-button:active {
+    color: #ccc !important;
+  }
+
+  .recipes-grid {
+    background-color: transparent !important;
+  }
+}

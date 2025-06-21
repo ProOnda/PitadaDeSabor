@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController, IonicModule } from '@ionic/angular';
 import { getAuth, deleteUser } from 'firebase/auth';
@@ -7,25 +7,44 @@ import { deleteDoc, doc, Firestore } from '@angular/fire/firestore';
 import { ButtonComponent } from '../../../components/common/button/button.component';
 import { PageHeaderComponent } from '../../../components/item-displays/page-header/page-header.component';
 
+
+// IMPORTES PARA O ALTO CONTRASTE
+import { FormsModule } from '@angular/forms';
+import { IonContent, IonItem, IonToggle, IonIcon, IonLabel } from '@ionic/angular/standalone';
+import { ThemeService } from 'src/app/services/theme/theme.service';
+
 @Component({
   selector: 'app-conta',
   templateUrl: './conta.page.html',
   styleUrls: ['./conta.page.scss'],
   standalone: true,
   imports: [
-    IonicModule,
     PageHeaderComponent,
-    ButtonComponent
+    ButtonComponent,
+    IonContent,
+    IonItem,
+    IonToggle,
+    IonIcon,
+    IonLabel,
+    FormsModule
   ],
 })
 export class ContaPage {
   private isAlertPresented = false; // Evita múltiplos alertas
+  highContrastPaletteToggle = false; // Classe do Alto Contraste
 
   constructor(
     private router: Router,
     private alertCtrl: AlertController,
-    private firestore: Firestore
-  ) {}
+    private firestore: Firestore,
+    private themeService: ThemeService
+  ) {
+    this.highContrastPaletteToggle = this.themeService.getHighContrast();
+  }
+
+  highContrastPaletteToggleChange(event: CustomEvent) {
+    this.themeService.setHighContrast(event.detail.checked);
+  }
 
   async deletarConta() {
     if (this.isAlertPresented) {
