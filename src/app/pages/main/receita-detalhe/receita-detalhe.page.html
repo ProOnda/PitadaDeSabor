@@ -1,0 +1,107 @@
+<div class="receita-detalhe-page-wrapper">
+  <div class="page-content-scrollable">
+    <div class="content">
+
+      <div class="main-recipe-display">
+
+        <div class="page-header-container-custom">
+        <app-page-header
+          title="Detalhes Da Receita"
+          [showBackButton]="true"
+          backButtonRoute="/feed"
+        ></app-page-header>
+      </div>
+      
+        <ng-container *ngIf="receita$ | async as receitaData">
+          <div *ngIf="loading" class="loading-state">
+            <p>Carregando receita...</p>
+          </div>
+
+          <div *ngIf="error" class="error-state">
+            <p>Ocorreu um erro: {{ error }}</p>
+            <button (click)="loadRecipeDetails()">Tentar novamente</button>
+          </div>
+
+          <div *ngIf="!loading && !error && receitaData" class="recipe-container">
+            <div class="recipe-image-container">
+              <img [src]="receitaData.recipe?.photoUrl || 'assets/placeholder.png'" [alt]="receitaData.recipe?.recipeName">
+            </div>
+
+            <div class="recipe-details-content">
+              <div class="recipe-header">
+                <div class="info">
+                  <h2>{{ receitaData.recipe?.recipeName }}</h2>
+                  <h3>Feito por {{ receitaData.recipe?.userName}}</h3>
+                </div>
+                <div class="actions">
+                  <button (click)="toggleFavorite()">
+                    <i class="bi" [class.bi-heart-fill]="isFavorite" [class.bi-heart]="!isFavorite"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="specifications">
+                <app-info-item iconClass="bi bi-bookmark" text="{{ receitaData.recipe?.categoryLabel }}"></app-info-item>
+                <app-info-item iconClass="bi bi-clock" text="{{ receitaData.recipe?.timeLabel }}"></app-info-item>
+                <app-info-item iconClass="bi bi-graph-up" text="{{ receitaData.recipe?.difficultyLabel }}"></app-info-item>
+              </div>
+
+              <div class="description" *ngIf="receitaData.recipe?.description">
+                <p>{{ receitaData.recipe?.description}}</p>
+              </div>
+
+              <div class="recipe-content-toggle">
+                <button
+                  [class.active]="showIngredients"
+                  (click)="toggleContent('ingredients')"
+                >
+                  Ingredientes
+                </button>
+                <button
+                  [class.active]="!showIngredients"
+                  (click)="toggleContent('preparation')"
+                >
+                  Modo de Preparo
+                </button>
+              </div>
+
+              <div class="recipe-ingredients" *ngIf="showIngredients">
+                <ul>
+                  <li *ngIf="!receitaData.recipe.ingredients || receitaData.recipe.ingredients.length === 0">
+                      Nenhum ingrediente adicionado.
+                  </li>
+                  <li *ngFor="let ingredient of receitaData.recipe.ingredients">
+                      {{ ingredient.quantity }} {{ ingredient.unitLabel }} de {{ ingredient.name }}
+                  </li>
+                </ul>
+              </div>
+
+              <div class="recipe-preparation" *ngIf="!showIngredients">
+                <ol>
+                  <li *ngIf="!receitaData.recipe.preparationSteps || receitaData.recipe.preparationSteps.length === 0">
+                      Nenhum modo de preparo detalhado.
+                  </li>
+                  <li *ngFor="let step of receitaData.recipe.preparationSteps">{{ step }}</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="action-buttons" *ngIf="loggedInUserUid && receitaData.recipe?.userId === loggedInUserUid">
+                <button class="action-button primary-button" (click)="editRecipe(receitaData.id)">
+                  <i class="bi bi-pencil-square"></i> Editar Receita
+                </button>
+                <button class="action-button danger-button" (click)="deleteRecipe(receitaData.id)">
+                  <i class="bi bi-trash"></i> Excluir Receita
+                </button>
+            </div>
+          </div>
+        </ng-container>
+      </div> <!-- <<<<< FIM DO NOVO WRAPPER >>>>> -->
+
+      <!-- Este loading-state estava duplicado, foi movido para dentro do novo wrapper -->
+      <!-- <div class="loading-state" *ngIf="!(receita$ | async) && loading">
+        <p>Carregando receita...</p>
+      </div> -->
+    </div>
+  </div>
+</div>

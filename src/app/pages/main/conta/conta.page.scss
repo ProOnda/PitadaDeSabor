@@ -1,0 +1,161 @@
+.account-page {
+  --background: #111;
+
+  .container {
+    width: 90%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  .section {
+    margin-top: 60px;
+    text-align: center;
+
+    p {
+      color: #f0f0f0;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+  }
+
+  .delete-section {
+    margin-top: auto;
+    text-align: center;
+    padding: 30px 20px;
+
+    p {
+      color: #f0f0f0;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .delete-button {
+      background-color: #b6002c;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: #900020;
+      }
+    }
+  }
+
+}
+
+// ALERTA DE DELETAR CONTA – BOTÕES ALINHADOS E BONITOS
+.custom-delete-alert {
+  --background: #111;
+  --color: #fff;
+
+  .alert-wrapper {
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(255, 225, 52, 0.4);
+    padding: 10px;
+  }
+
+  .alert-title {
+    font-size: 20px;
+    color: #ffe134;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .alert-message {
+    font-size: 16px;
+    color: #f0f0f0;
+    text-align: center;
+  }
+
+  .alert-button-group {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px;
+  }
+
+  .alert-button {
+    flex: 1;
+    margin: 0 8px;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .alert-cancel-btn {
+    background-color: #444;
+    color: #ccc;
+  }
+
+  .alert-delete-btn {
+    background-color: #b6002c;
+    color: #fff;
+  }
+}
+
+// Alto Contraste
+.toggle-item {
+  --background: transparent;
+  --color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #b6002c; // cor amarela para contraste
+  margin: 16px 0;
+  background-color: #1a1a1a;
+
+  .toggle-label {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff !important;
+  display: flex;
+  align-items: center;
+  }
+
+  ion-toggle.styled-toggle {
+  --handle-background: #ffe134 !important;
+  --handle-background-checked: #000 !important;
+  --handle-border-color: transparent !important;
+
+  --track-background: #444 !important;
+  --track-background-checked: #ffe134 !important;
+
+  --handle-width: 22px !important;
+  --handle-height: 22px !important;
+  --track-height: 24px !important;
+  --track-width: 48px !important;
+
+  transform: scale(1.3);
+  margin-left: 8px;
+  }
+
+
+  ion-toggle.custom-toggle {
+    --handle-background: #b6002c;
+    --track-background: #444;
+    --handle-border-color: #fff;
+    margin-left: auto;
+    transform: scale(1.4); // aumenta o tamanho do toggle
+  }
+
+  ion-toggle.custom-toggle::part(label) {
+    font-weight: bold;
+    font-size: 16px;
+    color: #fff;
+    margin-right: 12px;
+  }
+
+}

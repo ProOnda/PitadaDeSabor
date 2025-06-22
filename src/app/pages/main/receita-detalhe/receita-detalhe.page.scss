@@ -1,0 +1,270 @@
+.receita-detalhe-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Ocupa a altura total da viewport */
+  background-color: #111; /* Cor de fundo global da página */
+  color: #f0f0f0; /* Cor do texto padrão */
+  overflow: hidden; /* Garante que nada transborde do wrapper */
+}
+
+/* Container principal rolável (substitui ion-content) */
+.page-content-scrollable {
+  flex: 1; /* Faz esta div ocupar todo o espaço restante verticalmente */
+  overflow-y: auto; /* Habilita a rolagem vertical quando o conteúdo transborda */
+  -webkit-overflow-scrolling: touch; /* Suaviza a rolagem em dispositivos iOS */
+  padding: 0; /* Remova qualquer padding padrão que possa ter vindo de ion-content */
+}
+
+/* O .content que já existia no seu HTML, agora como filho do .page-content-scrollable */
+.content {
+  width: 85%; /* Largura do contêiner principal da página */
+  margin: 0 auto; /* Centraliza o conteúdo horizontalmente */
+  padding: 20px 0; /* Adicione padding vertical aqui para espaço no topo e base do conteúdo rolável */
+}
+
+/* <<<<< NOVO ESTILO AQUI: Para o main-recipe-display >>>>> */
+.main-recipe-display {
+  width: 90%;
+  margin: 0 auto;
+}
+
+/* Estilos para os componentes de carregamento e erro */
+.loading-state, .error-state {
+  text-align: center;
+  padding: 20px;
+  color: #F0DBBE;
+  width: 100%; /* Garante que ocupe o espaço disponível dentro do main-recipe-display */
+  margin: 0 auto; /* Centraliza-o */
+  box-sizing: border-box; /* Inclui padding na largura total */
+}
+.error-state button {
+  background-color: #AD2F33;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.recipe-container {
+  width: 100%; /* Ocupa 100% do main-recipe-display */
+  margin: 0 auto; /* Centraliza */
+}
+
+.recipe-image-container {
+  width: 100%; /* Ocupa 100% do recipe-container */
+  height: 25vh;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  margin-top: 10%; /* Ajuste este margin-top conforme necessário */
+  // Remova 'margin: 10% auto 0 auto;' e deixe apenas 'margin-top' se você quiser que o image-container não se centralize com auto
+  // ou centralize-o dentro do recipe-container se ele também for flex
+  
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover; /* Garante que a imagem cubra o container */
+  }
+}
+
+.recipe-details-content {
+  padding: 16px 0; /* Adicione padding interno se necessário para os detalhes */
+}
+
+.recipe-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.recipe-header .actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.recipe-header button {
+  background-color: #1D1D19;
+  padding: 15px;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  display: flex; /* Para centralizar o ícone */
+  align-items: center;
+  justify-content: center;
+}
+
+.recipe-header button i {
+  color: #AD2F33;
+  font-size: 22px;
+}
+
+.recipe-header h2 {
+  color: #F0DBBE;
+  font-size: 22px;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+
+.recipe-header h3 {
+  color: #f0f0f0;
+  font-size: 16px;
+  margin-top: 5px;
+}
+
+.description {
+  margin-bottom: 40px;
+  p {
+    line-height: 1.6;
+    color: #f0f0f0;
+  }
+}
+
+.specifications {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 25px;
+  margin: 8% 0px; /* Ajuste este margin-top conforme necessário */
+}
+
+.recipe-content-toggle {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 25px;
+  margin-bottom: 20px;
+  width: 100%;
+  gap: 10px;
+}
+
+.recipe-content-toggle button {
+  flex: 1;
+  background-color: #1D1D19;
+  padding: 15px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #f0f0f0;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.recipe-content-toggle button.active {
+  background-color: #67161F;
+}
+
+/* No seu receita-detalhe.page.scss */
+
+.recipe-preparation {
+  margin-top: 20px;
+
+  ol {
+    list-style: none; /* <-- ESSENCIAL: Remova o estilo de lista padrão */
+    padding: 0;
+    margin: 0;
+    counter-reset: step-counter; /* Inicializa o contador para os passos */
+  }
+
+  li {
+    background-color: #1D1D19; /* Fundo do item da lista */
+    padding: 12px 15px 12px 60px; /* Aumente o padding-left para dar espaço ao número customizado */
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: #f0f0f0;
+    font-size: 0.95em;
+    position: relative; /* Essencial para posicionar o pseudo-elemento */
+
+    /* Cria a numeração customizada */
+    &::before {
+      counter-increment: step-counter; /* Incrementa o contador para cada item */
+      content: counter(step-counter) "."; /* Exibe o número do contador + ponto */
+
+      position: absolute; /* Posiciona o número absolutamente dentro do li */
+      left: 15px; /* Ajuste para alinhar o número dentro do padding do li */
+      top: 50%; /* Centraliza verticalmente */
+      transform: translateY(-50%); /* Ajuste fino para centralização vertical */
+
+      color: #F0DBBE; /* Cor do número (o mesmo cinza claro) */
+      font-size: 14px;
+      min-width: 25px; /* Garante que números de 2 dígitos não se desorganizem */
+      text-align: right; /* Alinha o número à direita dentro de seu min-width */
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  /* Estilo para a mensagem "Nenhum modo de preparo detalhado" */
+  li[ngIf*="receitaData.recipe.preparationSteps"] {
+    list-style: none; /* Certifique-se de que não tenha marcador */
+    &::before {
+      content: ''; /* Remove o conteúdo do pseudo-elemento para esta mensagem */
+    }
+    margin-bottom: 0;
+    padding-left: 15px; /* Ajuste o padding-left de volta para o padrão, já que não tem número */
+  }
+}
+
+/* Para o .recipe-ingredients, você pode manter sem numeração ou aplicar algo similar */
+.recipe-ingredients {
+  margin-top: 20px;
+  ul {
+    list-style: none; /* Mantém sem marcadores para ingredientes */
+    padding: 0;
+    margin: 0;
+  }
+  li {
+    background-color: #1D1D19;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    color: #f0f0f0;
+    font-size: 0.95em;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  margin-top: 30px;
+  align-items: center;
+  gap: 10px;
+}
+
+.action-buttons button {
+  flex: 1;
+  background-color: #AD2F33;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #f0f0f0;
+  border: none;
+  cursor: pointer;
+}
+
+/* Media Queries para Responsividade */
+@media (max-width: 768px) {
+  .content {
+    width: 95%; /* Aumenta a largura em telas menores */
+    padding: 15px 0;
+  }
+  .recipe-header h2 {
+    font-size: 20px;
+  }
+  .recipe-header h3 {
+    font-size: 14px;
+  }
+  .recipe-content-toggle button {
+    font-size: 14px;
+    padding: 12px 15px;
+  }
+  .action-buttons button {
+    width: 95%; /* Ocupa mais largura em telas menores */
+  }
+}

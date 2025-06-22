@@ -1,0 +1,8 @@
+<div class="footer-link">
+  <ng-container *ngIf="isLoginPage">
+    Não Possui Uma Conta? <a [routerLink]="['/cadastro']">Cadastre-Se</a>.
+  </ng-container>
+  <ng-container *ngIf="!isLoginPage">
+    Já Possui Uma Conta? <a [routerLink]="['/login']">Log In</a>.
+  </ng-container>
+</div>

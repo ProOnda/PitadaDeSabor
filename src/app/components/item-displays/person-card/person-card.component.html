@@ -1,0 +1,11 @@
+<div class="person-card">
+  <div class="detail">
+    <div class="avatar">
+      <img [src]="avatarUrl" alt="{{ name }}" *ngIf="avatarUrl">
+      <div class="avatar-placeholder" *ngIf="!avatarUrl"></div>
+    </div>
+  </div>
+  <div class="info">
+    <p class="name">{{ name }}</p>
+    </div>
+</div>

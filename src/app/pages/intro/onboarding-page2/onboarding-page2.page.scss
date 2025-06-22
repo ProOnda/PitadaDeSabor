@@ -1,0 +1,30 @@
+ion-content {
+    --background: #111; /* Mantenha sua cor de fundo */
+  }
+
+  .navigation-container {
+    width: 300.66px;
+    height: 45.66px;
+    position: relative;
+    max-width: 80%;
+    margin: 0 auto;
+    margin-top: -30px;
+    margin-bottom: 30px;
+  }
+  
+  .back-button {
+    width: 50px;
+    left: 0px;
+    top: 16px;
+    position: absolute;
+    color: #F0F0F0;
+    cursor: pointer; /* Indica que é clicável */
+  }
+  
+  .next-button-positioned {
+    position: absolute;
+    left: 255px;
+    top: 0px;
+    /* O componente app-next-button já tem seus próprios estilos */
+    /* Se precisar de mais posicionamento, adicione aqui */
+  }

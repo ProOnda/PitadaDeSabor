@@ -1,0 +1,543 @@
+/* Seu SCSS Existente (mantido como está) */
+
+.criacao-receita-page-container {
+    background-color: #11110F;
+    height: 100%;
+    color: #f0f0f0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 20px;
+}
+
+.content {
+    width: 85%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding-top: 20px;
+}
+
+/* No seu arquivo .scss, por exemplo, recipe-creation.page.scss ou global.scss */
+
+.upload-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* Largura conforme o design */
+    height: 160px; /* Altura conforme o design */
+    background-color: #1D1D19; /* Cor de fundo */
+    border-radius: 14px; /* Raio de borda */
+    cursor: pointer; /* Indica que é clicável */
+    position: relative; /* Para posicionar a imagem de preview se usada - JÁ EXISTIA, ÓTIMO! */
+    overflow: hidden; /* Garante que a imagem de preview não transborde - JÁ EXISTIA, ÓTIMO! */
+
+    .upload-icon-wrapper {
+        position: relative; /* Para posicionar o ícone de mais */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 61.74px; /* Largura do fundo do ícone no seu design */
+        height: 60px; /* Altura do fundo do ícone no seu design */
+        // background-color: #404040; /* Cor do fundo do ícone, como no seu design */
+        // Ajustei a cor para não ter fundo na imagem, apenas o ícone
+        color: #404040; /* Cor do ícone principal */
+        font-size: 4em; /* Tamanho do ícone principal */
+        margin: 55px auto;
+    }
+
+    .upload-icon-wrapper .bi-image {
+        font-size: 80px;
+    }
+
+    .upload-plus-icon {
+        position: absolute;
+        bottom: -5px; /* Ajuste para posicionar o sinal de mais */
+        right: -15px; /* Ajuste para posicionar o sinal de mais */
+        font-size: 0.6em; /* Tamanho do ícone de mais */
+        color: #404040; /* Cor do ícone de mais */
+        background-color: #1D1D19; /* Fundo do plus, para simular a sobreposição no design */
+        border-radius: 50%; /* Faz o fundo do plus ser um círculo */
+        padding: 2px; /* Espaçamento ao redor do plus */
+    }
+
+    /* ADIÇÃO / MANUTENÇÃO: Estilos para a prévia da imagem */
+    .imagem-preview {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Garante que a imagem cubra toda a área */
+        border-radius: 14px; /* Mantém o raio de borda do container */
+        z-index: 2; /* Para que a imagem fique acima dos ícones */
+    }
+}
+
+.input-container-custom {
+    width: 100%;
+    position: relative;
+    border-radius: 14px;
+    background: #1D1D19;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+
+    &:focus-within {
+        border: 1px solid #f0f0f0;
+    }
+
+    input {
+        width: 100%;
+        height: 50px;
+        padding: 0 20.58px;
+        border: none;
+        background: transparent;
+        outline: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        font-family: Mulish, sans-serif;
+        font-weight: 700;
+        text-transform: capitalize;
+        box-sizing: border-box;
+
+        &::placeholder {
+            color: #606060;
+            font-size: 12px;
+            font-family: Mulish, sans-serif;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+    }
+}
+
+.grupo-formulario {
+    margin: 30px 0px;
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        color: #AD2F33;
+        font-weight: bold;
+        font-size: 0.9em;
+        font-family: Mulish, sans-serif;
+    }
+}
+
+.input-container-custom.input-container-textarea {
+    min-height: 100px;
+    align-items: flex-start;
+    padding: 15px 18px;
+
+    textarea {
+        width: 100%;
+        height: auto;
+        min-height: 80px;
+        resize: vertical;
+        border: none;
+        background: transparent;
+        outline: none;
+        color: #F0F0F0;
+        font-size: 12px;
+        font-family: Mulish, sans-serif;
+        font-weight: 700;
+        text-transform: capitalize;
+        box-sizing: border-box;
+
+        &::placeholder {
+            color: #606060;
+            font-size: 12px;
+            font-family: Mulish, sans-serif;
+            font-weight: 700;
+            text-transform: capitalize;
+        }
+    }
+}
+
+.seletor-wrapper {
+    width: 100%;
+    height: 50px;
+    position: relative;
+    border-radius: 14px;
+    background-color: #1D1D19;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+
+    &:focus-within {
+        border: 1px solid #f0f0f0;
+    }
+
+    select {
+        width: 100%;
+        height: 100%;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding: 0 45px 0 20.58px;
+        border: none;
+        background: transparent;
+        outline: none;
+        cursor: pointer;
+        color: #F0F0F0;
+        font-size: 12px;
+        font-family: Mulish, sans-serif;
+        font-weight: 700;
+        text-transform: capitalize;
+        box-sizing: border-box;
+
+        option:first-child {
+            color: #606060;
+        }
+        option {
+            background-color: #1D1D19;
+            color: #F0F0F0;
+            font-size: 12px;
+            font-family: Mulish, sans-serif;
+            font-weight: 700;
+        }
+    }
+
+    i {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #AD2F33;
+        pointer-events: none;
+        font-size: 1em;
+    }
+}
+
+.ingredientes-secao {
+    margin-bottom: 30px;
+}
+
+.secao-titulo {
+    color: #F0F0F0;
+    font-size: 14px;
+    font-family: Mulish, sans-serif;
+}
+
+.ingredientes-secao h2{
+    margin-bottom: -20px;
+}
+
+/* AJUSTES AQUI para .ingredientes-form-linha para flexbox e botão de remover */
+.ingredientes-form-linha {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    // Removi o margin-bottom aqui porque .item-com-remocao vai gerenciar isso
+    flex-wrap: wrap;
+
+    .grupo-formulario {
+        margin-bottom: 0;
+    }
+
+    .ingrediente-select {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 0;
+        min-width: 100px;
+
+        .seletor-wrapper {
+            border-radius: 8px;
+        }
+    }
+
+    .quantidade-input {
+        flex-grow: 0;
+        flex-shrink: 0;
+        flex-basis: 50px;
+        min-width: 70px;
+        // ADIÇÃO: Max-width para a quantidade
+        max-width: 70px; /* Limite máximo para não ficar muito largo */
+
+
+        .input-container-custom {
+            height: 50px;
+            border-radius: 8px;
+            input {
+                padding: 0 10px;
+                text-align: center;
+            }
+        }
+    }
+
+    .unidade-select {
+        flex-grow: 1;
+        flex-shrink: 1;
+        flex-basis: 0;
+        min-width: 80px;
+
+        .seletor-wrapper {
+            width: 100%;
+            height: 50px;
+            border-radius: 8px;
+            select {
+                font-size: 12px;
+                padding: 0 35px 0 10px;
+            }
+            i {
+                right: 10px;
+            }
+        }
+    }
+}
+
+/* ADIÇÃO: Estilos para o container de cada linha de ingrediente com o botão de remover */
+.item-com-remocao {
+    display: flex;
+    gap: 10px; /* Espaço entre os campos e o botão */
+    align-items: center; /* Alinha verticalmente no centro */
+    flex-wrap: wrap; /* Permite que os itens quebrem linha em telas menores */
+    margin-bottom: 15px; /* Espaço entre as linhas de ingredientes */
+
+
+    .quantidade-input .input-container-custom input {
+        text-align: center; /* Centraliza o número */
+        padding: 0 5px; /* Ajusta o padding para o texto centralizado */
+    }
+
+    // Estilo para o botão de remover
+    .botao-remover {
+        margin-top: 30px; /* Mantive a margem que você adicionou */
+        background-color: #AD2F33; /* Cor vermelha do botão */
+        width: 30px; /* Você alterou para 30px, mantive */
+        height: 30px; /* Você alterou para 30px, mantive */
+        border-radius: 50%; /* Torna o botão redondo */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        flex-shrink: 0; /* Impede que o botão encolha */
+        margin-left: auto; /* Empurra o botão para a direita se houver espaço */
+
+        &:hover {
+            background-color: darken(#AD2F33, 5%);
+        }
+
+        i {
+            font-size: 16px;
+            color: #F0F0F0;
+        }
+    }
+}
+
+
+.botao-adicionar-ingrediente {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 128px;
+    height: 50px;
+    background-color: #67161F;
+    color: #F0F0F0;
+    font-size: 12px;
+    font-family: Mulish, sans-serif;
+    font-weight: 700;
+    text-transform: capitalize;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    /* ADIÇÃO: Margem para o botão de adicionar */
+    margin-top: 20px;
+
+    &:hover {
+        background-color: darken(#67161F, 5%);
+    }
+
+    i {
+        font-size: 16px;
+    }
+}
+
+/* --- ADIÇÃO / AJUSTE DO CSS PARA A SEÇÃO MODO DE PREPARO --- */
+
+.modo-preparo-secao {
+    margin-bottom: 30px;
+    // O título "Modo De Preparo" usará .secao-titulo
+    // O botão "Adicionar" usará .botao-adicionar-ingrediente
+}
+
+// Inicializa o contador para a lista de passos
+.modo-preparo-secao {
+    counter-reset: passo-counter;
+}
+
+/* Container para cada passo individual */
+.passo-preparo-item {
+    margin-bottom: 15px; /* Espaço entre os passos, se houver mais de um */
+    position: relative; /* Essencial para posicionar o número */
+    counter-increment: passo-counter; /* Incrementa o contador para cada item */
+    display: flex; /* Adicionado para alinhar o input e o botão de remover */
+    align-items: center; /* Alinha verticalmente no centro */
+    gap: 10px; /* Espaço entre o input e o botão de remover */
+    flex-wrap: wrap; /* Permite que os itens quebrem linha em telas menores */
+
+
+    /* Estilo para o número do passo (1., 2., etc.) */
+    &::before {
+        content: counter(passo-counter) "."; /* Exibe o número do contador + ponto */
+        position: absolute;
+        left: 20px; /* Posição horizontal do número */
+        top: 50%;
+        transform: translateY(-50%); /* Centraliza verticalmente */
+        color: #606060; /* Cor do número */
+        font-size: 12px;
+        font-family: Mulish, sans-serif;
+        font-weight: 700;
+        z-index: 1; /* Garante que o número fique acima do input se necessário */
+        pointer-events: none; /* Não interfere com o input */
+        min-width: 25px; /* Espaço mínimo para números de dois dígitos */
+        text-align: left; /* Alinha o texto do número à esquerda */
+    }
+
+    /* ADIÇÃO: Estilo para o botão de remover em modo de preparo */
+    .botao-remover {
+        background-color: #AD2F33; /* Cor vermelha do botão */
+        width: 30px; /* Mantive o tamanho que você definiu para os ingredientes */
+        height: 30px; /* Mantive o tamanho que você definiu para os ingredientes */
+        border-radius: 50%; /* Torna o botão redondo */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        flex-shrink: 0; /* Impede que o botão encolha */
+        margin-left: auto; /* Empurra o botão para a direita se houver espaço */
+
+        &:hover {
+            background-color: darken(#AD2F33, 5%);
+        }
+
+        i {
+            font-size: 16px;
+            color: #F0F0F0;
+        }
+    }
+}
+
+/* Container do input dentro de cada passo */
+.passo-input-container {
+    border-radius: 8px; /* O raio de borda na imagem é 8px */
+    height: 50px; /* Altura do input */
+    background-color: #1D1D19; /* Fundo do input */
+    flex-grow: 1; /* Permite que o input de passo ocupe o espaço disponível */
+    flex-shrink: 1;
+    flex-basis: 0; // Adicionado para melhor flexibilidade
+
+
+    input {
+        padding-left: 50px; /* Ajusta o padding-left para dar espaço ao número (20px + largura do número + espaço) */
+        padding-right: 20.58px; /* Mantém o padding direito */
+        color: #F0F0F0; /* Cor do texto digitado */
+        // Outros estilos de fonte e cor já vêm de .input-container-custom input
+    }
+}
+
+/* Estilos para o botão "Criar Receita" */
+.botao-criar-receita {
+    display: flex; /* Permite centralizar o texto horizontalmente */
+    align-items: center; /* Centraliza o texto verticalmente */
+    justify-content: center; /* Centraliza o texto horizontalmente */
+    width: 100%; /* Largura do botão conforme o design */
+    height: 50px; /* Altura do botão */
+    background-color: #AD2F33; /* Cor de fundo do botão (vermelho) */
+    color: #F0F0F0; /* Cor do texto */
+    font-size: 14px;
+    font-family: Mulish, sans-serif;
+    font-weight: 700;
+    text-transform: capitalize;
+    border-radius: 8px; /* Raio de borda conforme o design */
+    border: none; /* Remove a borda padrão do botão */
+    cursor: pointer; /* Muda o cursor para indicar que é clicável */
+    transition: background-color 0.2s ease; /* Transição suave ao passar o mouse */
+    margin: 30px auto; /* Centraliza o botão horizontalmente e adiciona margem vertical */
+
+    &:hover {
+        background-color: darken(#AD2F33, 5%);
+    }
+}
+
+/* Alto Contraste */
+:host-context(.ion-palette-high-contrast) {
+  .criacao-receita-page-container {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+
+  .input-container-custom,
+  .input-container-custom.input-container-textarea,
+  .seletor-wrapper,
+  .passo-input-container {
+    background-color: #000 !important;
+    border: 1px solid #fff !important;
+  }
+
+  input,
+  textarea,
+  select {
+    color: #fff !important;
+    background-color: transparent !important;
+
+    &::placeholder {
+      color: #AAAAAA !important;
+    }
+  }
+
+  option {
+    background-color: #000 !important;
+    color: #fff !important;
+  }
+
+  .upload-area {
+    background-color: #000 !important;
+    border: 2px dashed #fff !important;
+  }
+
+  .upload-icon-wrapper,
+  .upload-plus-icon {
+    color: #fff !important;
+  }
+
+  .imagem-preview {
+    opacity: 0.9;
+  }
+
+  .grupo-formulario label,
+  .secao-titulo {
+    color: #fff !important;
+  }
+
+  .botao-remover,
+  .botao-adicionar-ingrediente,
+  .botao-criar-receita {
+    background-color: #fff !important;
+    color: #000 !important;
+    border: none !important;
+  }
+
+  .botao-remover:hover,
+  .botao-adicionar-ingrediente:hover,
+  .botao-criar-receita:hover {
+    background-color: #fff !important;
+  }
+
+  .ingredientes-form-linha .input-container-custom,
+  .ingredientes-form-linha .seletor-wrapper,
+  .unidade-select .seletor-wrapper {
+    background-color: #000 !important;
+    border: 1px solid #fff !important;
+  }
+
+  .modo-preparo-secao::before {
+    color: #fff !important;
+  }
+}

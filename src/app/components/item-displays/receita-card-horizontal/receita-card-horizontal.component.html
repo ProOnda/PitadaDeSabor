@@ -1,0 +1,16 @@
+<div class="receita-card-horizontal">
+  <div class="receita-image-container">
+    <!-- Usando as propriedades do input 'receita' para fotoUrl e receitaNome -->
+    <img [src]="receita.photoUrl || 'https://placehold.co/120x120'" [alt]="receita.recipeName" class="receita-image"> 
+  </div>
+  <div class="receita-details">
+    <h3 class="receita-title">{{ receita.recipeName }}</h3> <!-- Renomeado para receita-name para consistência -->
+    
+    <!-- <<<<< NOVOS ELEMENTOS: Nome do criador e data de criação >>>>> -->
+    <div class="receita-author-info">
+      <span class="author-name">{{ receita.userName }}</span>
+      <span class="separator"> • </span>
+      <span class="creation-date">{{ receita.createdAt | date:'d \'de\' MMMM \'de\' yyyy' }}</span>
+    </div>
+  </div>
+</div>

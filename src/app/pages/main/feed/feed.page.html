@@ -1,0 +1,70 @@
+<!-- Main wrapper para toda a página - Controla a altura total da viewport e o overflow global -->
+<div class="feed-page-wrapper">
+
+  <!-- Container principal rolável - Este div gerencia a rolagem do conteúdo -->
+  <div class="page-content-scrollable">
+    <!-- Conteúdo principal do feed - Ele terá width: 90% e margin: 0 auto; -->
+    <div class="feed-page-content">
+      <div class="header">
+        <div class="header-top-row">
+          <p class="home-text">Home</p>
+          <div class="profile-image-container"> <!-- Novo container para a imagem/ícone -->
+            <img [src]="userPhotoUrl!" *ngIf="userPhotoUrl" alt="Foto de Perfil" class="profile-actual-image">
+            <div *ngIf="!userPhotoUrl" class="profile-placeholder-icon">
+              <i class="bi bi-image"></i>
+            </div>
+          </div>
+        </div>
+        <div class="texts">
+          <p class="greeting">{{ saudacao }}, {{ userName || 'Usuário' }}!</p>
+          <p class="question">Qual Vai Ser A Receita Do Dia?</p>
+        </div>
+      </div>
+
+      <app-search-bar
+        (searchChange)="handleSearchChange($event)"
+        (filterClick)="goToFilterPage()"
+      ></app-search-bar>
+
+      <div class="categories-container">
+        <app-category-item
+          label="Lanches"
+          (categoryClick)="handleCategoryClick($event)"
+        >
+          <i class="bi bi-cup-straw"></i>
+        </app-category-item>
+        <app-category-item
+          label="Refeições"
+          (categoryClick)="handleCategoryClick($event)"
+        >
+          <i class="bi bi-egg-fried"></i>
+        </app-category-item>
+        <app-category-item
+          label="Sobremesas"
+          (categoryClick)="handleCategoryClick($event)"
+        >
+          <i class="bi bi-cake"></i>
+        </app-category-item>
+      </div>
+
+      <app-item-list-section title="As Mais Recentes" iconClass="bi bi-plus-lg"></app-item-list-section>
+
+      <div *ngIf="loading" class="loading">Carregando receitas...</div>
+      <div *ngIf="error" class="error">Erro: {{ error }}</div>
+
+      <div *ngIf="!loading && !error && receitas.length === 0">
+        Nenhuma receita encontrada.
+      </div>
+
+      <div *ngIf="!loading && !error && receitas.length > 0" class="receitas-container">
+        <app-receita-card-horizontal
+          *ngFor="let receitaComId of receitas"
+          [receita]="receitaComId"
+          (click)="openReceitaDetails(receitaComId.id)"
+        ></app-receita-card-horizontal>
+      </div>
+
+      <app-feed-menu></app-feed-menu>
+    </div>
+  </div>
+</div>

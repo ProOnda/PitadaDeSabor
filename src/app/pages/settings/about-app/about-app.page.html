@@ -1,0 +1,32 @@
+<ion-content class="about-app-page">
+  <div class="container">
+    
+    <app-page-header
+    title="Sobre o Aplicativo"
+    [showBackButton]="true"
+    backButtonRoute="/configuracoes"
+  ></app-page-header>
+
+    <div class="section description">
+      <h1>Pitada De Sabor - Seu Companheiro Culinário</h1>
+      <p>Descubra Um Mundo De Receitas Deliciosas E Inspire-Se Na Cozinha Com O Pitada De Sabor! Nosso Aplicativo Foi Desenvolvido Com Paixão Para Facilitar Sua Jornada Gastronômica. Desde Iniciantes Até Chefs Experientes, Explore Uma Vasta Coleção De Pratos Saborosos.</p>
+      <p>Encontre Receitas Para Todos Os Gostos E Ocasiões, E Desfrute De Uma Experiência Culinária Intuitiva E Agradável. Acreditamos Que Cozinhar É Uma Arte Que Pode Ser Apreciada Por Todos, E O Pitada De Sabor Está Aqui Para Ser Seu Guia Nessa Deliciosa Aventura.</p>
+    </div>
+
+    <div class="section team">
+      <h2>Equipe</h2>
+      <app-person-card
+        name="Arthur Lopez"
+        avatarUrl="/assets/images/arthur.jpg"
+        role="Desenvolvedor"></app-person-card>
+      <app-person-card
+        name="Gabriel Souza"
+        avatarUrl="/assets/images/gabriel.jpg"
+        role="Designer UI/UX"></app-person-card>
+      <app-person-card
+        name="Maria Apolinário"
+        avatarUrl="/assets/images/maria.jpg"
+        role="Gerente de Projeto"></app-person-card>
+    </div>
+  </div>
+</ion-content>

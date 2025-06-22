@@ -1,0 +1,23 @@
+ion-content {
+    --background: #111; /* Cor de fundo de exemplo */
+}
+
+.navigation-container {
+    width: 300.66px;
+    height: 45.66px;
+    position: relative;
+    max-width: 80%;
+    margin: 0 auto;
+    margin-top: -30px;
+    margin-bottom: 30px;
+  }
+  
+  .back-button {
+    width: 50px;
+  }
+  
+  .next-button-positioned {
+    position: absolute;
+    left: 255px;
+    top: 0px;
+  }

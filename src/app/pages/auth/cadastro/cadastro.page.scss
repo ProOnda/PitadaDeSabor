@@ -1,0 +1,115 @@
+.cadastro-page {
+  --background: #111;
+  height: 100%; /* Garante que a tela toda seja preenchida */
+  margin: 0 auto;
+}
+
+.cadastro-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 300px;
+  margin: 10px auto;
+}
+
+.cadastro-header {
+  color: #f0f0f0;
+  text-align: center;
+  margin: 20px 0;
+
+  h1 {
+    font-size: 20px;
+    color: #F0DBBE;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 14px;
+    color: #F0F0F0;
+    line-height: 1.4;
+  }
+}
+
+.cadastro-button {
+  --background: #ad2f33;
+  --color: #fff;
+  border-radius: 8px;
+  height: 50px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.separator {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #777;
+  margin: 20px 0;
+
+  &::before,
+  &::after {
+    content: '';
+    flex-grow: 1;
+    background-color: #777;
+    height: 1px;
+    margin: 0 10px;
+  }
+
+  span {
+    padding: 0 10px;
+  }
+}
+
+app-social-login {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+app-footer-link {
+  width: 100%;
+}
+
+/* Estilização para o ícone dentro do app-custom-input */
+.cadastro-container app-custom-input i {
+  position: absolute;
+  left: 10px; /* Ajuste a distância da borda esquerda */
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2em; /* Ajuste o tamanho do ícone */
+  color: #777; /* Cor do ícone */
+}
+
+/* Estilização adicional para o input dentro do app-custom-input para dar espaço ao ícone */
+.cadastro-container app-custom-input .input-wrapper input {
+  padding-left: 35px; /* Ajuste este valor para dar espaço ao ícone */
+  color: #777;
+}
+
+.password-input-container {
+  position: relative; /* Cria um contexto de posicionamento para os elementos internos */
+}
+
+.toggle-password-button {
+  position: absolute;
+  top: 50%;
+  right: 10px; /* Ajuste a distância da borda direita conforme necessário */
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 1.2em; /* Ajuste o tamanho do ícone do olho */
+  color: #ad2f33; /* Cor do ícone do olho */
+}
+
+/* Ajuste no padding-right do input para dar espaço ao ícone */
+.cadastro-container app-custom-input .input-wrapper input {
+  padding-left: 35px; /* Mantém o padding para o ícone de cadeado */
+  padding-right: 40px; /* Adiciona padding à direita para o ícone do olho */
+}
+
+.error-message {
+  color: #f0f0f0; /* Ou alguma outra cor vermelha que você prefira */
+  margin-top: 20px;
+}

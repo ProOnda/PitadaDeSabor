@@ -1,0 +1,50 @@
+.config-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    color: #F0F0F0;
+  
+    .icon-container {
+      width: 50px;
+      height: 50px;
+      background-color: #1D1D19; /* Mesmo fundo do item para o círculo */
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-right: 16px;
+      margin-left: -14%;
+  
+      .icon-container i.bi {
+        font-size: 1.5em; /* Tamanho do ícone */
+        color: #606060; /* Cor do ícone */
+      }
+    }
+  
+    .label {
+      font-size: 14px;
+      line-height: 35px; /* Ajuste conforme a altura do item */
+      flex-grow: 1; /* Ocupa o espaço restante */
+    }
+  
+    .arrow-container {
+      width: 50px;
+      height: 50px;
+      background-color: #1D1D19;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+  
+      i.bi-chevron-right {
+        font-size: 16px;
+        color: #606060; /* Cor da seta */
+      }
+    }
+  
+    &:last-child {
+      margin-bottom: 0; /* Remove a margem inferior do último item */
+  
+    }
+  }

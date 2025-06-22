@@ -1,0 +1,14 @@
+<div class="search-bar-container">
+  <div class="input-background">
+    <i class="bi bi-search search-icon"></i>
+    <input
+      type="text"
+      placeholder="Procurar..."
+      class="search-input"
+      (input)="onSearchChange($event)"
+    />
+  </div>
+  <div class="filter-button" (click)="onFilterClick()">
+    <i class="bi bi-sliders filter-icon"></i>
+  </div>
+</div>

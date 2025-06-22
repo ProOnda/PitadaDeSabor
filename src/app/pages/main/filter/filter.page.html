@@ -1,0 +1,77 @@
+<ion-content [fullscreen]="true" class="filter-page">
+  <div class="container">
+    <div class="page-header-container-custom">
+      <app-page-header
+        *ngIf="showFilters"
+        title="Filtros"
+        [showBackButton]="true"
+        backButtonRoute="/feed"
+      ></app-page-header>
+
+      <app-page-header
+        *ngIf="!showFilters"
+        title="Resultados da Pesquisa"
+        [showBackButton]="true" [backButtonRoute]="'/feed'" (backButtonClick)="backToFilters()" ></app-page-header>
+    </div>
+
+    <div class="filter-sections" *ngIf="showFilters">
+      <app-option-section
+        [title]="'Categorias'"
+        [iconClass]="'bi bi-grid-fill'"
+        [options]="categoriesOptions"
+        [currentSelectedValues]="selectedFilters['categories']"
+        (optionSelected)="handleOptionSelected('categories', $event)"
+      ></app-option-section>
+
+      <app-option-section
+        [title]="'Tempo de Preparo'"
+        [iconClass]="'bi bi-clock-fill'"
+        [options]="timeOptions"
+        [currentSelectedValues]="selectedFilters['time']"
+        (optionSelected)="handleOptionSelected('time', $event)"
+      ></app-option-section>
+
+      <app-option-section
+        [title]="'Dificuldade'"
+        [iconClass]="'bi bi-star-fill'"
+        [options]="difficultyOptions"
+        [currentSelectedValues]="selectedFilters['difficulty']"
+        (optionSelected)="handleOptionSelected('difficulty', $event)"
+      ></app-option-section>
+
+      <app-option-section
+        [title]="'Tipos de Alimentos'"
+        [iconClass]="'bi bi-egg-fill'"
+        [options]="foodTypesOptions"
+        [currentSelectedValues]="selectedFilters['foodTypes']"
+        (optionSelected)="handleOptionSelected('foodTypes', $event)"
+      ></app-option-section>
+
+      <div class="filter-actions">
+        <button class="apply-filters-button" (click)="applyFilters()">Filtrar</button>
+      </div>
+    </div>
+
+    <div class="filtered-recipes-display" *ngIf="!showFilters">
+      
+      <p *ngIf="isLoading" class="loading-message">Carregando receitas...</p>
+
+      <p *ngIf="!isLoading && filteredRecipes.length === 0" class="no-results-message">Nenhuma receita encontrada com os filtros selecionados.</p>
+
+      <div class="recipes-grid">
+        <div *ngFor="let recipe of filteredRecipes" class="recipe-card" (click)="navigateToRecipeDetail(recipe.id)">
+          <img [src]="recipe.photoUrl || 'assets/placeholder.png'" alt="{{ recipe.recipeName }}" class="recipe-image">
+          <div class="recipe-info">
+            <h4 class="recipe-name">{{ recipe.recipeName }}</h4>
+            <p class="recipe-description">{{ recipe.description }}</p>
+            <div class="recipe-meta">
+              <span *ngIf="recipe.categoryLabel" class="meta-item category">{{ recipe.categoryLabel }}</span>
+              <span *ngIf="recipe.timeLabel" class="meta-item time">{{ recipe.timeLabel }}</span>
+              <span *ngIf="recipe.difficultyLabel" class="meta-item difficulty">{{ recipe.difficultyLabel }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

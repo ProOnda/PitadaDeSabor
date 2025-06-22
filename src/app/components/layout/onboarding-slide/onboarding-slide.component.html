@@ -1,0 +1,20 @@
+<ion-content [fullscreen]="true">
+  <div class="slide-container">
+    <div class="image-container">
+      <img [src]="imageUrl" alt="Imagem da Página">
+    </div>
+    <div class="content">
+      <div class="text-content">
+        <h2 class="title">{{ title }}</h2>
+        <div class="navigation">
+          <div class="dots">
+            <span class="dot" [class.active]="activeDot === 1"></span>
+            <span class="dot" [class.active]="activeDot === 2"></span>
+            <span class="dot" [class.active]="activeDot === 3"></span>
+          </div>
+        </div>
+        <p class="description">{{ description }}</p>
+      </div>
+    </div>
+  </div>
+</ion-content>

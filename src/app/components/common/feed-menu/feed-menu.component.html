@@ -1,0 +1,21 @@
+<div class="feed-menu-container">
+  <div class="menu-background"></div>
+  <button class="add-button" (click)="navigateTo('/recipe-creation')"> <div class="add-icon-fundo">
+      <div class="add-icon-background">
+        <i class="bi bi-plus-lg add-icon"></i>
+      </div>
+    </div>
+  </button>
+  <button class="menu-item home" [class.active]="activeRoute.startsWith('/feed')" (click)="navigateTo('/feed')">
+    <i class="bi bi-house-door-fill"></i>
+  </button>
+  <button class="menu-item heart" [class.active]="activeRoute.startsWith('/favorites')"(click)="navigateTo('/favorites')">
+    <i class="bi bi-heart-fill"></i>
+  </button>
+  <button class="menu-item profile" (click)="navigateTo('/profile')">
+    <i class="bi bi-person-fill"></i>
+  </button>
+  <button class="menu-item settings" [class.active]="activeRoute.startsWith('/configuracoes')" (click)="navigateTo('/configuracoes')">
+    <i class="bi bi-gear-fill"></i>
+  </button>
+</div>

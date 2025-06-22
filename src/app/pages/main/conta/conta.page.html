@@ -1,0 +1,33 @@
+<ion-content class="account-page">
+  <div class="container">
+    
+    <app-page-header
+      title="Conta"
+      [showBackButton]="true"
+      backButtonRoute="/configuracoes"
+    ></app-page-header>
+
+    <ion-item class="toggle-item">
+      <ion-label class="toggle-label">
+        <ion-icon
+          [name]="highContrastPaletteToggle ? 'eye' : 'eye-off'"
+          style="margin-right: 8px;"
+        ></ion-icon>
+        {{ highContrastPaletteToggle ? 'Modo Alto Contraste Ativado' : 'Modo Alto Contraste Desativado' }}
+      </ion-label>
+      
+      <ion-toggle
+        class="styled-toggle"
+        [(ngModel)]="highContrastPaletteToggle"
+        (ionChange)="highContrastPaletteToggleChange($event)"
+        [enableOnOffLabels]="false"
+      ></ion-toggle>
+    </ion-item>
+
+    <div class="section delete-account">
+      <p>Se você deseja excluir sua conta permanentemente, clique no botão abaixo:</p>
+      <app-button buttonType="danger" [label]="'Deletar Conta'" class="mt-3" (buttonClick)="deletarConta()"></app-button>
+    </div>
+
+  </div>
+</ion-content>

@@ -1,0 +1,83 @@
+ion-content {
+  --background: #111;
+  ; /* Torna o fundo do ion-content transparente */
+}
+
+.image-container {
+   /* Para sobrepor o fundo do ion-content */
+  top: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden; /* Garante que nada vaze do container da imagem */
+
+  img {
+    width: 100%;
+    object-fit: cover; /* A imagem cobre o container, cortando se necessário */
+    height: 60vh;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 auto;
+  width: 80%;
+  text-align: left;
+}
+
+.slide-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+}
+
+.text-content {
+  /* flex-grow: 1; Remova o flex-grow inicialmente para teste */
+  display: flex;
+  flex-direction: column;
+  /* Remova ou ajuste o justify-content */
+  /* justify-content: flex-end; */
+}
+
+.text-content h2 {
+  font-size: 25px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #F0DBBE;
+}
+
+.text-content p {
+  font-size: 16px;
+  color: #F0F0F0;
+  line-height: 1.4;
+}
+
+.navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Botões nas laterais, bolinhas no centro */
+  width: 100%;
+  margin: 10px 0px;
+}
+
+.navigation .dots {
+  display: flex;
+  gap: 10px;
+}
+
+.navigation .dots .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgb(80, 80, 80);
+  opacity: 0.6;
+  transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+}
+
+.navigation .dots .dot.active {
+  opacity: 1;
+  background-color: #67161F;
+  transform: scale(1.2);
+}

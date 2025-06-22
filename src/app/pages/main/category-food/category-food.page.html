@@ -1,0 +1,37 @@
+<!-- src/app/pages/category-food/category-food.page.html -->
+<div class="category-food-page-wrapper">
+  <div class="page-header-container-custom">
+    <app-page-header
+      [title]="categoryLabel || 'Categorias'"
+      [showBackButton]="true"
+      backButtonRoute="/feed"
+    ></app-page-header>
+  </div>
+
+  <div class="page-content-scrollable">
+    <div class="container">
+      <div class="category-food-content">
+        <h2 class="section-title">Receitas de {{ categoryLabel || 'Categoria' }}</h2>
+
+        <p *ngIf="isLoading" class="loading-message">Carregando receitas...</p>
+        <p *ngIf="error" class="error-message">{{ error }}</p>
+
+        <div *ngIf="!isLoading && recipes.length > 0" class="recipes-grid">
+          <div *ngFor="let recipe of recipes" class="recipe-card" (click)="navigateToRecipeDetail(recipe.id)">
+            <div class="recipe-image-container">
+              <img [src]="recipe.photoUrl || 'https://placehold.co/311x229'" alt="{{ recipe.recipeName }}" class="recipe-image">
+            </div>
+            <div class="recipe-info">
+              <h5 class="recipe-title">{{ recipe.recipeName }}</h5>
+              <p class="recipe-meta">{{ recipe.createdAt | date:'mediumDate' }}</p>
+            </div>
+          </div>
+        </div>
+        <p *ngIf="!isLoading && !error && recipes.length === 0" class="no-recipes-message">
+          Nenhuma receita encontrada para esta categoria.
+        </p>
+      </div>
+    </div>
+  </div>
+  <app-feed-menu></app-feed-menu>
+</div>

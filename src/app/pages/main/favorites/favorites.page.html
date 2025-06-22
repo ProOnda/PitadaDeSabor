@@ -1,0 +1,57 @@
+<!-- Main wrapper para controlar a altura total da página e o overflow -->
+<div class="favorites-page-wrapper">
+  <!-- O cabeçalho da página (PageHeaderComponent) será fixo e não rolará com o conteúdo abaixo -->
+  <div class="page-header-container-custom">
+    <app-page-header
+      title="Meus Favoritos"
+      [showBackButton]="true"
+      backButtonRoute="/feed"
+    ></app-page-header>
+  </div>
+
+  <!-- Container principal rolável -->
+  <div class="page-content-scrollable">
+    <!-- Conteúdo centralizado e com largura de 85% -->
+    <div class="content">
+
+      <!-- Conteúdo principal dos favoritos (loading, error, grid de receitas) -->
+      <div class="main-favorites-display">
+        <p *ngIf="isLoading" class="loading-message">Carregando favoritos...</p>
+        <p *ngIf="error" class="error-message">{{ error }}</p>
+
+        <ng-container *ngIf="favoriteRecipes$ | async as recipes">
+          <div *ngIf="!isLoading && recipes.length > 0" class="recipes-grid">
+            <div *ngFor="let recipe of recipes" class="recipe-card" [class.expanded]="isDetailsVisible(recipe.id)">
+              <div class="recipe-image-container">
+                <div class="background-shape"></div>
+                <img [src]="recipe.photoUrl || 'https://placehold.co/311x229'" alt="{{ recipe.recipeName }}" class="recipe-image">
+              </div>
+
+              <div class="recipe-header-section" (click)="toggleRecipeDetails(recipe.id); $event.stopPropagation()">
+                <h4 class="recipe-name">{{ recipe.recipeName }}</h4>
+                <div class="details-toggle"
+                     [class.open]="isDetailsVisible(recipe.id)">
+                  <i class="bi" [class.bi-chevron-up]="isDetailsVisible(recipe.id)" [class.bi-chevron-down]="!isDetailsVisible(recipe.id)"></i>
+                </div>
+              </div>
+
+              <div class="recipe-details" [class.visible]="isDetailsVisible(recipe.id)">
+                <p class="recipe-description">{{ recipe.description }}</p>
+                <button class="learn-more-button" (click)="navigateToRecipeDetail(recipe.id); $event.stopPropagation()">Saiba Mais</button>
+              </div>
+            </div>
+          </div>
+          <p *ngIf="!isLoading && !error && recipes.length === 0" class="no-favorites-message">
+            Você ainda não tem nenhuma receita favorita. Adicione algumas!
+          </p>
+
+          <!-- O FeedMenuComponent pode ser colocado aqui se ele rolar com o conteúdo,
+               ou fora do .page-content-scrollable se ele for fixo na parte inferior da tela.
+               Assumindo que ele rola com o conteúdo para fins deste exemplo. -->
+          <app-feed-menu></app-feed-menu>
+
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

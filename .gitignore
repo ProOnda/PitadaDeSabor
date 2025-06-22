@@ -1,0 +1,85 @@
+# Specifies intentionally untracked files to ignore when using Git
+# http://git-scm.com/docs/gitignore
+
+# --- Global / System Files ---
+*~
+*.sw[mnpcod]
+.tmp
+*.tmp
+*.tmp.*
+UserInterfaceState.xcuserstate
+$RECYCLE.BIN/
+.DS_Store
+Thumbs.db
+.history/ # VS Code history
+
+# --- Logs ---
+*.log
+npm-debug.log
+yarn-error.log
+testem.log
+/connect.lock
+/libpeerconnection.log
+
+# --- IDEs and editors ---
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# Visual Studio Code specific (allow some config files)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# --- Compiled output & Cache (General) ---
+/dist/
+/tmp/
+/out-tsc/
+/bazel-out/
+/.sourcemaps/
+/.versions/
+/coverage/
+.sass-cache/
+/.angular/
+/.angular/cache/
+/.nx/
+/.nx/cache/
+/typings/
+
+
+# --- Node.js / NPM specific (applies to both frontend and backend) ---
+# Generally, node_modules should always be ignored
+node_modules/
+# Dependency caching (e.g. for Yarn Plug'n'Play)
+.pnp/
+.pnp.js
+
+# --- Frontend (Ionic/Angular) Specific ---
+# Path relative to the root .gitignore
+/frontend/www/
+/frontend/platforms/
+/frontend/plugins/
+/frontend/.ionic/
+# If frontend has its own node_modules, you can uncomment this,
+# but the global node_modules/ rule often covers it.
+# /frontend/node_modules/
+# /frontend/npm-debug.log
+# /frontend/yarn-error.log
+
+
+# --- Backend Specific ---
+# Path relative to the root .gitignore
+# Firebase Service Account Key - CRITICAL TO IGNORE FOR SECURITY!
+/backend/pitadadesabor-261ed-firebase-adminsdk-fbsvc-c8df4feb7d.json
+# If backend has its own node_modules, you can uncomment this,
+# but the global node_modules/ rule often covers it.
+# /backend/node_modules/
+# /backend/npm-debug.log
+# /backend/yarn-error.log

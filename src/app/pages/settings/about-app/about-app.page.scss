@@ -1,0 +1,40 @@
+.about-app-page {
+    --background: #111; /* Cor de fundo escura */
+
+
+    .container {
+      width: 90%;
+      margin: 0 auto;
+    }
+  
+    .section {
+      margin-bottom: 30px;
+      margin-top: 50px;
+    }
+  
+      h1 {
+        color: #F0DBBE;
+        font-size: 16px;
+        text-align: left;
+        font-family: sans-serif;
+        font-weight: bold;
+      }
+  
+      p {
+        line-height: 1.6;
+        font-size: 14px;
+        margin: 15px 0px;
+        color: #F0F0F0;
+        text-align: left;
+      }
+    }
+  
+    .team {
+      h2 {
+        color: #F0DBBE;
+        font-size: 14px;
+        text-align: left;
+        font-family: sans-serif;
+        font-weight: bold;
+      }
+    }

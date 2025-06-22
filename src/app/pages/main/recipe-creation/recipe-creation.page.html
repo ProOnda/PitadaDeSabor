@@ -1,0 +1,172 @@
+<div class="criacao-receita-page-container">
+    <div class="content">
+        <!-- <<<<< TÍTULO DINÂMICO DA PÁGINA >>>>> -->
+        <app-page-header [title]="pageTitle" [showBackButton]="true" (backButtonClick)="onBackClick()"></app-page-header>
+
+        <div class="criacao-receita-conteudo">
+            <div class="criar-receita-esquerda">
+                <div class="grupo-formulario upload-foto-receita">
+                    <label for="fotoReceita" class="upload-area">
+                        <input
+                            type="file"
+                            id="fotoReceita"
+                            name="fotoReceita"
+                            accept="image/png, image/jpeg, image/jpg"
+                            style="display: none;"
+                            (change)="onFileSelected($event)" >
+                        <div class="upload-icon-wrapper" *ngIf="!imagemPreviewUrl"> 
+                            <i class="bi bi-image"></i> 
+                            <i class="bi bi-plus-lg upload-plus-icon"></i>
+                        </div>
+                        <img [src]="imagemPreviewUrl!" *ngIf="imagemPreviewUrl" class="imagem-preview" alt="Prévia da Receita">
+                    </label>
+                </div>
+
+                <div class="grupo-formulario">
+                    <div class="input-container-custom">
+                        <input type="text" id="tituloReceita" name="tituloReceita" placeholder="Título" [(ngModel)]="recipeTitle" required> 
+                    </div>
+                </div>
+
+                <div class="grupo-formulario">
+                    <div class="input-container-custom input-container-textarea">
+                        <textarea id="descricaoReceita" name="descricaoReceita" placeholder="Descrição" [(ngModel)]="recipeDescription"></textarea>
+                    </div>
+                </div>
+
+                <div class="grupo-formulario">
+                    <div class="seletor-wrapper">
+                        <select id="tempo" name="tempo" [(ngModel)]="recipeTimeId" required> 
+                            <option value="" disabled selected hidden>Tempo</option>
+                            <option value="1">Até 30 minutos</option>
+                            <option value="2">30 minutos - 60 minutos</option>
+                            <option value="3">60 minutos - 120 minutos</option>
+                            <option value="4">Mais de 120 minutos</option>
+                        </select>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="grupo-formulario">
+                    <div class="seletor-wrapper">
+                        <select id="dificuldade" name="dificuldade" [(ngModel)]="recipeDifficultyId" required>
+                            <option value="" disabled selected hidden>Dificuldade</option>
+                            <option value="1">Fácil</option>
+                            <option value="2">Médio</option>
+                            <option value="3">Difícil</option>
+                        </select>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="grupo-formulario">
+                    <div class="seletor-wrapper">
+                        <select id="categoria" name="categoria" [(ngModel)]="recipeCategoryId" required>
+                            <option value="" disabled selected hidden>Categoria</option>
+                            <option value="1">Lanches</option>
+                            <option value="2">Refeições</option>
+                            <option value="3">Sobremesas</option>
+                        </select>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="ingredientes-secao">
+                    <h2 class="secao-titulo">Ingredientes</h2>
+
+                    <div class="grupo-formulario" *ngFor="let ingredient of ingredients; let i = index">
+                        <div class="ingredientes-form-linha item-com-remocao"> 
+                            <div class="grupo-formulario ingrediente-input-text">
+                                <div class="input-container-custom">
+                                    <input 
+                                        type="text" 
+                                        [(ngModel)]="ingredient.name" 
+                                        name="ingrediente-{{i}}" 
+                                        [attr.id]="'inputIngrediente-' + i" 
+                                        placeholder="Nome do Ingrediente"
+                                        required> 
+                                </div>
+                            </div>
+
+                            <div class="grupo-formulario quantidade-input">
+                                <div class="input-container-custom">
+                                    <input type="number" [(ngModel)]="ingredient.quantity" name="quantidade-{{i}}" placeholder="Qtd" min="0" step="any" [attr.id]="'quantidade-' + i" required> 
+                                </div>
+                            </div>
+
+                            <div class="grupo-formulario unidade-select">
+                                <div class="seletor-wrapper">
+                                    <select [(ngModel)]="ingredient.unitId" name="unidade-{{i}}" [attr.id]="'selectUnidade-' + i" required> 
+                                        <option value="" disabled selected hidden>Unid.</option> 
+                                        <option value="1">Gramas</option>
+                                        <option value="2">Mililitros</option>
+                                        <option value="3">Unidade(s)</option>
+                                        <option value="4">Colher de Sopa</option>
+                                        <option value="5">Colher de Chá</option>
+                                        <option value="6">Xícara(s)</option>
+                                    </select>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                            </div>
+
+                            <div class="grupo-formulario foodtype-select">
+                                <div class="seletor-wrapper">
+                                    <select [(ngModel)]="ingredient.foodTypeId" name="foodtype-{{i}}" [attr.id]="'selectFoodType-' + i" required> 
+                                        <option value="" disabled selected hidden>Tipo de Alimento</option>
+                                        <option value="1">Carnes, Aves e Peixes</option> 
+                                        <option value="2">Laticínios e Ovos</option>
+                                        <option value="3">Cereais e Grãos</option>
+                                        <option value="4">Leguminosas</option>
+                                        <option value="5">Frutas</option>
+                                        <option value="6">Vegetais</option>
+                                        <option value="7">Óleos e Gorduras</option>
+                                        <option value="8">Açúcares e Doces</option>
+                                        <option value="9">Especiarias e Condimentos</option>
+                                        <option value="10">Bebidas</option>
+                                    </select>
+                                    <i class="bi bi-chevron-down"></i>
+                                </div>
+                            </div>
+
+                            <button type="button" (click)="removeIngredient(i)" class="botao-remover" *ngIf="ingredients.length > 1">
+                                <i class="bi bi-dash-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="button" (click)="addIngredient()" class="botao-adicionar-ingrediente">
+                        <i class="bi bi-plus-lg"></i> Adicionar
+                    </button>
+                </div>
+
+                <div class="modo-preparo-secao">
+                    <h2 class="secao-titulo">Modo de Preparo</h2>
+
+                    <div class="passo-preparo-item" *ngFor="let step of preparationSteps; let i = index">
+                        <div class="input-container-custom passo-input-container">
+                            <input 
+                                type="text" 
+                                [(ngModel)]="step.description" 
+                                name="passo-{{i}}" 
+                                [attr.id]="'passo-' + i" 
+                                placeholder="{{ getStepPlaceholder(i) }}" 
+                                required
+                            />
+                        </div>
+                        <button type="button" (click)="removePreparationStep(i)" class="botao-remover" *ngIf="preparationSteps.length > 1">
+                            <i class="bi bi-dash-lg"></i>
+                        </button>
+                    </div>
+
+                    <button type="button" (click)="addPreparationStep()" class="botao-adicionar-ingrediente">
+                        <i class="bi bi-plus-lg"></i> Adicionar
+                    </button>
+                </div>
+            </div>
+            <!-- <<<<< TEXTO DO BOTÃO DINÂMICO >>>>> -->
+            <button class="botao-criar-receita" (click)="saveRecipe()">
+                {{ saveButtonText }}
+            </button>
+        </div>
+    </div>
+</div>

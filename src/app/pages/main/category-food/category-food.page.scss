@@ -1,0 +1,160 @@
+/* src/app/pages/category-food/category-food.page.scss */
+
+.category-food-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #11110F;
+  color: #f0f0f0;
+  overflow: hidden;
+  &::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+  scrollbar-width: none;
+}
+
+.page-header-container-custom {
+  width: 85%;
+  margin: 20px auto 0 auto;
+  box-sizing: border-box;
+}
+
+.page-content-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0;
+  &::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+  scrollbar-width: none;
+}
+
+.container {
+  max-width: 85%;
+  margin: 30px auto;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+}
+
+.category-food-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.section-title {
+  color: #F0F0F0;
+  font-size: 1.5em;
+  margin-bottom: 20px;
+  align-self: flex-start; // Garante que o título se alinha à esquerda
+}
+
+/* Estilos de mensagens de status */
+.loading-message, .error-message, .no-recipes-message {
+  color: #f0f0f0;
+  font-size: 1.1em;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin-top: 20px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  align-self: center;
+}
+
+.error-message {
+  color: var(--ion-color-danger);
+  background-color: var(--ion-color-danger-tint);
+  border: 1px solid var(--ion-color-danger);
+}
+
+.no-recipes-message {
+  color: var(--ion-color-primary-shade);
+  background-color: var(--ion-color-primary-tint);
+  border: 1px solid var(--ion-color-primary);
+}
+
+/* Grid de receitas (reutilizado do feed/perfil) */
+.recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+  width: 100%;
+  padding-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.recipe-card {
+  width: 100%;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 14px;
+}
+
+.recipe-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+.recipe-image-container {
+  width: 100%;
+  height: 25vh;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.recipe-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.recipe-info {
+  margin-top: 15px;
+  padding: 0px 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.recipe-title {
+  color: #F0F0F0;
+  font-size: 16px;
+  font-family: 'Mulish', sans-serif;
+  margin: 0;
+}
+
+.recipe-meta {
+  color: #f0f0f0;
+  font-size: 12px;
+  font-family: 'Mulish', sans-serif;
+  opacity: 0.8;
+}
+
+/* Estilos para o FeedMenuComponent */
+app-feed-menu {
+  width: 100%;
+  align-self: center;
+  margin-top: 30px;
+}
+
+/* Media Queries para Responsividade */
+@media (max-width: 768px) {
+  .page-header-container-custom,
+  .category-food-content {
+    width: 95%;
+  }
+}

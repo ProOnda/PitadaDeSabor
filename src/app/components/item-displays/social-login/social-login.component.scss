@@ -1,0 +1,30 @@
+.social-login {
+  display: flex;
+  gap: 20px; /* Espaçamento entre os botões */
+  width: fit-content; /* Ajusta a largura ao conteúdo */
+  height: fit-content; /* Ajusta a altura ao conteúdo */
+  margin: 20px auto;
+
+  &__button {
+    width: 35px;
+    height: 35px;
+    background-color: #F0DBBE;
+    border-radius: 8px;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden; /* Garante que o ícone fique dentro do círculo */
+    display: flex; /* Centraliza o ícone */
+    justify-content: center; /* Centraliza horizontalmente */
+    align-items: center; /* Centraliza verticalmente */
+    font-size: 1.5em; /* Ajuste o tamanho do ícone */
+
+    &--google {
+      color: #AD2F33; /* Cor do ícone do Google (aproximada) */
+    }
+
+    &--facebook {
+      color: #AD2F33; /* Cor do ícone do Facebook */
+    }
+  }
+}

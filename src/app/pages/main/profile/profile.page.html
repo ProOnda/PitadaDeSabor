@@ -1,0 +1,71 @@
+<!-- Main wrapper para toda a página - Ocupa a altura total da viewport e controla o overflow global -->
+<div class="profile-page-wrapper">
+
+  <!-- Container principal rolável - Este div gerencia a rolagem do conteúdo -->
+  <div class="page-content-scrollable">
+    <!-- Este div `.container` vai centralizar o conteúdo e limitar a largura (max-width: 85%) -->
+    <div class="container">
+
+      <!-- Conteúdo principal do perfil -->
+      <div class="profile-content">
+        
+        <div class="user-summary-wrapper">
+          <div class="grupo-formulario upload-foto-perfil">
+            <div class="contorno">
+            <label for="profileFoto" class="upload-area-perfil">
+              <input
+                type="file"
+                id="profileFoto"
+                name="profileFoto"
+                accept="image/png, image/jpeg, image/jpg"
+                style="display: none;"
+                (change)="onProfileFileSelected($event)" > <!-- NOVO EVENTO -->
+              <div class="upload-icon-wrapper-perfil" *ngIf="!profileImagePreviewUrl">
+                <i class="bi bi-image"></i>
+                <i class="bi bi-plus-lg upload-plus-icon-perfil"></i>
+              </div>
+              <img [src]="profileImagePreviewUrl!" *ngIf="profileImagePreviewUrl" class="imagem-preview-perfil" alt="Prévia da Foto de Perfil">
+            </label>
+            </div>
+          </div>
+          <!-- <<<<< NOVO: Botão de salvar para a foto de perfil >>>>> -->
+          <button class="botao-salvar-foto-perfil" *ngIf="selectedProfileFile" (click)="onSaveProfilePhoto()">
+            Salvar Foto de Perfil
+          </button>
+          <div class="info">
+            <p class="name">{{ userName || 'Carregando...' }}</p> <!-- CORREÇÃO APLICADA AQUI: de 'name' para 'userName' -->
+            <p class="posts-count">{{ postsCount || 0 }} postagens feitas</p>
+          </div>
+        </div>
+
+        <div class="item-list-section-container">
+          <app-item-list-section
+            title="Minhas Receitas"
+            iconClass="bi bi-book-fill">
+            </app-item-list-section>
+        </div>
+            <p *ngIf="isLoading" class="loading-message">Carregando suas receitas...</p>
+            <p *ngIf="error" class="error-message">{{ error }}</p>
+
+            <ng-container *ngIf="userRecipes$ | async as recipes">
+              <div *ngIf="!isLoading && recipes.length > 0" class="recipes-grid">
+                <div *ngFor="let recipe of recipes" class="recipe-card" (click)="navigateToRecipeDetail(recipe.id)">
+                  <div class="recipe-image-container">
+                    <img [src]="recipe.photoUrl || 'https://placehold.co/311x229'" alt="{{ recipe.recipeName }}" class="recipe-image">
+                  </div>
+                  <div class="recipe-info">
+                    <h5 class="recipe-title">{{ recipe.recipeName }}</h5>
+                    <p class="recipe-meta">{{ recipe.createdAt | date:'mediumDate' }}</p>
+                  </div>
+                </div>
+              </div>
+              <p *ngIf="!isLoading && !error && recipes.length === 0" class="no-recipes-message">
+                Você ainda não criou nenhuma receita. Que tal compartilhar uma?
+              </p>
+            </ng-container>
+        
+        <app-feed-menu></app-feed-menu>
+      </div>
+    </div>
+  </div>
+</div>

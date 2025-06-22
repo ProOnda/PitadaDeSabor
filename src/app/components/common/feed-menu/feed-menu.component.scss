@@ -1,0 +1,94 @@
+.feed-menu-container {
+  width: 310px;
+  height: 60px;
+  position: fixed; /* Fixa o elemento na tela */
+  bottom: 0; /* Alinha à parte inferior */
+  left: 50%; /* Move o lado esquerdo para o centro da tela */
+  transform: translateX(-50%); /* Centraliza horizontalmente */
+  z-index: 100; /* Garante que fique acima de outros elementos (opcional) */
+  /* Outros estilos que você já tem */
+  margin: 30px 0px;
+}
+
+.menu-background {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: #1D1D19;
+  border-radius: 14px;
+}
+
+.add-button {
+  width: 65px;
+  height: 65px;
+  left: 128px; /* Mantém o botão adicionar centralizado */
+  top: -15px;
+  position: absolute;
+  background: none;
+  border: none;
+  outline: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.add-icon-fundo{
+  background-color: #1D1D19;
+  padding: 10px;
+  border-radius: 100%;
+}
+
+.add-icon-background {
+  width: 38px;
+  height: 38px;
+  background: #AD2F33;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%; /* Para torná-lo um círculo se necessário */
+}
+
+.add-icon {
+  color: #1D1D19;
+  font-size: 24px;
+}
+
+.menu-item {
+  position: absolute;
+  background: none;
+  border: none;
+  outline: none;
+  opacity: 0.6;
+  font-size: 24px; /* Tamanho base para os ícones */
+  top: 20px; /* Mantém a posição vertical */
+  opacity: 50%;
+}
+
+.menu-item.home {
+  left: 20px;
+  color: #f0f0f0;
+}
+
+.menu-item.heart {
+  left: 80px;
+  color: rgba(240, 240, 240);
+}
+
+.menu-item.profile {
+  left: 210px;
+  color: rgba(240, 240, 240);
+}
+
+.menu-item.settings {
+  left: 265px;
+  color: rgba(240, 240, 240);
+}
+
+.active {
+  opacity: 1;
+  border-bottom: solid #AD2F33;
+  padding-bottom: 2px;
+}
